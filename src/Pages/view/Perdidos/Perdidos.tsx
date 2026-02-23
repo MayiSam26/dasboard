@@ -18,7 +18,7 @@ import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 
 export default function Perdidos() {
-  const [apoderado, setApoderado] = React.useState<any>([]);
+  
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
   const [iddueno, setIdIddueno] = React.useState<any>("");
