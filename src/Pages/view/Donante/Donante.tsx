@@ -15,13 +15,13 @@ import EventIcon from "@mui/icons-material/Event";
 import Header from "../../components/Header";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
+
 export default function Donante() {
   const [donante, setDonante] = React.useState<any>([]);
-  const [Editdonante, setEditDonante] = React.useState<any>();
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
   const [idDonante, setIdDonante] = React.useState<any>("");
-  const [openModalDelete, setOpenModalDelete] = React.useState<boolean>(false);
+
   const [fullname, setFullname] = React.useState<string>("");
   const [redsocial, setRedsocial] = React.useState<string>("");
   const [idtipopersona, setIdtipopersona] = React.useState<string>("");
@@ -50,10 +50,10 @@ export default function Donante() {
     const url = baseurl + "donante/detail/" + idDonante;
     await axios.get(url).then((response) => {
       const { data } = response;
-      console.log(data.data);
+
       setFullname(data.data.fullname);
       setRedsocial(data.data.redsocial);
-      setIdtipopersona(data.data.idtipopersona);
+      setIdtipopersona(String(data.data.idtipopersona));
       setRuc(data.data.Ruc);
       setDni(data.data.Dni);
     });
@@ -73,43 +73,39 @@ export default function Donante() {
     try {
       const response = await axios.put(url, body);
       const { data } = response;
+
       if (data.code === "000") {
         setSeverity("success");
         setMssg(data.message);
         setOpenAlert(true);
+
         setTimeout(() => {
-          setOpenModal(false);
+          setOpenModalEdit(false); // ✅ corregido (antes estaba setOpenModal(false))
+          setOpenAlert(false);
           getDonante();
         }, 1800);
+      } else {
+        setSeverity("error");
+        setMssg(data.message);
+        setOpenAlert(true);
       }
-    } catch (error) {
-      console.error("Error al actualizar el donante:", error);
+    } catch (error: any) {
+      setSeverity("error");
+      setMssg(error?.message || "Error al actualizar el donante");
+      setOpenAlert(true);
     }
   };
 
-  const handleFullname = (value: string) => {
-    setFullname(value);
-  };
-
-  const handleRedsocial = (value: string) => {
-    setRedsocial(value);
-  };
-
-  const handleIdtipopersona = (value: string) => {
-    setIdtipopersona(value);
-  };
-
-  const handleRuc = (value: string) => {
-    setRuc(value);
-  };
-
-  const handleDni = (value: string) => {
-    setDni(value);
-  };
+  const handleFullname = (value: string) => setFullname(value);
+  const handleRedsocial = (value: string) => setRedsocial(value);
+  const handleIdtipopersona = (value: string) => setIdtipopersona(value);
+  const handleRuc = (value: string) => setRuc(value);
+  const handleDni = (value: string) => setDni(value);
 
   React.useEffect(() => {
     getDonante();
   }, []);
+
   const columns: GridColDef<(typeof donante)[number]>[] = [
     {
       field: "fullname",
@@ -193,10 +189,7 @@ export default function Donante() {
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
-          <Agregar
-            setOpenModal={setOpenModal}
-            getDonante={() => getDonante()}
-          />
+          <Agregar setOpenModal={setOpenModal} getDonante={() => getDonante()} />
         </Box>
       </Modal>
     );
@@ -228,7 +221,6 @@ export default function Donante() {
           <Editar
             setOpenModalEdit={setOpenModalEdit}
             getDonante={() => getDonante()}
-            Editdonante={Editdonante}
             handleFullname={(value) => handleFullname(value)}
             handleRedsocial={(value) => handleRedsocial(value)}
             handleIdtipopersona={(value) => handleIdtipopersona(value)}
