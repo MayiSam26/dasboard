@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Grid, Modal, TextField, Typography } from "@mui/material";
+import { Alert, Button, Grid, TextField, Typography } from "@mui/material";
 import React, { useEffect } from "react";
 import SaveIcon from '@mui/icons-material/Save';
 
@@ -13,7 +13,6 @@ interface props {
 }
 export default function Editar({setFlask,setOpenModalEdit,idRefugio,getRedesSocial}:props){
     const[nombre,setNombre] = React.useState<any>("")
-    const[icono,setIcono] = React.useState<any>("")
     const[link,setLik] = React.useState<any>("")
     const[telefono,setTelefono] = React.useState<any>("")
     const[correo,setCorreo] = React.useState<any>("")
@@ -36,9 +35,9 @@ export default function Editar({setFlask,setOpenModalEdit,idRefugio,getRedesSoci
             setCorreo(data.data.correo)
         })
     }
-    useEffect(() =>{
-        getById()
-    },[])
+    useEffect(() => {
+    getById();
+}, [idRefugio]);
     const updateRefugio = async() =>{
         const url=baseurl+'home/updates/'+idRefugio
         const body = {
@@ -144,7 +143,12 @@ export default function Editar({setFlask,setOpenModalEdit,idRefugio,getRedesSoci
                                 value={link ?? ""}
                                 onChange={(e) => setLik(e.target.value)}
                             />
-                             <img src={link} width="100px" style={{padding:'10px',border:'1px solid #c2c2c2'}}/>
+                             <img 
+  src={link} 
+  alt="Logo del refugio"
+  width="100px" 
+  style={{padding:'10px',border:'1px solid #c2c2c2'}}
+/>
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
                             <TextField 
