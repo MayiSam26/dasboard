@@ -14,9 +14,6 @@ import React from "react";
 
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
-import { isNull } from "util";
-import { isNullishCoalesce } from "typescript";
-import { deflate } from "zlib";
 import SaveIcon from "@mui/icons-material/Save";
 import moment from "moment";
 
@@ -31,19 +28,12 @@ interface autocomplete {
 }
 export default function Agregar({ setOpenModal, getPerdidos }: props) {
     const [amo, setAmo] = React.useState<autocomplete[]>([]);
-    const [albergados, setAlbergados] = React.useState<autocomplete[]>([]);
-    const [plan, setPlan] = React.useState<autocomplete[]>([]);
 
     // form
     const [amoSelect, setAmoSelect] = React.useState<any>("");
     const [genero, setGenero] = React.useState<any>("");
     const [tipoAnimal, setTipoAnimal] = React.useState<any>("");
     const [fromto, setFromto] = React.useState<any>(null);
-
-    const [severity, setSeverity] = React.useState<any>("");
-    const [mssg, setMssg] = React.useState<any>("");
-    const [openAlert, setOpenAlert] = React.useState<boolean>(false);
-
     const saveApadrinado = async () => {
         const body = {};
     };
