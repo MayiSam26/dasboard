@@ -41,7 +41,7 @@ export default function Editar({
     axios.get(url).then((response) => {
       const { data } = response;
      
-      setFoto(data.data.foto);
+      setFoto(data.data.foto); 
       setMotivo(data.data.observaciones);
       setEsterilizado(data.data.esterelizacion)
     });

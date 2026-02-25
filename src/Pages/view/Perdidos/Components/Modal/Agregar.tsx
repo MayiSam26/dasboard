@@ -29,6 +29,18 @@ interface autocomplete {
 export default function Agregar({ setOpenModal, getPerdidos }: props) {
     const [amo, setAmo] = React.useState<autocomplete[]>([]);
 
+// 👇 ESTAS SON LAS 3 LÍNEAS QUE FALTABAN 👇
+  const [openAlert, setOpenAlert] = React.useState(false)
+  const [mssg, setMssg] = React.useState("")
+  const [severity, setSeverity] = React.useState<any>("success")
+  // 👆 ===================================== 👆
+
+  // AGREGA ESTO PARA QUE TUS INPUTS FUNCIONEN:
+    const [nombre, setNombre] = React.useState("");
+    const [edad, setEdad] = React.useState("");
+    const [descripcion, setDescripcion] = React.useState("");
+    const [file, setFile] = React.useState<any>(null);
+
     // form
     const [amoSelect, setAmoSelect] = React.useState<any>("");
     const [genero, setGenero] = React.useState<any>("");
