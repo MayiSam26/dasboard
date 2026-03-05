@@ -94,7 +94,7 @@ export default function Home() {
                 <div className="card-body p-4">
                   <div className="text-center w-75 m-auto">
                     <h4 className="text-dark-50 text-center pb-0 fw-bold">
-                      Inicio de session
+                      Inicio de Sesión
                     </h4>
                     <p className="text-muted mb-4">
                       Ingresa tu usuario y contraseña para ingresar al panel
