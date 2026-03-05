@@ -7,7 +7,6 @@ import HeaderBox from "./Components/HeaderBox";
 import baseurl from "../../../Config/axios";
 import axios from "axios";
 import React from "react";
-import DeleteIcon from "@mui/icons-material/Delete";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import moment from "moment";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -30,8 +29,6 @@ export default function Colitas() {
   const [tamano, setTamano] = React.useState<any>("");
   const [dateTo, setDateTo] = React.useState<any>("");
 
-
- 
   const getAlbergados = async () => {
     const body = {
       search: "",
@@ -41,7 +38,7 @@ export default function Colitas() {
       fechaBusqueda: null,
     };
     const url = baseurl + "colitas/list";
-    await axios.post(url,body).then((response) => {
+    await axios.post(url, body).then((response) => {
       const { data } = response;
       setAlbergados(data.data);
     });
@@ -52,18 +49,8 @@ export default function Colitas() {
   }, []);
 
   const columns: GridColDef<(typeof albergados)[number]>[] = [
-    {
-      field: "nombre",
-      headerName: "Nombre",
-      width: 120,
-      editable: true,
-    },
-    {
-      field: "tamano",
-      headerName: "Tamaño",
-      width: 130,
-      editable: true,
-    },
+    { field: "nombre", headerName: "Nombre", width: 120, editable: true },
+    { field: "tamano", headerName: "Tamaño", width: 130, editable: true },
     {
       field: "peso",
       headerName: "Peso",
@@ -78,7 +65,6 @@ export default function Colitas() {
       editable: true,
       renderCell: (params) => params.value + " año(s)",
     },
-
     {
       field: "Fecha_Ingreso",
       headerName: "Fecha Ingreso",
@@ -90,13 +76,7 @@ export default function Colitas() {
         </>
       ),
     },
-    {
-      field: "estado",
-      headerName: "Estado",
-      width: 100,
-      editable: true,
-      align: "center",
-    },
+    { field: "estado", headerName: "Estado", width: 100, editable: true, align: "center" },
     {
       field: "esterelizacion",
       headerName: "Esterelizado",
@@ -111,7 +91,7 @@ export default function Colitas() {
       editable: true,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => params.value.descripcion
+      renderCell: (params) => params.value.descripcion,
     },
     {
       field: "genero",
@@ -120,34 +100,27 @@ export default function Colitas() {
       editable: true,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => params.value.descripcion
+      renderCell: (params) => params.value.descripcion,
     },
     {
       field: "foto",
       headerName: "Foto",
       width: 100,
       editable: true,
-      renderCell: (params) => {
-        return (
-          <img
-            src={`${baseurl}${params.row.foto}`}
-            alt="Imagen"
-            style={{
-              objectFit: "cover",
-              backgroundSize: "cover",
-              padding: "5px",
-              width: "100px",
-            }}
-          />
-        );
-      },
+      renderCell: (params) => (
+        <img
+          src={`${baseurl}${params.row.foto}`}
+          alt="Imagen"
+          style={{
+            objectFit: "cover",
+            backgroundSize: "cover",
+            padding: "5px",
+            width: "100px",
+          }}
+        />
+      ),
     },
-    {
-      field: "observaciones",
-      headerName: "Observaciones",
-      width: 250,
-      editable: true,
-    },
+    { field: "observaciones", headerName: "Observaciones", width: 250, editable: true },
     {
       field: "view",
       headerName: "Editar",
@@ -163,59 +136,49 @@ export default function Colitas() {
           sx={{ textAlign: "center", cursor: "pointer" }}
         />
       ),
-    }
+    },
   ];
 
+  const handleBusqueda = (value: any) => setBusquedNombre(value);
+  const handleTipoAnimal = (value: any) => setTipoAnimal(value);
+  const handleGenero = (value: any) => setGenero(value);
+  const handleTamno = (value: any) => setTamano(value);
+  const handleDateTo = (value: any) => setDateTo(moment(value).format("YYYY-MM-DD"));
 
-  const handleBusqueda = (value: any) => {
-    setBusquedNombre(value);
-  };
-
-  const handleTipoAnimal = (value: any) => {
-    setTipoAnimal(value);
-  };
-
-  const handleGenero = (value: any) => {
-    setGenero(value);
-  };
-  const handleTamno = (value: any) => {
-    setTamano(value);
-  };
-
-  const handleDateTo = (value: any) => {
-    setDateTo(moment(value).format("YYYY-MM-DD"));
-  };
-
-  const handleSearch = async() =>{
-    const fechaBusqueda: Date | null = dateTo === 'Invalid date' ? null : dateTo;
+  const handleSearch = async () => {
+    const fechaBusqueda: Date | null = dateTo === "Invalid date" ? null : dateTo;
 
     const body = {
-      search: busquedaNombre?? '',
+      search: busquedaNombre ?? "",
       p_tamano: tamano ?? null,
-      p_idtipoanimal: tipoAnimal?parseInt(tipoAnimal):null,
-      p_idgenero: genero?parseInt(genero):null,
+      p_idtipoanimal: tipoAnimal ? parseInt(tipoAnimal) : null,
+      p_idgenero: genero ? parseInt(genero) : null,
       fechaBusqueda: fechaBusqueda,
-    }
+    };
 
     const url = baseurl + "colitas/list";
-    await axios.post(url,body).then((response) => {
+    await axios.post(url, body).then((response) => {
       const { data } = response;
       setAlbergados(data.data);
     });
-  }
+  };
+
+  // ✅ ESTILO NUEVO PARA MODALES (RESPONSIVE + SCROLL)
+  const modalBoxSx = {
+    position: "absolute" as const,
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "min(700px, 92vw)",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    bgcolor: "background.paper",
+    borderRadius: 2,
+    boxShadow: 24,
+    p: { xs: 2, sm: 3 },
+  };
 
   const ModalAgregar = () => {
-    const style = {
-      position: "absolute" as "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: 700,
-      bgcolor: "background.paper",
-      border: "2px solid #000",
-      boxShadow: 24,
-      p: 4,
-    };
     return (
       <Modal
         open={openModal}
@@ -223,45 +186,32 @@ export default function Colitas() {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          <Agregar
-            setOpenModal={setOpenModal}
-            getAlbergados={() => getAlbergados()}
+        <Box sx={modalBoxSx}>
+          <Agregar setOpenModal={setOpenModal} getAlbergados={getAlbergados} />
+        </Box>
+      </Modal>
+    );
+  };
+
+  const ModalEditar = () => {
+    return (
+      <Modal
+        open={openModalEdit}
+        onClose={() => setOpenModalEdit(false)}
+        aria-labelledby="modal-modal-title"
+        aria-describedby="modal-modal-description"
+      >
+        <Box sx={modalBoxSx}>
+          <Editar
+            setOpenModalEdit={setOpenModalEdit}
+            idAnimal={idAnimal}
+            getAlbergados={getAlbergados}
           />
         </Box>
       </Modal>
     );
   };
 
-  const ModalEditar = () =>{
-    const style = {
-        position: 'absolute' as 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: 700,
-        bgcolor: 'background.paper',
-        border: '2px solid #000',
-        boxShadow: 24,
-        p: 4,
-      };
-    return(
-         <Modal
-            open={openModalEdit}
-            onClose={() => setOpenModalEdit(false)}
-            aria-labelledby="modal-modal-title"
-            aria-describedby="modal-modal-description"
-            >
-            <Box sx={style}>
-                <Editar 
-                    setOpenModalEdit={setOpenModalEdit}
-                    idAnimal={idAnimal}
-                    getAlbergados={() =>getAlbergados()}
-                />
-            </Box>
-        </Modal>
-    )
-  }
   return (
     <>
       <Layout>
@@ -271,26 +221,26 @@ export default function Colitas() {
           <Body>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <HeaderBox setOpenModal={() => setOpenModal(true)}  />
+                <HeaderBox setOpenModal={() => setOpenModal(true)} />
               </Grid>
+
               <Grid item xs={12} sx={{ marginTop: "20px" }}>
                 <Search
-                  handleBusqueda={(value: any) => handleBusqueda(value)}
-                  handleTipoAnimal={(value: any) => handleTipoAnimal(value)}
-                  handleGenero={(value: any) => handleGenero(value)}
-                  handleSearch={() => handleSearch()}
-                  handleTamno={(value: any) => handleTamno(value)}
-                  handleDateTo={(value: any) => handleDateTo(value)}
+                  handleBusqueda={handleBusqueda}
+                  handleTipoAnimal={handleTipoAnimal}
+                  handleGenero={handleGenero}
+                  handleSearch={handleSearch}
+                  handleTamno={handleTamno}
+                  handleDateTo={handleDateTo}
                 />
+
                 <Box sx={{ height: 400, width: "100%" }}>
                   <DataGrid
                     rows={albergados}
                     columns={columns}
                     initialState={{
                       pagination: {
-                        paginationModel: {
-                          pageSize: 8,
-                        },
+                        paginationModel: { pageSize: 8 },
                       },
                     }}
                     autoHeight
@@ -305,6 +255,7 @@ export default function Colitas() {
           </Body>
         </Content>
       </Layout>
+
       {ModalAgregar()}
       {ModalEditar()}
     </>
