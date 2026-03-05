@@ -154,7 +154,7 @@ export default function Home() {
 
                     <div className="mb-3 mb-0 text-center">
                       <Button onClick={() => handleLogin()} variant="contained" sx={{textTransform:'capitalize'}}>
-                            Iniciar Session
+                            Ingresar
                       </Button>
                     </div>
                   </form>
