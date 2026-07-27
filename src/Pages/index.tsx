@@ -9,87 +9,108 @@ import moment from "moment";
 import formatlocaldate from "../Config/helpersDate";
 
 export default function Home() {
-  const navigate = useNavigate()
-    const { login } = useContext(UserSessionContext);
-    const[usuario,setUsuario] = useState<any>("")
-    const[pass,setPass] = useState<any>("")
-    const [showPassword, setShowPassword] = React.useState<any>(false);
-    const[severity,setSeverity] = React.useState<any>("")
-    const[mssg,setMssg] = React.useState<any>("")
-    const[openAlert,setOpenAlert] = React.useState<boolean>(false)
+  const navigate = useNavigate();
+  const { login } = useContext(UserSessionContext);
+  const [usuario, setUsuario] = useState<any>("");
+  const [pass, setPass] = useState<any>("");
+  const [showPassword, setShowPassword] = React.useState<any>(false);
+  const [severity, setSeverity] = React.useState<any>("");
+  const [mssg, setMssg] = React.useState<any>("");
+  const [openAlert, setOpenAlert] = React.useState<boolean>(false);
 
-    const handleLogin = async () => {
-      try {
-        const body = {
-          usuario:usuario,
-          pass:pass
+  const handleLogin = async () => {
+    try {
+      setOpenAlert(false);
+      const body = {
+        usuario: usuario,
+        pass: pass
+      };
+
+      const url = baseurl + "session-user";
+      const response = await axios.post(url, body);
+      const { data } = response;
+
+      if (data.code === '000') {
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", data.usuario);
         }
-       
-        const url = baseurl+"session-user"
-        const response = await axios.post(url, body);
-        const{data} = response
-    
-      if (data.token) {
-        localStorage.setItem("token",data.token);
-        localStorage.setItem("user",data.usuario);
-      }
-      if(data.code === '000'){
-        saveAuditoria()
-        navigate("/panel")
-      }else{
-        setOpenAlert(true)
-        setSeverity('error')
-        setMssg(data.message)
+
+        // Intenta guardar auditoría sin bloquear el flujo si falla
+        await saveAuditoria();
+
+        // Redirección directa al panel
+        window.location.href = "/panel";
+      } else {
+        setOpenAlert(true);
+        setSeverity('error');
+        setMssg(data.message || 'Contraseña incorrecta o usuario incorrecto');
       }
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
-     
+      setOpenAlert(true);
+      setSeverity('error');
+      setMssg('Error al conectar con el servidor');
     }
-    };
-  
-    const saveAuditoria = async() =>{
-      const fecha = moment(new Date()).format('YYYY-MM-DD HH:mm:ss')
+  };
+
+  const saveAuditoria = async () => {
+    try {
+      const fecha = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
 
       const body = {
-        fechaInicio:formatlocaldate(new Date()),
-        modulo:"",
-        fechaRegistro:fecha,
-        resultado:null
+        fechaInicio: formatlocaldate(new Date()),
+        modulo: "Login",
+        fechaRegistro: fecha,
+        resultado: null
+      };
+
+      const url = baseurl + "auditoria";
+      const token = localStorage.getItem("token");
+
+      const response = await axios.post(url, body, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const { data } = response;
+      if (data && data.data && data.data.idauditoria) {
+        localStorage.setItem("auditoria", data.data.idauditoria);
       }
-     
-      const url = baseurl+"auditoria"
-      const response = await axios.post(url, body);
-      const{data} = response
-      localStorage.setItem("auditoria",data.data.idauditoria)
+    } catch (error) {
+      console.error("Error no bloqueante al guardar auditoría:", error);
     }
+  };
 
-    const handleClickShowPassword = () => setShowPassword((show:any) => !show);
-  
-    const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
-      event.preventDefault();
-    };
+  const handleClickShowPassword = () => setShowPassword((show: any) => !show);
 
-    const alert = () =>{
-      return(
-          <Alert variant="filled" severity={severity}>
-              {mssg}
-          </Alert>
-      )
-  }
+  const handleMouseDownPassword = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+  };
+
+  const alert = () => {
+    return (
+      <Alert variant="filled" severity={severity}>
+        {mssg}
+      </Alert>
+    );
+  };
+
   return (
     <>
       <div className="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5">
         <div className="container">
           <div className="row justify-content-center">
             <div className="col-xxl-4 col-lg-5">
-            {openAlert?alert():null}
+              {openAlert ? alert() : null}
               <div className="card">
-                <div 
-                    className="card-header pt-4 pb-4 text-center"
-                    style={{
-                        backgroundImage:'url(images/heros.png)',objectFit:'cover',backgroundPosition:'center'}}
-                >
-                </div>
+                <div
+                  className="card-header pt-4 pb-4 text-center"
+                  style={{
+                    backgroundImage: 'url(images/heros.png)',
+                    objectFit: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                ></div>
 
                 <div className="card-body p-4">
                   <div className="text-center w-75 m-auto">
@@ -101,7 +122,7 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <form action="#">
+                  <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
                     <div className="mb-3">
                       <label className="form-label">Usuario</label>
                       <TextField
@@ -110,14 +131,13 @@ export default function Home() {
                         size="small"
                         label="Ingresar Usuario"
                         variant="outlined"
-                        onChange={(e) =>setUsuario(e.target.value)}
+                        onChange={(e) => setUsuario(e.target.value)}
                       />
                     </div>
 
                     <div className="mb-3">
                       <label className="form-label">Contraseña</label>
                       <div className="input-group input-group-merge">
-                        
                         <FormControl
                           sx={{ width: "100%" }}
                           variant="outlined"
@@ -153,15 +173,13 @@ export default function Home() {
                     </div>
 
                     <div className="mb-3 mb-0 text-center">
-                      <Button onClick={() => handleLogin()} variant="contained" sx={{textTransform:'capitalize'}}>
-                            Ingresar
+                      <Button onClick={() => handleLogin()} variant="contained" sx={{ textTransform: 'capitalize' }}>
+                        Ingresar
                       </Button>
                     </div>
                   </form>
                 </div>
               </div>
-
-              
             </div>
           </div>
         </div>
