@@ -219,7 +219,7 @@ export default function Adopcion() {
                     px={1}
                     sx={{ border: "1px solid #c2c2c2",width:'100%' }}
                   >
-                    <Typography variant="body1">Cantidad Adopaciones</Typography>
+                    <Typography variant="body1">Cantidad Adopciones</Typography>
                     <Typography variant="h3" style={{ fontWeight: 700 }}>
                       {item.cantadopci}
                     </Typography>
