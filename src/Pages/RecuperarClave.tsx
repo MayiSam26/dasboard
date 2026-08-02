@@ -1,4 +1,4 @@
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Pets, PersonOutline, LockOutlined } from "@mui/icons-material";
 import {
   Alert,
   Button,
@@ -102,7 +102,7 @@ export default function RecuperarClave() {
         className="cya-login-panel"
         style={{
           backgroundImage:
-            "linear-gradient(155deg, rgba(228, 96, 47, 0.85) 0%, rgba(63, 158, 92, 0.85) 100%), url(/images/login-bg.jpg)",
+            "linear-gradient(180deg, rgba(10, 12, 14, 0.35) 0%, rgba(10, 12, 14, 0.72) 100%), url(/images/login-bg.jpg)",
         }}
       >
         <img src="/images/logocito.png" alt="Refugio Colitas y Amor" />
@@ -112,24 +112,35 @@ export default function RecuperarClave() {
 
       <div className="cya-login-form-side">
         <div className="cya-login-card">
+          <div className="cya-login-icon-badge">
+            <Pets />
+          </div>
+
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
           {step === "usuario" && (
             <form onSubmit={handleBuscarUsuario}>
-              <Typography variant="h6" sx={{ fontWeight: 800, mb: 1 }}>
+              <Typography variant="h6" sx={{ fontWeight: 800, mb: 1, textAlign: "center" }}>
                 ¿Cuál es tu usuario?
               </Typography>
-              <Typography color="text.secondary" sx={{ mb: 3 }}>
+              <Typography color="text.secondary" sx={{ mb: 3, textAlign: "center" }}>
                 Te mostraremos tu pregunta secreta para verificar que eres tú.
               </Typography>
               <TextField
                 fullWidth
                 required
                 size="small"
-                label="Usuario"
+                label="Ingresa tu Usuario"
                 sx={{ mb: 3 }}
                 value={usuario}
                 onChange={(e) => setUsuario(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonOutline />
+                    </InputAdornment>
+                  ),
+                }}
               />
               <Button fullWidth type="submit" variant="contained" disabled={loading} sx={{ textTransform: "none" }}>
                 {loading ? "Buscando..." : "Continuar"}
@@ -188,6 +199,11 @@ export default function RecuperarClave() {
                   type={showPassword ? "text" : "password"}
                   value={nuevaPassword}
                   onChange={(e) => setNuevaPassword(e.target.value)}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <LockOutlined />
+                    </InputAdornment>
+                  }
                   endAdornment={
                     <InputAdornment position="end">
                       <IconButton onClick={() => setShowPassword((s) => !s)} edge="end">

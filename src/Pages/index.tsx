@@ -1,4 +1,4 @@
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Pets, PersonOutline, LockOutlined } from "@mui/icons-material";
 import { Alert, Button, FormControl, IconButton, InputAdornment, InputLabel, OutlinedInput, TextField } from "@mui/material";
 import React, { useContext, useState } from "react";
 import { UserSessionContext } from "../Config/Context";
@@ -107,7 +107,7 @@ export default function Home() {
         className="cya-login-panel"
         style={{
           backgroundImage:
-            "linear-gradient(155deg, rgba(228, 96, 47, 0.85) 0%, rgba(63, 158, 92, 0.85) 100%), url(/images/login-bg.jpg)",
+            "linear-gradient(180deg, rgba(10, 12, 14, 0.35) 0%, rgba(10, 12, 14, 0.72) 100%), url(/images/login-bg.jpg)",
         }}
       >
         <img src="/images/logocito.png" alt="Refugio Colitas y Amor" />
@@ -123,7 +123,10 @@ export default function Home() {
           {openAlert ? alert() : null}
 
           <div className="text-center mb-4">
-            <h4 className="pb-0">Bienvenido de vuelta</h4>
+            <div className="cya-login-icon-badge">
+              <Pets />
+            </div>
+            <h4 className="pb-0">Bienvenido</h4>
             <p className="text-muted mb-0">
               Ingresa tu usuario y contraseña para continuar
             </p>
@@ -135,9 +138,16 @@ export default function Home() {
                 fullWidth
                 id="outlined-basic"
                 size="small"
-                label="Usuario"
+                label="Ingresa tu Usuario"
                 variant="outlined"
                 onChange={(e) => setUsuario(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <PersonOutline />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </div>
 
@@ -154,6 +164,11 @@ export default function Home() {
                   size='small'
                   type={showPassword ? "text" : "password"}
                   onChange={(e) => setPass(e.target.value)}
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <LockOutlined />
+                    </InputAdornment>
+                  }
                   endAdornment={
                     <InputAdornment position="end">
                       <IconButton

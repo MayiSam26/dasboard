@@ -32,41 +32,44 @@ body {
 }
 
 .cya-login-panel {
-  flex: 1;
+  flex: 0.85;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 3rem;
-  background-color: var(--cya-primary);
+  padding: 4rem 3.5rem;
+  background-color: var(--cya-dark);
   background-size: cover;
   background-position: center;
   color: #fff;
-  text-align: center;
+  text-align: left;
 }
 
 .cya-login-panel img {
-  width: 120px;
-  margin-bottom: 1.5rem;
-  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.15));
+  width: 84px;
+  margin-bottom: 2rem;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.35));
 }
 
 .cya-login-panel h1 {
   font-family: var(--cya-font-heading);
   font-weight: 800;
-  font-size: 1.9rem;
-  margin-bottom: .5rem;
+  font-size: 2.1rem;
+  line-height: 1.25;
+  margin-bottom: .9rem;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.4);
 }
 
 .cya-login-panel p {
-  max-width: 360px;
-  opacity: .92;
-  font-size: 1rem;
-  line-height: 1.5;
+  max-width: 380px;
+  opacity: .95;
+  font-size: 1.02rem;
+  line-height: 1.55;
+  text-shadow: 0 1px 10px rgba(0, 0, 0, 0.35);
 }
 
 .cya-login-form-side {
-  flex: 1;
+  flex: 1.15;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -76,12 +79,32 @@ body {
 
 .cya-login-card {
   width: 100%;
-  max-width: 380px;
+  max-width: 440px;
   background: #fff;
   border: 1px solid var(--cya-border);
   border-radius: var(--cya-radius-lg);
   box-shadow: var(--cya-shadow-md);
-  padding: 2.5rem 2rem;
+  padding: 2.75rem 2.5rem;
+}
+
+.cya-login-icon-badge {
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: rgba(63, 158, 92, 0.12);
+  color: var(--cya-secondary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.1rem;
+  animation: cya-badge-pop .4s ease;
+}
+.cya-login-icon-badge svg {
+  font-size: 34px;
+}
+@keyframes cya-badge-pop {
+  0% { transform: scale(.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .cya-login-card h4 {
@@ -90,19 +113,44 @@ body {
   color: var(--cya-dark);
 }
 
+/* Animación sutil al enfocar los campos */
+.cya-login-card .MuiOutlinedInput-root {
+  transition: box-shadow .2s ease, transform .15s ease;
+  border-radius: 12px;
+}
+.cya-login-card .MuiOutlinedInput-root.Mui-focused {
+  box-shadow: 0 0 0 4px rgba(228, 96, 47, 0.14);
+  transform: translateY(-1px);
+}
+
+/* El ojito de mostrar/ocultar contraseña */
+.cya-login-card .MuiIconButton-root svg {
+  transition: transform .25s ease;
+}
+.cya-login-card .MuiIconButton-root:active svg {
+  transform: scale(.8) rotate(-10deg);
+}
+
 .cya-login-card .MuiButton-containedPrimary,
 .cya-login-card .MuiButton-contained {
   background-color: var(--cya-primary) !important;
   border-radius: 999px !important;
-  padding: .7rem !important;
+  padding: .8rem !important;
   font-weight: 700 !important;
   text-transform: none !important;
   box-shadow: none !important;
+  transition: transform .15s ease, box-shadow .15s ease !important;
 }
 .cya-login-card .MuiButton-contained:hover {
   background-color: var(--cya-primary-dark) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(228, 96, 47, 0.25) !important;
+}
+.cya-login-card .MuiButton-contained:active {
+  transform: translateY(0);
 }
 
 @media (max-width: 900px) {
   .cya-login-panel { display: none; }
+  .cya-login-form-side { flex: 1; }
 }
