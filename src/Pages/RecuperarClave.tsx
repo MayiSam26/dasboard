@@ -98,7 +98,13 @@ export default function RecuperarClave() {
 
   return (
     <div className="cya-login-shell">
-      <div className="cya-login-panel">
+      <div
+        className="cya-login-panel"
+        style={{
+          backgroundImage:
+            "linear-gradient(155deg, rgba(228, 96, 47, 0.85) 0%, rgba(63, 158, 92, 0.85) 100%), url(/images/login-bg.jpg)",
+        }}
+      >
         <img src="/images/logocito.png" alt="Refugio Colitas y Amor" />
         <h1>Recuperar contraseña</h1>
         <p>Responde tu pregunta secreta para volver a acceder al panel.</p>

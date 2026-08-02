@@ -103,7 +103,13 @@ export default function Home() {
 
   return (
     <div className="cya-login-shell">
-      <div className="cya-login-panel">
+      <div
+        className="cya-login-panel"
+        style={{
+          backgroundImage:
+            "linear-gradient(155deg, rgba(228, 96, 47, 0.85) 0%, rgba(63, 158, 92, 0.85) 100%), url(/images/login-bg.jpg)",
+        }}
+      >
         <img src="/images/logocito.png" alt="Refugio Colitas y Amor" />
         <h1>Refugio Colitas &amp; Amor</h1>
         <p>

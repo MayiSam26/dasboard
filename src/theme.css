@@ -38,7 +38,9 @@ body {
   align-items: center;
   justify-content: center;
   padding: 3rem;
-  background: linear-gradient(155deg, var(--cya-primary) 0%, var(--cya-secondary) 100%);
+  background-color: var(--cya-primary);
+  background-size: cover;
+  background-position: center;
   color: #fff;
   text-align: center;
 }
