@@ -3,16 +3,24 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useEffect, useState } from "react";
 import { setAuthHeader } from "../../Config/axiosSetup";
+import baseurl from "../../Config/axios";
 
+function buildImgUrl(foto: string) {
+    const cleanBase = baseurl.replace(/\/+$/, "");
+    const cleanFoto = (foto || "").replace(/\\/g, "/").replace(/^\/+/, "");
+    return `${cleanBase}/${cleanFoto}`;
+}
 
 export default function Header(){
     const[user,userName] = useState<any>("")
+    const[foto,setFoto] = useState<any>("")
     useEffect(
         () =>{
             userName(localStorage.getItem("user"))
+            setFoto(localStorage.getItem("userFoto"))
         },[user]
     )
-    
+
     const navigate = useNavigate(); // Usa useNavigate si necesitas redireccionar
     const verifyToken = () =>{
         const token = localStorage.getItem('token');
@@ -23,6 +31,7 @@ export default function Header(){
     const logout = () =>{
         localStorage.removeItem("token")
         localStorage.removeItem("auditoria")
+        localStorage.removeItem("userFoto")
         setAuthHeader(null)
         verifyToken()
     }
@@ -39,8 +48,13 @@ export default function Header(){
                                      aria-expanded="false"
                                      style={{display:'flex',alignItems:'center'}}
                                 >
-                                    <span className="account-user-avatar"> 
-                                        <img src="../images/usuario.png" alt="user-image" className="rounded-circle" />
+                                    <span className="account-user-avatar">
+                                        <img
+                                            src={foto ? buildImgUrl(foto) : "../images/usuario.png"}
+                                            alt="user-image"
+                                            className="rounded-circle"
+                                            style={{ objectFit: "cover" }}
+                                        />
                                     </span>
                                     <span>
                                         <span className="account-user-name">{user}</span>

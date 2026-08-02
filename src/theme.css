@@ -9,6 +9,7 @@
   --cya-primary-dark: #C74E23;
   --cya-secondary: #3F9E5C;
   --cya-secondary-dark: #2F7D46;
+  --cya-sidebar-bg: #24282C;
   --cya-dark: #24282C;
   --cya-text-muted: #767C82;
   --cya-bg-alt: #FBF7F2;
@@ -113,6 +114,33 @@ body {
   color: var(--cya-dark);
 }
 
+/* ---------- Paleta aplicada a toda la app, no solo el login ---------- */
+
+.MuiButton-containedPrimary {
+  background-color: var(--cya-primary) !important;
+}
+.MuiButton-containedPrimary:hover {
+  background-color: var(--cya-primary-dark) !important;
+}
+.MuiButton-outlinedPrimary,
+.MuiButton-textPrimary {
+  color: var(--cya-primary) !important;
+}
+.MuiButton-outlinedPrimary {
+  border-color: var(--cya-primary) !important;
+}
+.MuiCheckbox-colorPrimary.Mui-checked,
+.MuiRadio-colorPrimary.Mui-checked,
+.MuiSwitch-colorPrimary.Mui-checked {
+  color: var(--cya-primary) !important;
+}
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: var(--cya-primary) !important;
+}
+.MuiFormLabel-root.Mui-focused {
+  color: var(--cya-primary) !important;
+}
+
 /* Animación sutil al enfocar los campos */
 .cya-login-card .MuiOutlinedInput-root {
   transition: box-shadow .2s ease, transform .15s ease;
@@ -153,4 +181,48 @@ body {
 @media (max-width: 900px) {
   .cya-login-panel { display: none; }
   .cya-login-form-side { flex: 1; }
+}
+
+/* ---------- Sidebar ---------- */
+
+.leftside-menu {
+  background-color: var(--cya-sidebar-bg) !important;
+  transition: background-color .3s ease;
+}
+
+.cya-sidebar-item {
+  border-left: 3px solid transparent;
+  border-radius: 0 10px 10px 0;
+  margin-right: 8px;
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.cya-sidebar-item:hover {
+  background-color: rgba(255, 255, 255, .07);
+}
+.cya-sidebar-item.cya-active {
+  background-color: rgba(255, 255, 255, .09);
+  border-left-color: var(--cya-primary);
+}
+.cya-sidebar-item.cya-active .MuiListItemText-primary {
+  font-weight: 700 !important;
+  color: var(--cya-primary) !important;
+}
+.cya-sidebar-item.cya-active .MuiListItemIcon-root svg {
+  color: var(--cya-primary) !important;
+}
+
+.cya-theme-swatch {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 3px solid transparent;
+  transition: transform .15s ease, border-color .15s ease;
+  display: inline-flex;
+}
+.cya-theme-swatch:hover {
+  transform: scale(1.1);
+}
+.cya-theme-swatch.cya-selected {
+  border-color: var(--cya-dark);
 }

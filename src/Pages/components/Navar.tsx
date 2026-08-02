@@ -4,51 +4,97 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  ListSubheader,
 } from "@mui/material";
-import { Link, Outlet, useNavigate } from "react-router-dom";
-import SendIcon from "@mui/icons-material/Send";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
-import InterestsIcon from "@mui/icons-material/Interests";
-import GroupAddIcon from "@mui/icons-material/GroupAdd";
-import LocalPlayIcon from "@mui/icons-material/LocalPlay";
-import TrendingDownIcon from "@mui/icons-material/TrendingDown";
-import SentimentSatisfiedAltIcon from "@mui/icons-material/SentimentSatisfiedAlt";
 import FolderSharedIcon from "@mui/icons-material/FolderShared";
 import PetsIcon from "@mui/icons-material/Pets";
-import AutoStoriesIcon from "@mui/icons-material/AutoStories";
-import SettingsAccessibilityIcon from "@mui/icons-material/SettingsAccessibility";
+import SearchOffIcon from "@mui/icons-material/SearchOff";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
 import React from "react";
+
+interface SubItem {
+  label: string;
+  path: string;
+}
+
+interface Section {
+  key: string;
+  label: string;
+  icon: React.ReactNode;
+  items: SubItem[];
+}
+
+const sections: Section[] = [
+  {
+    key: "refugio",
+    label: "Refugio",
+    icon: <HomeIcon />,
+    items: [
+      { label: "Información", path: "/panel/informacion-pages" },
+      { label: "Red Social", path: "/panel/redes-social" },
+    ],
+  },
+  {
+    key: "colitas",
+    label: "Colitas",
+    icon: <PetsIcon />,
+    items: [{ label: "Albergados", path: "/panel/colitas" }],
+  },
+  {
+    key: "perdidos",
+    label: "Mascotas Perdidas",
+    icon: <SearchOffIcon />,
+    items: [
+      { label: "Reportes de Perdidas", path: "/panel/perdidos" },
+      { label: "Dueños", path: "/panel/apoderado" },
+    ],
+  },
+  {
+    key: "adopcion",
+    label: "Adopción",
+    icon: <FolderSharedIcon />,
+    items: [
+      { label: "Adoptante", path: "/panel/adoptante" },
+      { label: "Adopción", path: "/panel/adopcion" },
+    ],
+  },
+  {
+    key: "donaciones",
+    label: "Donaciones",
+    icon: <StackedBarChartIcon />,
+    items: [
+      { label: "Ingreso", path: "/panel/ingresos" },
+      { label: "Donante", path: "/panel/donante" },
+      { label: "Apadrinado", path: "/panel/apadrinado" },
+    ],
+  },
+];
+
 export default function Navar() {
   const navigate = useNavigate();
-  const [openRefugio, setOpenRefugio] = React.useState(false);
-  const [openAdopcion, setOpenAdopcion] = React.useState(false);
-  const [openDonacion, setOpenDonacion] = React.useState(false);
-  const [openColitas, setOpenColitas] = React.useState(false);
+  const location = useLocation();
 
-  const handleopenRefugio = () => {
-    setOpenRefugio(!openRefugio);
-  };
-  const handleopenAdopcion = () => {
-    setOpenAdopcion(!openAdopcion);
-  };
+  const sectionOfCurrentPath = sections.find((s) =>
+    s.items.some((i) => i.path === location.pathname)
+  );
 
-  const handleopenDonacion = () => {
-    setOpenDonacion(!openDonacion);
+  const [openSection, setOpenSection] = React.useState<string | null>(
+    sectionOfCurrentPath?.key ?? null
+  );
+
+  const toggleSection = (key: string) => {
+    setOpenSection((prev) => (prev === key ? null : key));
   };
 
-  const handleopenColitas = () => {
-    setOpenColitas(!openColitas);
-  };
   return (
     <>
-      <div className="leftside-menu" style={{ background: "#313a46" }}>
+      <div className="leftside-menu" style={{ background: "var(--cya-sidebar-bg)" }}>
         <Link
           to="/panel"
           className="logo text-center logo-light"
-          style={{ background: "rgb(133, 146, 158,0.5)" }}
+          style={{ background: "rgba(255,255,255,0.08)" }}
         >
           <span className="logo-lg">
             <img src="../images/logocito.png" alt="" height="40" />
@@ -69,129 +115,49 @@ export default function Navar() {
 
         <div className="h-100" id="leftside-menu-container" data-simplebar="">
           <List
-            sx={{ width: "100%", maxWidth: 360, bgcolor: "#313A46" }}
+            sx={{ width: "100%", maxWidth: 360, bgcolor: "transparent" }}
             component="nav"
             aria-labelledby="nested-list-subheader"
           >
-            <ListItemButton onClick={handleopenRefugio}>
-              <ListItemIcon>
-                <HomeIcon sx={{ color: "white" }} />
-              </ListItemIcon>
-              <ListItemText sx={{ color: "white" }} primary="Refugio" />
-            </ListItemButton>
+            {sections.map((section) => {
+              const isSectionActive = section.items.some((i) => i.path === location.pathname);
+              return (
+                <React.Fragment key={section.key}>
+                  <ListItemButton
+                    className={`cya-sidebar-item${isSectionActive ? " cya-active" : ""}`}
+                    onClick={() => toggleSection(section.key)}
+                  >
+                    <ListItemIcon>
+                      {React.cloneElement(section.icon as React.ReactElement, {
+                        sx: { color: "white" },
+                      })}
+                    </ListItemIcon>
+                    <ListItemText sx={{ color: "white" }} primary={section.label} />
+                  </ListItemButton>
 
-            <Collapse in={openRefugio} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItemButton
-                  sx={{ pl: 4 }}
-                  onClick={() => navigate("/panel/informacion-pages")}
-                >
-                  <ListItemIcon>
-                    <KeyboardArrowRightIcon sx={{ color: "white" }} />
-                  </ListItemIcon>
-                  <ListItemText sx={{ color: "white" }} primary="Informacion" />
-                </ListItemButton>
-
-                <ListItemButton
-                  sx={{ pl: 4 }}
-                  onClick={() => navigate("/panel/redes-social")}
-                >
-                  <ListItemIcon>
-                    <KeyboardArrowRightIcon sx={{ color: "white" }} />
-                  </ListItemIcon>
-                  <ListItemText sx={{ color: "white" }} primary="Red Social" />
-                </ListItemButton>
-              </List>
-            </Collapse>
-
-            <ListItemButton onClick={handleopenColitas}>
-              <ListItemIcon>
-                <PetsIcon sx={{ color: "white" }} />
-              </ListItemIcon>
-              <ListItemText sx={{ color: "white" }} primary="Colitas" />
-            </ListItemButton>
-
-            <Collapse in={openColitas} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItemButton
-                  sx={{ pl: 4 }}
-                  onClick={() => navigate("/panel/colitas")}
-                >
-                  <ListItemIcon>
-                    <KeyboardArrowRightIcon sx={{ color: "white" }} />
-                  </ListItemIcon>
-                  <ListItemText sx={{ color: "white" }} primary="Albergados" />
-                </ListItemButton>
-
-              </List>
-            </Collapse>
-
-            <ListItemButton onClick={handleopenAdopcion}>
-              <ListItemIcon>
-                <FolderSharedIcon sx={{ color: "white" }} />
-              </ListItemIcon>
-              <ListItemText sx={{ color: "white" }} primary="Adopcion" />
-            </ListItemButton>
-
-
-
-            <Collapse in={openAdopcion} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-                <ListItemButton
-                  sx={{ pl: 4 }}
-                  onClick={() => navigate("/panel/adoptante")}
-                >
-                  <ListItemIcon>
-                    <KeyboardArrowRightIcon sx={{ color: "white" }} />
-                  </ListItemIcon>
-                  <ListItemText sx={{ color: "white" }} primary="Adoptante" />
-                </ListItemButton>
-
-                <ListItemButton
-                  sx={{ pl: 4 }}
-                  onClick={() => navigate("/panel/adopcion")}
-                >
-                  <ListItemIcon>
-                    <KeyboardArrowRightIcon sx={{ color: "white" }} />
-                  </ListItemIcon>
-                  <ListItemText sx={{ color: "white" }} primary="Adopcion" />
-                </ListItemButton>
-              </List>
-            </Collapse>
-
-            <ListItemButton onClick={handleopenDonacion}>
-              <ListItemIcon>
-                <StackedBarChartIcon sx={{ color: "white" }} />
-              </ListItemIcon>
-              <ListItemText sx={{ color: "white" }} primary="Donaciones" />
-            </ListItemButton>
-
-            <Collapse in={openDonacion} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding>
-
-               <ListItemButton
-                  sx={{ pl: 4 }}
-                  onClick={() => navigate("/panel/ingresos")}
-                >
-                  <ListItemIcon>
-                    <KeyboardArrowRightIcon sx={{ color: "white" }} />
-                  </ListItemIcon>
-                  <ListItemText sx={{ color: "white" }} primary="Ingreso" />
-                </ListItemButton>
-
-
-                <ListItemButton
-                  sx={{ pl: 4 }}
-                  onClick={() => navigate("/panel/donante")}
-                >
-                  <ListItemIcon>
-                    <KeyboardArrowRightIcon sx={{ color: "white" }} />
-                  </ListItemIcon>
-                  <ListItemText sx={{ color: "white" }} primary="Donante" />
-                </ListItemButton>
-
-              </List>
-            </Collapse>
+                  <Collapse in={openSection === section.key} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                      {section.items.map((item) => {
+                        const active = location.pathname === item.path;
+                        return (
+                          <ListItemButton
+                            key={item.path}
+                            className={`cya-sidebar-item${active ? " cya-active" : ""}`}
+                            sx={{ pl: 4 }}
+                            onClick={() => navigate(item.path)}
+                          >
+                            <ListItemIcon>
+                              <KeyboardArrowRightIcon sx={{ color: "white" }} />
+                            </ListItemIcon>
+                            <ListItemText sx={{ color: "white" }} primary={item.label} />
+                          </ListItemButton>
+                        );
+                      })}
+                    </List>
+                  </Collapse>
+                </React.Fragment>
+              );
+            })}
           </List>
 
           <div className="clearfix"></div>

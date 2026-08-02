@@ -37,6 +37,11 @@ export default function Home() {
         if (data.token) {
           localStorage.setItem("token", data.token);
           localStorage.setItem("user", data.usuario);
+          if (data.foto) {
+            localStorage.setItem("userFoto", data.foto);
+          } else {
+            localStorage.removeItem("userFoto");
+          }
           setAuthHeader(data.token);
         }
 

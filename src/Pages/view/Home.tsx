@@ -5,13 +5,27 @@ import Content from "../components/Layout/Content";
 import Layout from "../components/Layout/Index";
 import Navar from "../components/Navar";
 import { useNavigate } from "react-router-dom";
-import { Box, Grid, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Typography,
+} from "@mui/material";
 import { BarChart } from "@mui/x-charts/BarChart";
 import { PieChart } from "@mui/x-charts/PieChart";
 import PetsIcon from "@mui/icons-material/Pets";
 import FavoriteIcon from "@mui/icons-material/Favorite";
-import GroupsIcon from "@mui/icons-material/Groups";
-import PaidIcon from "@mui/icons-material/Paid";
+import HourglassTopIcon from "@mui/icons-material/HourglassTop";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/es";
@@ -19,8 +33,15 @@ import baseurl from "../../Config/axios";
 
 moment.locale("es");
 
-const CYA_PRIMARY = "#E4602F";
-const CYA_SECONDARY = "#3F9E5C";
+function cssVar(name: string, fallback: string) {
+  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  return value || fallback;
+}
+
+// Primario/secundario siguen la paleta elegida en "Mi cuenta"; acento y
+// neutro se mantienen fijos (uso semántico: pendiente/otro).
+const CYA_PRIMARY = cssVar("--cya-primary", "#E4602F");
+const CYA_SECONDARY = cssVar("--cya-secondary", "#3F9E5C");
 const CYA_ACCENT = "#F4A731";
 const CYA_MUTED = "#B7C2C9";
 
@@ -37,12 +58,14 @@ interface StatCardProps {
   label: string;
   value: string | number;
   color: string;
+  onClick?: () => void;
 }
 
-function StatCard({ icon, label, value, color }: StatCardProps) {
+function StatCard({ icon, label, value, color, onClick }: StatCardProps) {
   return (
     <Paper
       elevation={0}
+      onClick={onClick}
       sx={{
         p: 2.5,
         borderRadius: "16px",
@@ -51,6 +74,11 @@ function StatCard({ icon, label, value, color }: StatCardProps) {
         alignItems: "center",
         gap: 2,
         height: "100%",
+        cursor: onClick ? "pointer" : "default",
+        transition: "transform .15s ease, box-shadow .15s ease",
+        "&:hover": onClick
+          ? { transform: "translateY(-2px)", boxShadow: "0 10px 24px rgba(36,40,44,.10)" }
+          : undefined,
       }}
     >
       <Box
@@ -86,8 +114,9 @@ export default function HomePanel() {
 
   const [totalMascotas, setTotalMascotas] = React.useState(0);
   const [totalAdoptadas, setTotalAdoptadas] = React.useState(0);
-  const [totalDonantes, setTotalDonantes] = React.useState(0);
-  const [totalRecaudado, setTotalRecaudado] = React.useState(0);
+  const [totalUsuarios, setTotalUsuarios] = React.useState(0);
+  const [solicitudesPendientes, setSolicitudesPendientes] = React.useState<any[]>([]);
+  const [openSolicitudes, setOpenSolicitudes] = React.useState(false);
 
   const [mesesLabels, setMesesLabels] = React.useState<string[]>([]);
   const [adopcionesPorMes, setAdopcionesPorMes] = React.useState<number[]>([]);
@@ -149,12 +178,13 @@ export default function HomePanel() {
       })
       .catch((e) => console.log(e.message));
 
-    // Adopciones: total adoptadas + por mes
+    // Adopciones: adoptadas + por mes + solicitudes pendientes (Estado: proceso)
     axios
       .post(baseurl + "adopciones/list", {})
       .then((res) => {
         const data = res.data.data || [];
         setTotalAdoptadas(data.filter((a: any) => a.Estado === "adoptado").length);
+        setSolicitudesPendientes(data.filter((a: any) => a.Estado === "proceso"));
 
         const counts = meses.map((m) =>
           data.filter((a: any) => a.Fecha_Adopcion && moment(a.Fecha_Adopcion).isSame(m, "month")).length
@@ -163,22 +193,20 @@ export default function HomePanel() {
       })
       .catch((e) => console.log(e.message));
 
-    // Donantes: total
+    // Usuarios: total
     axios
-      .get(baseurl + "donante/list")
+      .get(baseurl + "usuario/list")
       .then((res) => {
         const data = res.data.data || [];
-        setTotalDonantes(data.length);
+        setTotalUsuarios(data.length);
       })
       .catch((e) => console.log(e.message));
 
-    // Ingresos: total recaudado + por mes
+    // Ingresos: por mes
     axios
       .get(baseurl + "ingresos/list")
       .then((res) => {
         const data = res.data.data || [];
-        const total = data.reduce((sum: number, item: any) => sum + Number(item.monto || 0), 0);
-        setTotalRecaudado(total);
 
         const sums = meses.map((m) =>
           data
@@ -206,23 +234,79 @@ export default function HomePanel() {
 
             <Grid container spacing={2} sx={{ mb: 3 }}>
               <Grid item xs={12} sm={6} md={3}>
-                <StatCard icon={<PetsIcon />} label="Mascotas registradas" value={totalMascotas} color={CYA_SECONDARY} />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <StatCard icon={<FavoriteIcon />} label="Adopciones realizadas" value={totalAdoptadas} color={CYA_PRIMARY} />
-              </Grid>
-              <Grid item xs={12} sm={6} md={3}>
-                <StatCard icon={<GroupsIcon />} label="Donantes registrados" value={totalDonantes} color={CYA_ACCENT} />
+                <StatCard
+                  icon={<PetsIcon />}
+                  label="Total de Colitas Registradas"
+                  value={totalMascotas}
+                  color={CYA_SECONDARY}
+                />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <StatCard
-                  icon={<PaidIcon />}
-                  label="Total recaudado"
-                  value={`S/. ${totalRecaudado.toFixed(2)}`}
+                  icon={<FavoriteIcon />}
+                  label="Colitas Adoptadas"
+                  value={totalAdoptadas}
+                  color={CYA_PRIMARY}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  icon={<HourglassTopIcon />}
+                  label="Solicitudes Pendientes de Adopción"
+                  value={solicitudesPendientes.length}
+                  color={CYA_ACCENT}
+                  onClick={() => setOpenSolicitudes(true)}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  icon={<PeopleAltIcon />}
+                  label="Total de Usuarios Registrados"
+                  value={totalUsuarios}
                   color={CYA_SECONDARY}
                 />
               </Grid>
             </Grid>
+
+            <Dialog open={openSolicitudes} onClose={() => setOpenSolicitudes(false)} maxWidth="sm" fullWidth>
+              <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                Solicitudes pendientes de adopción
+                <IconButton onClick={() => setOpenSolicitudes(false)}>
+                  <CloseIcon />
+                </IconButton>
+              </DialogTitle>
+              <DialogContent dividers>
+                {solicitudesPendientes.length === 0 && (
+                  <Typography color="text.secondary">No hay solicitudes pendientes por revisar.</Typography>
+                )}
+                <List disablePadding>
+                  {solicitudesPendientes.map((s: any, idx: number) => (
+                    <React.Fragment key={s.idadopcion}>
+                      <ListItem disablePadding sx={{ py: 1.2 }}>
+                        <ListItemText
+                          primary={
+                            <>
+                              <strong>{s.adoptante?.Nombre} {s.adoptante?.Apellido}</strong> quiere adoptar a{" "}
+                              <strong style={{ color: CYA_PRIMARY }}>{s.animales?.nombre}</strong>
+                            </>
+                          }
+                          secondary={
+                            <>
+                              DNI: {s.adoptante?.Dni} · Tel: {s.adoptante?.telefono}
+                              <br />
+                              Motivo: {s.Observaciones}
+                              <br />
+                              Solicitado: {moment(s.fecharegistro).format("LL")}
+                            </>
+                          }
+                        />
+                      </ListItem>
+                      {idx < solicitudesPendientes.length - 1 && <Divider component="li" />}
+                    </React.Fragment>
+                  ))}
+                </List>
+              </DialogContent>
+            </Dialog>
 
             <Grid container spacing={2} sx={{ mb: 2 }}>
               <Grid item xs={12} md={8}>
