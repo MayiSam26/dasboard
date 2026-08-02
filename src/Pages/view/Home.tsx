@@ -4,50 +4,305 @@ import Body from "../components/Layout/Body";
 import Content from "../components/Layout/Content";
 import Layout from "../components/Layout/Index";
 import Navar from "../components/Navar";
-import CheckAuthentication from "../../Config/Private";
 import { useNavigate } from "react-router-dom";
+import { Box, Grid, Paper, Typography } from "@mui/material";
+import { BarChart } from "@mui/x-charts/BarChart";
+import { PieChart } from "@mui/x-charts/PieChart";
+import PetsIcon from "@mui/icons-material/Pets";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import GroupsIcon from "@mui/icons-material/Groups";
+import PaidIcon from "@mui/icons-material/Paid";
+import axios from "axios";
+import moment from "moment";
+import "moment/locale/es";
+import baseurl from "../../Config/axios";
 
+moment.locale("es");
 
-export default function HomePanel(){
-    const[user,userName] = React.useState<any>("")
-    useEffect(
-        () =>{
-            userName(localStorage.getItem("user"))
-        },[user]
-    )
-    const navigate = useNavigate(); // Usa useNavigate si necesitas redireccionar
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            navigate('/'); // Redirige a la página de inicio si no hay token
-        }
-    }, [navigate]);
-    return(
-        <>
-            <Layout>
-                <Navar />
-                <Content>
-                    <Header />
-                    <Body>
-                        <div style={{
-                            display:'flex',
-                            justifyContent:'center',
-                            width:'100%',
-                            flexDirection:'column'
-                        }}>
-                              <h1 style={{textAlign:'center',fontWeight:400}} >Sistema de Colitas & Amor</h1>
-                              
-                              <h1 style={{textAlign:'center',fontWeight:400}}>
-                                Bienvenido <span style={{fontWeight:700,color:'#64C27A'}}>{user}</span>
-                              </h1>
-                        </div>
-                      
-                        <div style={{display:"flex",justifyContent:'center'}}>
-                            <img src="images/welcome.png" alt="welcome" />
-                        </div>
-                    </Body>
-                </Content>
-            </Layout>
-        </>
-    )
+const CYA_PRIMARY = "#E4602F";
+const CYA_SECONDARY = "#3F9E5C";
+const CYA_ACCENT = "#F4A731";
+const CYA_MUTED = "#B7C2C9";
+
+function lastNMonths(n: number) {
+  const months = [];
+  for (let i = n - 1; i >= 0; i--) {
+    months.push(moment().subtract(i, "months"));
+  }
+  return months;
+}
+
+interface StatCardProps {
+  icon: React.ReactNode;
+  label: string;
+  value: string | number;
+  color: string;
+}
+
+function StatCard({ icon, label, value, color }: StatCardProps) {
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 2.5,
+        borderRadius: "16px",
+        border: "1px solid #ECE4DA",
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+        height: "100%",
+      }}
+    >
+      <Box
+        sx={{
+          width: 52,
+          height: 52,
+          minWidth: 52,
+          borderRadius: "14px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: `${color}1F`,
+          color: color,
+        }}
+      >
+        {icon}
+      </Box>
+      <Box>
+        <Typography variant="h5" sx={{ fontWeight: 800, lineHeight: 1.2 }}>
+          {value}
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {label}
+        </Typography>
+      </Box>
+    </Paper>
+  );
+}
+
+export default function HomePanel() {
+  const [user, userName] = React.useState<any>("");
+  const navigate = useNavigate();
+
+  const [totalMascotas, setTotalMascotas] = React.useState(0);
+  const [totalAdoptadas, setTotalAdoptadas] = React.useState(0);
+  const [totalDonantes, setTotalDonantes] = React.useState(0);
+  const [totalRecaudado, setTotalRecaudado] = React.useState(0);
+
+  const [mesesLabels, setMesesLabels] = React.useState<string[]>([]);
+  const [adopcionesPorMes, setAdopcionesPorMes] = React.useState<number[]>([]);
+  const [donacionesPorMes, setDonacionesPorMes] = React.useState<number[]>([]);
+
+  const [estadoMascotas, setEstadoMascotas] = React.useState<{ label: string; value: number; color: string }[]>([]);
+  const [tipoMascotas, setTipoMascotas] = React.useState<{ label: string; value: number; color: string }[]>([]);
+
+  useEffect(() => {
+    userName(localStorage.getItem("user"));
+  }, [user]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) navigate("/");
+  }, [navigate]);
+
+  useEffect(() => {
+    const meses = lastNMonths(6);
+    setMesesLabels(meses.map((m) => m.format("MMM YY")));
+
+    // Colitas: total, estado, tipo
+    axios
+      .post(baseurl + "colitas/list", {})
+      .then((res) => {
+        const data = res.data.data || [];
+        setTotalMascotas(data.length);
+
+        const estados: Record<string, number> = {};
+        const tipos: Record<string, number> = {};
+        data.forEach((item: any) => {
+          const estadoKey = item.estado || "Sin estado";
+          estados[estadoKey] = (estados[estadoKey] || 0) + 1;
+          const tipoKey = item.tipo_descripcion?.descripcion || "Otro";
+          tipos[tipoKey] = (tipos[tipoKey] || 0) + 1;
+        });
+
+        const estadoColors: Record<string, string> = {
+          "En refugio": CYA_SECONDARY,
+          proceso: CYA_ACCENT,
+          adoptado: CYA_PRIMARY,
+        };
+        setEstadoMascotas(
+          Object.entries(estados).map(([label, value]) => ({
+            label,
+            value,
+            color: estadoColors[label] || CYA_MUTED,
+          }))
+        );
+
+        const tipoColors = [CYA_PRIMARY, CYA_SECONDARY, CYA_ACCENT, CYA_MUTED];
+        setTipoMascotas(
+          Object.entries(tipos).map(([label, value], idx) => ({
+            label,
+            value,
+            color: tipoColors[idx % tipoColors.length],
+          }))
+        );
+      })
+      .catch((e) => console.log(e.message));
+
+    // Adopciones: total adoptadas + por mes
+    axios
+      .post(baseurl + "adopciones/list", {})
+      .then((res) => {
+        const data = res.data.data || [];
+        setTotalAdoptadas(data.filter((a: any) => a.Estado === "adoptado").length);
+
+        const counts = meses.map((m) =>
+          data.filter((a: any) => a.Fecha_Adopcion && moment(a.Fecha_Adopcion).isSame(m, "month")).length
+        );
+        setAdopcionesPorMes(counts);
+      })
+      .catch((e) => console.log(e.message));
+
+    // Donantes: total
+    axios
+      .get(baseurl + "donante/list")
+      .then((res) => {
+        const data = res.data.data || [];
+        setTotalDonantes(data.length);
+      })
+      .catch((e) => console.log(e.message));
+
+    // Ingresos: total recaudado + por mes
+    axios
+      .get(baseurl + "ingresos/list")
+      .then((res) => {
+        const data = res.data.data || [];
+        const total = data.reduce((sum: number, item: any) => sum + Number(item.monto || 0), 0);
+        setTotalRecaudado(total);
+
+        const sums = meses.map((m) =>
+          data
+            .filter((i: any) => i.fecha_registro && moment(i.fecha_registro).isSame(m, "month"))
+            .reduce((sum: number, i: any) => sum + Number(i.monto || 0), 0)
+        );
+        setDonacionesPorMes(sums);
+      })
+      .catch((e) => console.log(e.message));
+  }, []);
+
+  return (
+    <>
+      <Layout>
+        <Navar />
+        <Content>
+          <Header />
+          <Body>
+            <Typography variant="h5" sx={{ fontWeight: 800, mb: 0.5 }}>
+              Hola, <span style={{ color: CYA_SECONDARY }}>{user}</span> 👋
+            </Typography>
+            <Typography color="text.secondary" sx={{ mb: 3 }}>
+              Este es el resumen de Colitas &amp; Amor.
+            </Typography>
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard icon={<PetsIcon />} label="Mascotas registradas" value={totalMascotas} color={CYA_SECONDARY} />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard icon={<FavoriteIcon />} label="Adopciones realizadas" value={totalAdoptadas} color={CYA_PRIMARY} />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard icon={<GroupsIcon />} label="Donantes registrados" value={totalDonantes} color={CYA_ACCENT} />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  icon={<PaidIcon />}
+                  label="Total recaudado"
+                  value={`S/. ${totalRecaudado.toFixed(2)}`}
+                  color={CYA_SECONDARY}
+                />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2} sx={{ mb: 2 }}>
+              <Grid item xs={12} md={8}>
+                <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #ECE4DA", height: "100%" }}>
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>Adopciones por mes</Typography>
+                  {mesesLabels.length > 0 && (
+                    <BarChart
+                      xAxis={[{ scaleType: "band", data: mesesLabels }]}
+                      yAxis={[{ tickMinStep: 1, valueFormatter: (v: number) => `${v}` }]}
+                      series={[{ data: adopcionesPorMes, color: CYA_PRIMARY, label: "Adopciones" }]}
+                      height={280}
+                      grid={{ horizontal: true }}
+                    />
+                  )}
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #ECE4DA", height: "100%" }}>
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>Estado de las mascotas</Typography>
+                  {estadoMascotas.length > 0 && (
+                    <PieChart
+                      series={[
+                        {
+                          data: estadoMascotas,
+                          innerRadius: 45,
+                          paddingAngle: 2,
+                          cornerRadius: 3,
+                        },
+                      ]}
+                      height={280}
+                    />
+                  )}
+                </Paper>
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={8}>
+                <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #ECE4DA", height: "100%" }}>
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>Donaciones por mes (S/.)</Typography>
+                  {mesesLabels.length > 0 && (
+                    <BarChart
+                      xAxis={[{ scaleType: "band", data: mesesLabels }]}
+                      yAxis={[{ valueFormatter: (v: number) => `S/. ${v.toFixed(0)}` }]}
+                      series={[
+                        {
+                          data: donacionesPorMes,
+                          color: CYA_SECONDARY,
+                          label: "Recaudado",
+                          valueFormatter: (v: number | null) => `S/. ${(v ?? 0).toFixed(2)}`,
+                        },
+                      ]}
+                      height={280}
+                      grid={{ horizontal: true }}
+                    />
+                  )}
+                </Paper>
+              </Grid>
+              <Grid item xs={12} md={4}>
+                <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #ECE4DA", height: "100%" }}>
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>Perros vs. gatos</Typography>
+                  {tipoMascotas.length > 0 && (
+                    <PieChart
+                      series={[
+                        {
+                          data: tipoMascotas,
+                          innerRadius: 45,
+                          paddingAngle: 2,
+                          cornerRadius: 3,
+                        },
+                      ]}
+                      height={280}
+                    />
+                  )}
+                </Paper>
+              </Grid>
+            </Grid>
+          </Body>
+        </Content>
+      </Layout>
+    </>
+  );
 }
