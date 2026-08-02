@@ -1,0 +1,106 @@
+/* =========================================================
+   Colitas y Amor — Dashboard admin
+   Misma identidad visual que el sitio público, adaptada a un
+   panel de trabajo: base neutra + acentos de marca.
+   ========================================================= */
+
+:root {
+  --cya-primary: #E4602F;
+  --cya-primary-dark: #C74E23;
+  --cya-secondary: #3F9E5C;
+  --cya-secondary-dark: #2F7D46;
+  --cya-dark: #24282C;
+  --cya-text-muted: #767C82;
+  --cya-bg-alt: #FBF7F2;
+  --cya-border: #ECE4DA;
+  --cya-font-heading: 'Nunito', sans-serif;
+  --cya-font-body: 'Nunito Sans', sans-serif;
+  --cya-radius-md: 16px;
+  --cya-radius-lg: 24px;
+  --cya-shadow-md: 0 10px 30px rgba(36, 40, 44, 0.10);
+}
+
+body {
+  font-family: var(--cya-font-body);
+}
+
+/* ---------- Login ---------- */
+
+.cya-login-shell {
+  min-height: 100vh;
+  display: flex;
+}
+
+.cya-login-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  background: linear-gradient(155deg, var(--cya-primary) 0%, var(--cya-secondary) 100%);
+  color: #fff;
+  text-align: center;
+}
+
+.cya-login-panel img {
+  width: 120px;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.15));
+}
+
+.cya-login-panel h1 {
+  font-family: var(--cya-font-heading);
+  font-weight: 800;
+  font-size: 1.9rem;
+  margin-bottom: .5rem;
+}
+
+.cya-login-panel p {
+  max-width: 360px;
+  opacity: .92;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.cya-login-form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--cya-bg-alt);
+}
+
+.cya-login-card {
+  width: 100%;
+  max-width: 380px;
+  background: #fff;
+  border: 1px solid var(--cya-border);
+  border-radius: var(--cya-radius-lg);
+  box-shadow: var(--cya-shadow-md);
+  padding: 2.5rem 2rem;
+}
+
+.cya-login-card h4 {
+  font-family: var(--cya-font-heading);
+  font-weight: 800;
+  color: var(--cya-dark);
+}
+
+.cya-login-card .MuiButton-containedPrimary,
+.cya-login-card .MuiButton-contained {
+  background-color: var(--cya-primary) !important;
+  border-radius: 999px !important;
+  padding: .7rem !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+}
+.cya-login-card .MuiButton-contained:hover {
+  background-color: var(--cya-primary-dark) !important;
+}
+
+@media (max-width: 900px) {
+  .cya-login-panel { display: none; }
+}

@@ -4,7 +4,7 @@ import React, { useContext, useState } from "react";
 import { UserSessionContext } from "../Config/Context";
 import axios from "axios";
 import baseurl from "../Config/axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import moment from "moment";
 import formatlocaldate from "../Config/helpersDate";
 import { setAuthHeader } from "../Config/axiosSetup";
@@ -18,10 +18,12 @@ export default function Home() {
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
+  const [loading, setLoading] = React.useState<boolean>(false);
 
   const handleLogin = async () => {
     try {
       setOpenAlert(false);
+      setLoading(true);
       const body = {
         usuario: usuario,
         pass: pass
@@ -47,12 +49,14 @@ export default function Home() {
         setOpenAlert(true);
         setSeverity('error');
         setMssg(data.message || 'Contraseña incorrecta o usuario incorrecto');
+        setLoading(false);
       }
     } catch (error) {
       console.error('Error al iniciar sesión:', error);
       setOpenAlert(true);
       setSeverity('error');
       setMssg('Error al conectar con el servidor');
+      setLoading(false);
     }
   };
 
@@ -98,94 +102,89 @@ export default function Home() {
   };
 
   return (
-    <>
-      <div className="account-pages pt-2 pt-sm-5 pb-4 pb-sm-5">
-        <div className="container">
-          <div className="row justify-content-center">
-            <div className="col-xxl-4 col-lg-5">
-              {openAlert ? alert() : null}
-              <div className="card">
-                <div
-                  className="card-header pt-4 pb-4 text-center"
-                  style={{
-                    backgroundImage: 'url(images/heros.png)',
-                    objectFit: 'cover',
-                    backgroundPosition: 'center'
-                  }}
-                ></div>
+    <div className="cya-login-shell">
+      <div className="cya-login-panel">
+        <img src="/images/logocito.png" alt="Refugio Colitas y Amor" />
+        <h1>Refugio Colitas &amp; Amor</h1>
+        <p>
+          Panel administrativo del refugio: gestiona adopciones, donantes,
+          mascotas y el día a día del refugio desde un solo lugar.
+        </p>
+      </div>
 
-                <div className="card-body p-4">
-                  <div className="text-center w-75 m-auto">
-                    <h4 className="text-dark-50 text-center pb-0 fw-bold">
-                      Inicio de Sesión
-                    </h4>
-                    <p className="text-muted mb-4">
-                      Ingresa tu usuario y contraseña para ingresar al panel
-                    </p>
-                  </div>
+      <div className="cya-login-form-side">
+        <div className="cya-login-card">
+          {openAlert ? alert() : null}
 
-                  <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
-                    <div className="mb-3">
-                      <label className="form-label">Usuario</label>
-                      <TextField
-                        className="form-control"
-                        id="outlined-basic"
-                        size="small"
-                        label="Ingresar Usuario"
-                        variant="outlined"
-                        onChange={(e) => setUsuario(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="mb-3">
-                      <label className="form-label">Contraseña</label>
-                      <div className="input-group input-group-merge">
-                        <FormControl
-                          sx={{ width: "100%" }}
-                          variant="outlined"
-                        >
-                          <InputLabel htmlFor="outlined-adornment-password">
-                            Contraseña
-                          </InputLabel>
-                          <OutlinedInput
-                            id="outlined-adornment-password"
-                            size='small'
-                            type={showPassword ? "text" : "password"}
-                            onChange={(e) => setPass(e.target.value)}
-                            endAdornment={
-                              <InputAdornment position="end">
-                                <IconButton
-                                  aria-label="toggle password visibility"
-                                  onClick={handleClickShowPassword}
-                                  onMouseDown={handleMouseDownPassword}
-                                  edge="end"
-                                >
-                                  {showPassword ? (
-                                    <VisibilityOff />
-                                  ) : (
-                                    <Visibility />
-                                  )}
-                                </IconButton>
-                              </InputAdornment>
-                            }
-                            label="Contraseña"
-                          />
-                        </FormControl>
-                      </div>
-                    </div>
-
-                    <div className="mb-3 mb-0 text-center">
-                      <Button onClick={() => handleLogin()} variant="contained" sx={{ textTransform: 'capitalize' }}>
-                        Ingresar
-                      </Button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
+          <div className="text-center mb-4">
+            <h4 className="pb-0">Bienvenido de vuelta</h4>
+            <p className="text-muted mb-0">
+              Ingresa tu usuario y contraseña para continuar
+            </p>
           </div>
+
+          <form onSubmit={(e) => { e.preventDefault(); handleLogin(); }}>
+            <div className="mb-3">
+              <TextField
+                fullWidth
+                id="outlined-basic"
+                size="small"
+                label="Usuario"
+                variant="outlined"
+                onChange={(e) => setUsuario(e.target.value)}
+              />
+            </div>
+
+            <div className="mb-4">
+              <FormControl
+                sx={{ width: "100%" }}
+                variant="outlined"
+              >
+                <InputLabel htmlFor="outlined-adornment-password">
+                  Contraseña
+                </InputLabel>
+                <OutlinedInput
+                  id="outlined-adornment-password"
+                  size='small'
+                  type={showPassword ? "text" : "password"}
+                  onChange={(e) => setPass(e.target.value)}
+                  endAdornment={
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {showPassword ? (
+                          <VisibilityOff />
+                        ) : (
+                          <Visibility />
+                        )}
+                      </IconButton>
+                    </InputAdornment>
+                  }
+                  label="Contraseña"
+                />
+              </FormControl>
+            </div>
+
+            <Button
+              fullWidth
+              type="submit"
+              variant="contained"
+              disabled={loading}
+              sx={{ textTransform: 'none' }}
+            >
+              {loading ? "Ingresando..." : "Ingresar"}
+            </Button>
+
+            <p className="text-center mt-3 mb-0">
+              <Link to="/recuperar-clave">¿Olvidaste tu contraseña?</Link>
+            </p>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }

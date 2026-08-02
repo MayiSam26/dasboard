@@ -14,6 +14,8 @@ import Apadrinado from "../Pages/view/Apadrinado/Apadrinado";
 import Ingresos from "../Pages/view/Ingresos/Ingresos";
 import Amo from "../Pages/view/Amo/Amo";
 import Perdidos from "../Pages/view/Perdidos/Perdidos";
+import RecuperarClave from "../Pages/RecuperarClave";
+import MiCuenta from "../Pages/view/MiCuenta/MiCuenta";
 
 import PrivateRoute from "./PrivateRoute";
 
@@ -26,10 +28,12 @@ export function RoutesApp() {
         <Routes>
           {/* PUBLICA */}
           <Route path="/" element={<Home />} />
+          <Route path="/recuperar-clave" element={<RecuperarClave />} />
 
           {/* PROTEGIDAS */}
           <Route element={<PrivateRoute isAuth={isAuth} />}>
             <Route path="/panel" element={<HomePanel />} />
+            <Route path="/panel/mi-cuenta" element={<MiCuenta />} />
             <Route path="/panel/redes-social" element={<RedesSocial />} />
             <Route path="/panel/informacion-pages" element={<Intial />} />
             <Route path="/panel/informacion-adoptante" element={<Planes />} />

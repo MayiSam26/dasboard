@@ -47,6 +47,10 @@ export default function Header(){
                                     </span>
                                 </Link>
                                 <div className="dropdown-menu dropdown-menu-end dropdown-menu-animated topbar-dropdown-menu profile-dropdown">
+                                    <Link to="/panel/mi-cuenta" className="dropdown-item notify-item">
+                                        <i className="mdi mdi-account-circle me-1"></i>
+                                        <span style={{color:'black',textTransform:'capitalize'}}>Mi cuenta</span>
+                                    </Link>
                                     <Button
                                     onClick={() => logout()}
                                     className="dropdown-item notify-item">
