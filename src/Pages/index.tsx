@@ -7,6 +7,7 @@ import baseurl from "../Config/axios";
 import { useNavigate } from "react-router-dom";
 import moment from "moment";
 import formatlocaldate from "../Config/helpersDate";
+import { setAuthHeader } from "../Config/axiosSetup";
 
 export default function Home() {
   const navigate = useNavigate()
@@ -32,6 +33,7 @@ export default function Home() {
       if (data.token) {
         localStorage.setItem("token",data.token);
         localStorage.setItem("user",data.usuario);
+        setAuthHeader(data.token);
       }
       if(data.code === '000'){
         saveAuditoria()

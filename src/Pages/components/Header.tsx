@@ -2,6 +2,7 @@ import { Button } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useEffect, useState } from "react";
+import { setAuthHeader } from "../../Config/axiosSetup";
 
 
 export default function Header(){
@@ -22,6 +23,7 @@ export default function Header(){
     const logout = () =>{
         localStorage.removeItem("token")
         localStorage.removeItem("auditoria")
+        setAuthHeader(null)
         verifyToken()
     }
     return(<>
