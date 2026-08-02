@@ -1,15 +1,19 @@
 import {
     Alert,
     Autocomplete,
+    Box,
     Button,
     FormControl,
     Grid,
+    IconButton,
     InputLabel,
     MenuItem,
     Select,
     TextField,
     Typography,
 } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import SearchOffIcon from "@mui/icons-material/SearchOff";
 import React from "react";
 
 import axios from "axios";
@@ -50,7 +54,7 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
         const body = {};
     };
 
-    //search 
+    //search
     const getAmo = async () => {
         const url = baseurl + "amo/list";
         const body = {
@@ -102,7 +106,7 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
 
     const alert = () => {
         return (
-            <Alert variant="filled" severity={severity}>
+            <Alert variant="filled" severity={severity} sx={{ borderRadius: 0 }}>
                 {mssg}
             </Alert>
         );
@@ -110,182 +114,225 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
     return (
         <>
             {openAlert ? alert() : null}
-            <Grid container spacing={2} sx={{ py: 1, px: 2 }}>
-                <Grid item xs={12} sx={{ display: "flex" }}>
-                    <Grid item xs={10}>
-                        <Typography variant="h5">Agregar Mascota Perdida</Typography>
-                    </Grid>
-                    <Grid item xs={2}>
-                        <Button
-                            onClick={saveApadrinado}
-                            fullWidth
-                            variant="contained"
-                            sx={{
-                                background: "#65c178",
-                                borderRadius: "20px",
-                                fontWeight: "bolder",
-                                textTransform: "capitalize",
-                                "&:hover": {
-                                    background: "#ed6436",
-                                },
-                            }}
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                px: 3,
+                py: 2.2,
+                borderBottom: "1px solid var(--cya-border)",
+                background: "var(--cya-bg-alt)",
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+                <Box
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(63, 158, 92, 0.14)",
+                    color: "var(--cya-secondary-dark)",
+                  }}
+                >
+                  <SearchOffIcon fontSize="small" />
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: 800, color: "var(--cya-dark)" }}>
+                  Agregar Mascota Perdida
+                </Typography>
+              </Box>
+              <IconButton onClick={() => setOpenModal(false)} size="small">
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </Box>
+
+            <Box sx={{ px: 3, py: 2.5 }}>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                    <Autocomplete
+                        disablePortal
+                        id="combo-box-demo"
+                        options={amo}
+                        size="small"
+                        fullWidth
+                        renderInput={(params) => (
+                            <TextField {...params} label="Amo" />
+                        )}
+                        onChange={handleDonantes}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <TextField
+                        id="outlined-basic"
+                        label="Ingrese Nombre"
+                        variant="outlined"
+                        fullWidth
+                        size="small"
+                    //onChange={(e) => setNombre(e.target.value)}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <TextField
+                        id="outlined-basic"
+                        label="Ingrese edad"
+                        variant="outlined"
+                        type="number"
+                        fullWidth
+                        size="small"
+                    //onChange={(e) => setNombre(e.target.value)}
+                    />
+                </Grid>
+                <Grid item xs={6}>
+                    <FormControl fullWidth size="small">
+                        <InputLabel id="demo-simple-select-label">Tamaño</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label"
+                            id="demo-simple-select"
+                            //value={age}
+                            //onChange={(e) => handleGenero(e.target.value)}
+                            label="Tamaño"
                         >
-                            <SaveIcon />
-                            Save
-                        </Button>
-                    </Grid>
+                            <MenuItem value="">Todos</MenuItem>
+                            <MenuItem value="pequeño">Pequeño</MenuItem>
+                            <MenuItem value="mediano">Mediano</MenuItem>
+                            <MenuItem value="grande">Grande</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={6}>
+                    <FormControl fullWidth size="small">
+                        <InputLabel id="demo-simple-select-label2">Estado</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label2"
+                            id="demo-simple-select2"
+                            //value={age}
+                            //onChange={(e) => handleTipoAnimal(e.target.value)}
+                            label="Estado"
+                        >
+                            <MenuItem value="">Todos</MenuItem>
+                            <MenuItem value="P">Perdido</MenuItem>
+                            <MenuItem value="E">Encontrado</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={6}>
+                    <FormControl fullWidth size="small">
+                        <InputLabel id="demo-simple-select-label3">Genero</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label3"
+                            id="demo-simple-select3"
+                            //value={age}
+                            onChange={(e) => handleGenero(e.target.value)}
+                            label="Genero"
+                        >
+                            <MenuItem value="">Todos</MenuItem>
+                            <MenuItem value="1">Macho</MenuItem>
+                            <MenuItem value="2">Hembra</MenuItem>
+                        </Select>
+                    </FormControl>
+                </Grid>
+                <Grid item xs={6}>
+                    <FormControl fullWidth size="small">
+                        <InputLabel id="demo-simple-select-label4">Tipo</InputLabel>
+                        <Select
+                            labelId="demo-simple-select-label4"
+                            id="demo-simple-select4"
+                            //value={age}
+                            onChange={(e) => handleTipoAnimal(e.target.value)}
+                            label="Tipo"
+                        >
+                            <MenuItem value="">Todos</MenuItem>
+                            <MenuItem value="1">Perro</MenuItem>
+                            <MenuItem value="2">Gato</MenuItem>
+                        </Select>
+                    </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                    <Grid item xs={12} sx={{ marginTop: "10px", marginBottom: "10px" }}>
-                        <Autocomplete
-                            disablePortal
-                            id="combo-box-demo"
-                            options={amo}
-                            size="small"
-                            fullWidth
-                            renderInput={(params) => (
-                                <TextField {...params} label="Amo" />
-                            )}
-                            onChange={handleDonantes}
-                        />
-                    </Grid>
-                    <Grid item xs={12} sx={{ marginTop: "10px" }}>
-                        <TextField
-                            id="outlined-basic"
-                            label="Ingrese Nombre"
-                            variant="outlined"
-                            fullWidth
-                            size="small"
-                        //onChange={(e) => setNombre(e.target.value)}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={12} sx={{ marginTop: "10px" }}>
-                        <TextField
-                            id="outlined-basic"
-                            label="Ingrese edad"
-                            variant="outlined"
-                            type="number"
-                            fullWidth
-                            size="small"
-                        //onChange={(e) => setNombre(e.target.value)}
-                        />
-                    </Grid>
-                    <Grid container spacing={2} sx={{ marginTop: "5px" }}>
-                        <Grid item xs={12} md={6}>
-                            <FormControl fullWidth>
-                                <InputLabel id="demo-simple-select-label">Tamaño</InputLabel>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    //value={age}
-                                    //onChange={(e) => handleGenero(e.target.value)}
-                                    label="Tamaño"
-                                    size="small"
-                                >
-                                    <MenuItem value="">Todos</MenuItem>
-                                    <MenuItem value="pequeño">Pequeño</MenuItem>
-                                    <MenuItem value="mediano">Mediano</MenuItem>
-                                    <MenuItem value="grande">Grande</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <FormControl fullWidth>
-                                <InputLabel id="demo-simple-select-label">Estado</InputLabel>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    //value={age}
-                                    //onChange={(e) => handleTipoAnimal(e.target.value)}
-                                    label="Estado"
-                                    size="small"
-                                >
-                                    <MenuItem value="">Todos</MenuItem>
-                                    <MenuItem value="P">Perdido</MenuItem>
-                                    <MenuItem value="E">Encontrado</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                    </Grid>
-                    <Grid container spacing={2} sx={{ marginTop: "5px" }}>
-                        <Grid item xs={12} md={6}>
-                            <FormControl fullWidth>
-                                <InputLabel id="demo-simple-select-label">Genero</InputLabel>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    //value={age}
-                                    onChange={(e) => handleGenero(e.target.value)}
-                                    label="Genero"
-                                    size="small"
-                                >
-                                    <MenuItem value="">Todos</MenuItem>
-                                    <MenuItem value="1">Macho</MenuItem>
-                                    <MenuItem value="2">Hembra</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <FormControl fullWidth>
-                                <InputLabel id="demo-simple-select-label">Tipo</InputLabel>
-                                <Select
-                                    labelId="demo-simple-select-label"
-                                    id="demo-simple-select"
-                                    //value={age}
-                                    onChange={(e) => handleTipoAnimal(e.target.value)}
-                                    label="Tipo"
-                                    size="small"
-                                >
-                                    <MenuItem value="">Todos</MenuItem>
-                                    <MenuItem value="1">Perro</MenuItem>
-                                    <MenuItem value="2">Gato</MenuItem>
-                                </Select>
-                            </FormControl>
-                        </Grid>
-                    </Grid>
-                    <Grid item xs={12} md={12} sx={{ marginTop: "10px" }}>
-                        <textarea
-                            placeholder="Ingrese Observaciones"
-                            //value={descripcion ?? ""}
-                            //onChange={(e) => setDescripcion(e.target.value)}
-                            style={{
-                                width: "100%",
-                                borderRadius: "4px",
-                                border: "1px solid #c2c2c2",
-                                padding: "9px",
-                                maxHeight: "300px",
-                                height: "130px",
-                                fontFamily: "inherit",
-                            }}
-                        ></textarea>
-                    </Grid>
-
-                    <Grid item xs={12} md={12} sx={{ marginTop: "10px" }}>
-                        <input
-                            type="date"
-                            onChange={handleFormatTo}
-                            style={{
-                                padding: "8px",
-                                width: "100%",
-                                border: "1px solid #c2c2c2",
-                                borderRadius: "4px",
-                            }}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={12} sx={{ marginTop: "10px" }}>
-                        <input
-                            type="file"
-                            style={{
-                                border: '1px solid #c2c2c2',
-                                padding: '8px',
-                                width: '100%',
-                                borderRadius: '4px'
-                            }}
-                            //onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-                        />
-                    </Grid>
+                    <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
+                      Observaciones
+                    </Typography>
+                    <textarea
+                        placeholder="Ingrese Observaciones"
+                        //value={descripcion ?? ""}
+                        //onChange={(e) => setDescripcion(e.target.value)}
+                        style={{
+                            width: "100%",
+                            borderRadius: "8px",
+                            border: "1px solid var(--cya-border)",
+                            padding: "10px",
+                            maxHeight: "300px",
+                            height: "110px",
+                            fontFamily: "inherit",
+                            boxSizing: "border-box",
+                        }}
+                    ></textarea>
                 </Grid>
-            </Grid>
+
+                <Grid item xs={12}>
+                    <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
+                      Fecha de extravío
+                    </Typography>
+                    <input
+                        type="date"
+                        onChange={handleFormatTo}
+                        style={{
+                            padding: "8px",
+                            width: "100%",
+                            border: "1px solid var(--cya-border)",
+                            borderRadius: "8px",
+                            boxSizing: "border-box",
+                        }}
+                    />
+                </Grid>
+                <Grid item xs={12}>
+                    <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
+                      Foto
+                    </Typography>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        style={{
+                            border: '1px solid var(--cya-border)',
+                            padding: '8px',
+                            width: '100%',
+                            borderRadius: '8px',
+                            boxSizing: "border-box",
+                        }}
+                        //onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+                    />
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 1.2,
+                px: 3,
+                py: 2,
+                borderTop: "1px solid var(--cya-border)",
+              }}
+            >
+              <Button
+                onClick={() => setOpenModal(false)}
+                sx={{ textTransform: "none", color: "var(--cya-text-muted)" }}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={saveApadrinado}
+                variant="contained"
+                startIcon={<SaveIcon />}
+                className="cya-btn-add"
+              >
+                Guardar
+              </Button>
+            </Box>
         </>
     );
 }

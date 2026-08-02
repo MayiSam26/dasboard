@@ -1,21 +1,11 @@
-import {
-  Alert,
-  Box,
-  Button,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Modal,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Alert, Box, Button, Grid, IconButton, TextField, Typography } from "@mui/material";
 import React, { useEffect } from "react";
 
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
 import SaveIcon from "@mui/icons-material/Save";
+import CloseIcon from "@mui/icons-material/Close";
+import PersonIcon from "@mui/icons-material/Person";
 
 interface props {
   setOpenModalEdit?: any;
@@ -89,7 +79,7 @@ export default function Editar({
   //sksks
   const alert = () => {
     return (
-      <Alert variant="filled" severity={severity}>
+      <Alert variant="filled" severity={severity} sx={{ borderRadius: 0 }}>
         {mssg}
       </Alert>
     );
@@ -98,34 +88,47 @@ export default function Editar({
   return (
     <>
       {openAlert ? alert() : null}
-      <Grid container spacing={2} sx={{ py: 1, px: 2 }}>
-        <Grid item xs={12} sx={{ display: "flex" }}>
-          <Grid item xs={10}>
-            <Typography variant="h5">Actualizar Estado de Adopcion</Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Button
-            onClick={updateData}
-              fullWidth
-              variant="contained"
-              sx={{
-                background: "#65c178",
-                fontWeight: "bolder",
-                textTransform: "capitalize",
-                "&:hover": {
-                  background: "#ed6436",
-                },
-              }}
-            >
-                Actualizar
-            </Button>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-        <Grid item xs={12} sx={{ marginTop: "10px" }}>
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 2.2,
+          borderBottom: "1px solid var(--cya-border)",
+          background: "var(--cya-bg-alt)",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(228, 96, 47, 0.12)",
+              color: "var(--cya-primary)",
+            }}
+          >
+            <PersonIcon fontSize="small" />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "var(--cya-dark)" }}>
+            Editar Adoptante
+          </Typography>
+        </Box>
+        <IconButton onClick={() => setOpenModalEdit(false)} size="small">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
+      <Box sx={{ px: 3, py: 2.5 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
             <TextField
-              id="outlined-basic"
-              label="Ingrese Nombre"
+              label="Nombre"
               variant="outlined"
               value={nombre ?? ""}
               fullWidth
@@ -133,10 +136,9 @@ export default function Editar({
               onChange={(e) => setNombre(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={6}>
             <TextField
-              id="outlined-basic"
-              label="Ingrese Apellido"
+              label="Apellido"
               variant="outlined"
               fullWidth
               value={apellido ?? ""}
@@ -144,10 +146,9 @@ export default function Editar({
               onChange={(e) => setApellido(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={6}>
             <TextField
-              id="outlined-basic"
-              label="Ingrese DNI"
+              label="DNI"
               variant="outlined"
               value={documento ?? ""}
               type="number"
@@ -156,10 +157,9 @@ export default function Editar({
               onChange={(e) => setdocumento(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={6}>
             <TextField
-              id="outlined-basic"
-              label="Ingrese telefono/celular"
+              label="Telefono / Celular"
               variant="outlined"
               value={telefono ?? ""}
               fullWidth
@@ -167,10 +167,9 @@ export default function Editar({
               onChange={(e) => setTelefono(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={12}>
             <TextField
-              id="outlined-basic"
-              label="Ingrese direccion"
+              label="Direccion"
               variant="outlined"
               value={direccion ?? ""}
               fullWidth
@@ -178,25 +177,49 @@ export default function Editar({
               onChange={(e) => setdireccion(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
+              Motivo
+            </Typography>
             <textarea
               placeholder="Ingrese Observaciones"
               value={motivo ?? ""}
               onChange={(e) => setMotivo(e.target.value)}
               style={{
                 width: "100%",
-                borderRadius: "4px",
-                border: "1px solid #c2c2c2",
-                padding: "9px",
+                borderRadius: "8px",
+                border: "1px solid var(--cya-border)",
+                padding: "10px",
                 maxHeight: "300px",
-                height: "130px",
+                height: "110px",
                 fontFamily: "inherit",
+                boxSizing: "border-box",
               }}
             ></textarea>
           </Grid>
-
         </Grid>
-      </Grid>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 1.2,
+          px: 3,
+          py: 2,
+          borderTop: "1px solid var(--cya-border)",
+        }}
+      >
+        <Button
+          onClick={() => setOpenModalEdit(false)}
+          sx={{ textTransform: "none", color: "var(--cya-text-muted)" }}
+        >
+          Cancelar
+        </Button>
+        <Button onClick={updateData} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add">
+          Actualizar
+        </Button>
+      </Box>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { Box, Grid, Modal } from "@mui/material";
+import { Box, Chip, Grid, Grow, IconButton, Modal, Tooltip, Typography } from "@mui/material";
 import Body from "../../components/Layout/Body";
 import Content from "../../components/Layout/Content";
 import Layout from "../../components/Layout/Index";
@@ -6,15 +6,26 @@ import Navar from "../../components/Navar";
 import HeaderBox from "./Components/HeaderBox";
 import baseurl from "../../../Config/axios";
 import axios from "axios";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import BlockIcon from "@mui/icons-material/Block";
 import React, { useEffect } from "react";
 import moment from "moment";
-import EventIcon from "@mui/icons-material/Event";
 import Header from "../../components/Header";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
+
+const SOCIAL_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
+  Facebook: { icon: <FacebookIcon fontSize="small" />, color: "#3b5998" },
+  Instagram: { icon: <InstagramIcon fontSize="small" />, color: "#C13584" },
+  Tiktok: { icon: <MusicNoteIcon fontSize="small" />, color: "#000000" },
+  WhatsApp: { icon: <WhatsAppIcon fontSize="small" />, color: "#25D366" },
+  Ninguno: { icon: <BlockIcon fontSize="small" />, color: "#9e9e9e" },
+};
 
 export default function Donante() {
   const [donante, setDonante] = React.useState<any>([]);
@@ -80,7 +91,7 @@ export default function Donante() {
         setOpenAlert(true);
 
         setTimeout(() => {
-          setOpenModalEdit(false); // ✅ corregido (antes estaba setOpenModal(false))
+          setOpenModalEdit(false);
           setOpenAlert(false);
           getDonante();
         }, 1800);
@@ -107,136 +118,147 @@ export default function Donante() {
   }, []);
 
   const columns: GridColDef<(typeof donante)[number]>[] = [
-    {
-      field: "fullname",
-      headerName: "Nombre Completo",
-      width: 180,
-      editable: true,
-    },
+    { field: "fullname", headerName: "Nombre Completo", width: 180, headerAlign: "center" },
     {
       field: "redsocial",
-      headerName: "Redes Social",
-      width: 180,
-      editable: true,
+      headerName: "Red Social",
+      width: 130,
+      resizable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const social = SOCIAL_ICONS[params.value] || SOCIAL_ICONS["Ninguno"];
+        return (
+          <Tooltip title={params.value || "Ninguno"}>
+            <Box component="span" sx={{ display: "inline-flex", verticalAlign: "middle", color: social.color }}>
+              {social.icon}
+            </Box>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "persona",
       headerName: "Tipo Persona",
-      width: 200,
-      editable: true,
-      renderCell: (params) => {
-        return <>{params.value.nombre}</>;
-      },
+      width: 140,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Chip
+          label={params.value?.nombre}
+          size="small"
+          color={params.value?.nombre?.toLowerCase().includes("jurid") ? "info" : "default"}
+          variant={params.value?.nombre?.toLowerCase().includes("jurid") ? "filled" : "outlined"}
+        />
+      ),
     },
-    {
-      field: "Ruc",
-      headerName: "RUC",
-      width: 160,
-      editable: true,
-    },
-    {
-      field: "Dni",
-      headerName: "DNI",
-      width: 160,
-      editable: true,
-    },
+    { field: "Ruc", headerName: "RUC", width: 120, align: "center", headerAlign: "center" },
+    { field: "Dni", headerName: "DNI", width: 100, align: "center", headerAlign: "center" },
     {
       field: "Fecha_Registro",
       headerName: "Fecha Registro",
-      width: 230,
-      editable: true,
-      renderCell: (params) => (
-        <>
-          {moment(params.value).format("DD-MM-YYYY")} <EventIcon />
-        </>
-      ),
+      width: 130,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => moment(params.value).format("DD-MM-YYYY"),
     },
     {
       field: "view",
-      headerName: "Editar",
-      width: 100,
-      editable: true,
+      headerName: "Opción",
+      width: 80,
+      sortable: false,
+      resizable: false,
       align: "center",
+      headerAlign: "center",
       renderCell: (params) => (
-        <DriveFileRenameOutlineIcon
-          onClick={() => {
-            setOpenModalEdit(true);
-            setIdDonante(params.row.iddonantes);
-          }}
-          sx={{ textAlign: "center", cursor: "pointer" }}
-        />
+        <Tooltip title="Editar">
+          <IconButton
+            className="cya-icon-edit"
+            size="small"
+            onClick={() => {
+              setOpenModalEdit(true);
+              setIdDonante(params.row.iddonantes);
+            }}
+          >
+            <DriveFileRenameOutlineIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
       ),
     },
   ];
 
+  const modalSx = { display: "flex", alignItems: "center", justifyContent: "center", p: 2 };
+  const modalBoxSx = {
+    width: "min(700px, 92vw)",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    overflowX: "hidden",
+    bgcolor: "background.paper",
+    borderRadius: "var(--cya-radius-lg)",
+    boxShadow: "0 25px 60px rgba(36, 40, 44, 0.35)",
+    outline: "none",
+  };
+
   const ModalAgregar = () => {
-    const style = {
-      position: "absolute" as "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: 700,
-      bgcolor: "background.paper",
-      border: "2px solid #000",
-      boxShadow: 24,
-      p: 4,
-    };
     return (
       <Modal
         open={openModal}
-        onClose={() => setOpenModal(false)}
+        onClose={(_e, reason) => {
+          if (reason === "backdropClick") return;
+          setOpenModal(false);
+        }}
+        disableEscapeKeyDown
+        closeAfterTransition
+        sx={modalSx}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          <Agregar setOpenModal={setOpenModal} getDonante={() => getDonante()} />
-        </Box>
+        <Grow in={openModal} timeout={280}>
+          <Box sx={modalBoxSx}>
+            <Agregar setOpenModal={setOpenModal} getDonante={() => getDonante()} />
+          </Box>
+        </Grow>
       </Modal>
     );
   };
 
   const ModalEditar = () => {
-    const style = {
-      position: "absolute" as "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: 700,
-      bgcolor: "background.paper",
-      border: "2px solid #000",
-      boxShadow: 24,
-      p: 4,
-    };
     return (
       <Modal
         open={openModalEdit}
-        onClose={() => {
+        onClose={(_e, reason) => {
+          if (reason === "backdropClick") return;
           setOpenModalEdit(false);
           setOpenAlert(false);
         }}
+        disableEscapeKeyDown
+        closeAfterTransition
+        sx={modalSx}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          <Editar
-            setOpenModalEdit={setOpenModalEdit}
-            getDonante={() => getDonante()}
-            handleFullname={(value) => handleFullname(value)}
-            handleRedsocial={(value) => handleRedsocial(value)}
-            handleIdtipopersona={(value) => handleIdtipopersona(value)}
-            handleRuc={(value) => handleRuc(value)}
-            handleDni={(value) => handleDni(value)}
-            changeEditDonante={changeEditDonante}
-            severity={severity}
-            mssg={mssg}
-            openAlert={openAlert}
-            fullname={fullname}
-            redsocial={redsocial}
-            idtipopersona={idtipopersona}
-            ruc={ruc}
-            dni={dni}
-          />
-        </Box>
+        <Grow in={openModalEdit} timeout={280}>
+          <Box sx={modalBoxSx}>
+            <Editar
+              setOpenModalEdit={setOpenModalEdit}
+              getDonante={() => getDonante()}
+              handleFullname={(value) => handleFullname(value)}
+              handleRedsocial={(value) => handleRedsocial(value)}
+              handleIdtipopersona={(value) => handleIdtipopersona(value)}
+              handleRuc={(value) => handleRuc(value)}
+              handleDni={(value) => handleDni(value)}
+              changeEditDonante={changeEditDonante}
+              severity={severity}
+              mssg={mssg}
+              openAlert={openAlert}
+              fullname={fullname}
+              redsocial={redsocial}
+              idtipopersona={idtipopersona}
+              ruc={ruc}
+              dni={dni}
+            />
+          </Box>
+        </Grow>
       </Modal>
     );
   };
@@ -250,13 +272,14 @@ export default function Donante() {
           <Body>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <HeaderBox setOpenModal={() => setOpenModal(true)} />
+                <HeaderBox setOpenModal={() => setOpenModal(true)} count={donante ? donante.length : 0} />
               </Grid>
               <Grid item xs={12} sx={{ marginTop: "20px" }}>
-                <Box sx={{ height: 400, width: "100%" }}>
+                <Box sx={{ width: "100%" }} className="cya-table-card">
                   <DataGrid
                     rows={donante}
                     columns={columns}
+                    rowHeight={56}
                     initialState={{
                       pagination: {
                         paginationModel: {
@@ -265,9 +288,10 @@ export default function Donante() {
                       },
                     }}
                     autoHeight
-                    pageSizeOptions={[3]}
-                    checkboxSelection
+                    pageSizeOptions={[5, 8, 25]}
                     disableRowSelectionOnClick
+                    disableColumnFilter
+                    isCellEditable={() => false}
                     getRowId={(row) => row.iddonantes}
                   />
                 </Box>

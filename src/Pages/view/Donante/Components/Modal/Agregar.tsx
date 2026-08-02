@@ -1,23 +1,23 @@
 import {
   Alert,
-  Autocomplete,
+  Box,
   Button,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect } from "react";
+import React from "react";
 
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
-import { isNull } from "util";
-import { isNullishCoalesce } from "typescript";
-import { deflate } from "zlib";
 import SaveIcon from "@mui/icons-material/Save";
+import CloseIcon from "@mui/icons-material/Close";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import formatlocaldate from "../../../../../Config/helpersDate";
 
 interface props {
@@ -74,7 +74,7 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
 
   const alert = () => {
     return (
-      <Alert variant="filled" severity={severity}>
+      <Alert variant="filled" severity={severity} sx={{ borderRadius: 0 }}>
         {mssg}
       </Alert>
     );
@@ -82,104 +82,141 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
   return (
     <>
       {openAlert ? alert() : null}
-      <Grid container spacing={2} sx={{ py: 1, px: 2 }}>
-        <Grid item xs={12} sx={{ display: "flex" }}>
-          <Grid item xs={10}>
-            <Typography variant="h5">Agregar Nuevo Donante</Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Button
-              onClick={createData}
-              fullWidth
-              variant="contained"
-              sx={{
-                background: "#65c178",
-                borderRadius: "20px",
-                fontWeight: "bolder",
-                textTransform: "capitalize",
-                "&:hover": {
-                  background: "#ed6436",
-                },
-              }}
-            >
-              <SaveIcon />
-              Guardar
-            </Button>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 2.2,
+          borderBottom: "1px solid var(--cya-border)",
+          background: "var(--cya-bg-alt)",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(63, 158, 92, 0.14)",
+              color: "var(--cya-secondary-dark)",
+            }}
+          >
+            <VolunteerActivismIcon fontSize="small" />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "var(--cya-dark)" }}>
+            Agregar Nuevo Donante
+          </Typography>
+        </Box>
+        <IconButton onClick={() => setOpenModal(false)} size="small">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
+      <Box sx={{ px: 3, py: 2.5 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
             <TextField
-              id="outlined-basic"
-              label="Ingrese Nombre completo"
+              label="Nombre completo"
               variant="outlined"
               fullWidth
               size="small"
               onChange={(e) => setFullname(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
-            <TextField
-              id="outlined-basic"
-              label="Ingrese Red Social"
-              variant="outlined"
-              fullWidth
-              size="small"
-              onChange={(e) => setSocial(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
-            <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">
-                Tipo Persona
-              </InputLabel>
+          <Grid item xs={6}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="red-social-label">Red Social</InputLabel>
               <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                //value={age}
-                onChange={(e) => setTipo(e.target.value)}
-                label="Tipo Persona"
-                size="small"
+                labelId="red-social-label"
+                defaultValue=""
+                onChange={(e) => setSocial(e.target.value)}
+                label="Red Social"
               >
-                <MenuItem value="1">persona natural</MenuItem>
-                <MenuItem value="2">persona juridica</MenuItem>
+                <MenuItem value="Facebook">Facebook</MenuItem>
+                <MenuItem value="Instagram">Instagram</MenuItem>
+                <MenuItem value="Tiktok">Tiktok</MenuItem>
+                <MenuItem value="WhatsApp">WhatsApp</MenuItem>
+                <MenuItem value="Ninguno">Ninguno</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={6}>
+            <FormControl fullWidth size="small">
+              <InputLabel id="tipo-persona-label">Tipo Persona</InputLabel>
+              <Select
+                labelId="tipo-persona-label"
+                defaultValue=""
+                onChange={(e) => setTipo(e.target.value)}
+                label="Tipo Persona"
+              >
+                <MenuItem value="1">Persona Natural</MenuItem>
+                <MenuItem value="2">Persona Jurídica</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+          <Grid item xs={6}>
             <TextField
-              id="outlined-basic"
-              label="Ingrese Ruc"
+              label="RUC"
               variant="outlined"
               fullWidth
               size="small"
               onChange={(e) => setRuc(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={6}>
             <TextField
-              id="outlined-basic"
-              label="Ingrese DNI"
+              label="DNI"
               variant="outlined"
               fullWidth
               size="small"
               onChange={(e) => setDNI(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
+              Fecha de registro
+            </Typography>
             <input
               type="date"
               onChange={(e) => setDateTo(e.target.value)}
               style={{
                 padding: "8px",
                 width: "100%",
-                border: "1px solid #c2c2c2",
-                borderRadius: "4px",
+                border: "1px solid var(--cya-border)",
+                borderRadius: "8px",
+                boxSizing: "border-box",
               }}
             />
           </Grid>
         </Grid>
-      </Grid>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 1.2,
+          px: 3,
+          py: 2,
+          borderTop: "1px solid var(--cya-border)",
+        }}
+      >
+        <Button
+          onClick={() => setOpenModal(false)}
+          sx={{ textTransform: "none", color: "var(--cya-text-muted)" }}
+        >
+          Cancelar
+        </Button>
+        <Button onClick={createData} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add">
+          Guardar
+        </Button>
+      </Box>
     </>
   );
 }

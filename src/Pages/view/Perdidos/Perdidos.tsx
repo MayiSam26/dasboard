@@ -1,4 +1,4 @@
-import { Box, Grid, Modal, Typography } from "@mui/material";
+import { Box, Chip, Grid, Grow, IconButton, Modal, Tooltip } from "@mui/material";
 import Header from "../../components/Header";
 import Body from "../../components/Layout/Body";
 import Content from "../../components/Layout/Content";
@@ -11,235 +11,289 @@ import baseurl from "../../../Config/axios";
 import axios from "axios";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MaleIcon from "@mui/icons-material/Male";
+import FemaleIcon from "@mui/icons-material/Female";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import EventIcon from "@mui/icons-material/Event";
 import moment from "moment";
+import { TbCat, TbDog } from "react-icons/tb";
 import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 
+// react-icons + los tipos de React 18 no siempre coinciden en el tipo de
+// retorno (ReactNode vs JSX.Element); se castean una sola vez acá.
+const CatIcon = TbCat as React.FC<{ size?: number; color?: string }>;
+const DogIcon = TbDog as React.FC<{ size?: number; color?: string }>;
+
 export default function Perdidos() {
-  
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
   const [iddueno, setIdIddueno] = React.useState<any>("");
   const [openModalDelete, setOpenModalDelete] = React.useState<boolean>(false);
-  const [perdidos, setPerdidos] = React.useState<any>("");
-  const [busquedaNombre, setBusquedNombre] = React.useState<any>("")
-  const [tipoAnimal, setTipoAnimal] = React.useState<any>("")
-  const [genero, setGenero] = React.useState<any>("")
-  const [status, setStatus] = React.useState<any>("")
-  const [dateTo, setDateTo] = React.useState<any>("")
+  const [perdidos, setPerdidos] = React.useState<any>([]);
+  const [busquedaNombre, setBusquedNombre] = React.useState<any>("");
+  const [tipoAnimal, setTipoAnimal] = React.useState<any>("");
+  const [genero, setGenero] = React.useState<any>("");
+  const [status, setStatus] = React.useState<any>("");
+  const [dateTo, setDateTo] = React.useState<any>("");
 
   const getPerdidos = async () => {
-    const body ={
-        nombreBusqueda:'',
-        idTipoAnimalBusqueda:null,
-        idGeneroBusqueda:null,
-        statusBusqueda:null,
-        fechaBusqueda:null
-      }
+    const body = {
+      nombreBusqueda: "",
+      idTipoAnimalBusqueda: null,
+      idGeneroBusqueda: null,
+      statusBusqueda: null,
+      fechaBusqueda: null,
+    };
     const url = baseurl + "perdidos/list";
-    await axios.post(url,body).then((response) => {
-      const { data } = response;
-      setPerdidos(data.data);
-    });
+    await axios
+      .post(url, body)
+      .then((response) => {
+        const { data } = response;
+        setPerdidos(data.data);
+      })
+      .catch(() => setPerdidos([]));
   };
 
   React.useEffect(() => {
     getPerdidos();
   }, []);
 
-  const handleBusqueda = (value:any) =>{
-    setBusquedNombre(value)
-  }
+  const handleBusqueda = (value: any) => {
+    setBusquedNombre(value);
+  };
 
-  const handleTipoAnimal = (value:any) =>{
-    setTipoAnimal(value)
-  }
-  
-  const handleGenero = (value:any) =>{
-    setGenero(value)
-  }
-  const handleStatus = (value:any) =>{
-    setStatus(value)
-  }
+  const handleTipoAnimal = (value: any) => {
+    setTipoAnimal(value);
+  };
 
-  const handleDateTo = (value:any) =>{
-    setDateTo(moment(value).format('YYYY-MM-DD'))
-  }
+  const handleGenero = (value: any) => {
+    setGenero(value);
+  };
+  const handleStatus = (value: any) => {
+    setStatus(value);
+  };
 
-  const handleSearch = async() =>{
-    const fechaBusqueda: Date | null = dateTo === 'Invalid date' ? null : dateTo;
+  const handleDateTo = (value: any) => {
+    // Mientras se escribe un input type="date" a mano, el navegador puede
+    // disparar onChange con años a medio completar (ej. "0020-04-14").
+    // Solo aceptamos la fecha si viene completa y es un año razonable.
+    const parsed = moment(value, "YYYY-MM-DD", true);
+    if (!parsed.isValid() || parsed.year() < 1900 || parsed.year() > 2100) {
+      setDateTo("");
+      return;
+    }
+    setDateTo(parsed.format("YYYY-MM-DD"));
+  };
 
-    const body ={
-        nombreBusqueda:busquedaNombre?? "",
-        idTipoAnimalBusqueda:tipoAnimal?parseInt(tipoAnimal):null,
-        idGeneroBusqueda:genero?parseInt(genero):null,
-        statusBusqueda:status?status:null,
-        fechaBusqueda:fechaBusqueda
-      }
+  const handleSearch = async () => {
+    const body = {
+      nombreBusqueda: busquedaNombre ?? "",
+      idTipoAnimalBusqueda: tipoAnimal ? parseInt(tipoAnimal) : null,
+      idGeneroBusqueda: genero ? parseInt(genero) : null,
+      statusBusqueda: status ? status : null,
+      fechaBusqueda: dateTo || null,
+    };
     const url = baseurl + "perdidos/list";
-    await axios.post(url,body).then((response) => {
-      const { data } = response;
-      setPerdidos(data.data);
-    });
-  }
+    await axios
+      .post(url, body)
+      .then((response) => {
+        const { data } = response;
+        setPerdidos(data.data);
+      })
+      .catch(() => setPerdidos([]));
+  };
 
-   useEffect(() =>{
-        if(busquedaNombre === ""){
-            getPerdidos()
-        }
-   },[busquedaNombre])
+  const handleClearFilters = () => {
+    setBusquedNombre("");
+    setTipoAnimal("");
+    setGenero("");
+    setStatus("");
+    setDateTo("");
+    getPerdidos();
+  };
+
+  useEffect(() => {
+    if (busquedaNombre === "") {
+      getPerdidos();
+    }
+  }, [busquedaNombre]);
+
   const columns: GridColDef<(typeof perdidos)[number]>[] = [
-    {
-      field: "Nombre",
-      headerName: "Colitas",
-      width: 150,
-      editable: true,
-    },
+    { field: "Nombre", headerName: "Colitas", width: 140, headerAlign: "center" },
     {
       field: "Edad",
       headerName: "Edad",
-      width: 150,
-      editable: true,
-      renderCell: (params) => <>{params.value + " años"}</>,
+      width: 90,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => `${params.value} año(s)`,
     },
-    {
-      field: "tamano",
-      headerName: "Tamano",
-      width: 150,
-      editable: true,
-    },
+    { field: "tamano", headerName: "Tamaño", width: 100, align: "center", headerAlign: "center" },
     {
       field: "genero",
       headerName: "Genero",
-      width: 150,
-      editable: true,
-      renderCell: (params) => <>{params.value.descripcion}</>,
+      width: 90,
+      resizable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const desc: string = params.value?.descripcion || "";
+        const isMacho = desc.toLowerCase().includes("macho");
+        return (
+          <Tooltip title={desc}>
+            {isMacho ? (
+              <MaleIcon sx={{ color: "#4A90D9" }} fontSize="small" />
+            ) : (
+              <FemaleIcon sx={{ color: "#D96BAA" }} fontSize="small" />
+            )}
+          </Tooltip>
+        );
+      },
     },
     {
       field: "tipo",
-      headerName: "tipo",
-      width: 80,
-      editable: true,
-      renderCell: (params) => <>{params.value.descripcion}</>,
+      headerName: "Tipo",
+      width: 70,
+      resizable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const desc: string = params.value?.descripcion || "";
+        const isGato = desc.toLowerCase().includes("gato");
+        return (
+          <Tooltip title={desc}>
+            <Box component="span" sx={{ display: "inline-flex", verticalAlign: "middle" }}>
+              {isGato ? (
+                <CatIcon size={20} color="var(--cya-primary)" />
+              ) : (
+                <DogIcon size={20} color="var(--cya-secondary-dark)" />
+              )}
+            </Box>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "dueno",
       headerName: "Dueño",
-      width: 150,
-      editable: true,
-      renderCell: (params) => <>{params.value.nombre}</>,
+      width: 140,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => params.value?.nombre,
     },
     {
       field: "status",
       headerName: "Estado",
-      width: 150,
-      editable: true,
+      width: 130,
+      align: "center",
+      headerAlign: "center",
       renderCell: (params) => (
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-          }}
-        >
-          <Typography
-            variant="body1"
-            sx={{
-              background: "transparent",
-              width: "100%",
-              textAlign: "center",
-              border: "1px #c2c2c2 solid",
-              borderRadius: "20px",
-              px: 1,
-            }}
-          >
-            {params.value == 'P'? 'Perdido':'Encontrado'}
-          </Typography>
-        </Box>
+        <Chip
+          label={params.value === "P" ? "Perdido" : "Encontrado"}
+          color={params.value === "P" ? "error" : "success"}
+          size="small"
+        />
       ),
     },
     {
       field: "Fecha_Extravio",
-      headerName: "Fecha Extravio",
-      width: 150,
-      editable: true,
-      renderCell: (params) => (
-        <>
-          {moment(params.value).format("L")} <EventIcon />
-        </>
-      ),
+      headerName: "Fecha Extravío",
+      width: 130,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => moment(params.value).format("DD-MM-YYYY"),
     },
     {
       field: "Observaciones",
       headerName: "Observaciones",
-      width: 150,
-      editable: true,
-    },
-    {
-      field: "view",
-      headerName: "Editar",
-      width: 100,
-      editable: true,
-      align: "center",
+      flex: 1,
+      minWidth: 160,
       headerAlign: "center",
       renderCell: (params) => (
-        <DriveFileRenameOutlineIcon
-          onClick={() => {
-            setOpenModalEdit(true);
-            setIdIddueno(params.row.idmascotaperdida);
-          }}
-          sx={{ textAlign: "center", cursor: "pointer" }}
-        />
+        <Tooltip title={params.value || ""}>
+          <span
+            style={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              display: "block",
+            }}
+          >
+            {params.value}
+          </span>
+        </Tooltip>
       ),
     },
     {
-      field: "detele",
-      headerName: "Eliminar",
-      width: 100,
-      editable: true,
+      field: "view",
+      headerName: "Opción",
+      width: 90,
+      sortable: false,
+      resizable: false,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
-        <DeleteIcon
-          color="error"
-          onClick={() => {
-            setOpenModalDelete(true);
-            setIdIddueno(params.row.idmascotaperdida);
-          }}
-          sx={{ textAlign: "center", cursor: "pointer" }}
-        />
+        <>
+          <Tooltip title="Editar">
+            <IconButton
+              className="cya-icon-edit"
+              size="small"
+              onClick={() => {
+                setOpenModalEdit(true);
+                setIdIddueno(params.row.idmascotaperdida);
+              }}
+            >
+              <DriveFileRenameOutlineIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="Eliminar">
+            <IconButton
+              size="small"
+              sx={{ ml: 0.5, color: "#c0392b" }}
+              onClick={() => {
+                setOpenModalDelete(true);
+                setIdIddueno(params.row.idmascotaperdida);
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </>
       ),
     },
   ];
 
+  const modalSx = { display: "flex", alignItems: "center", justifyContent: "center", p: 2 };
+  const modalBoxSx = {
+    width: "min(700px, 92vw)",
+    maxHeight: "90vh",
+    overflowY: "auto",
+    overflowX: "hidden",
+    bgcolor: "background.paper",
+    borderRadius: "var(--cya-radius-lg)",
+    boxShadow: "0 25px 60px rgba(36, 40, 44, 0.35)",
+    outline: "none",
+  };
+
   const ModalAgregar = () => {
-    const style = {
-      position: "absolute" as "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      width: 700,
-      bgcolor: "background.paper",
-      border: "2px solid #000",
-      boxShadow: 24,
-      p: 4,
-    };
     return (
       <Modal
         open={openModal}
-        onClose={() => setOpenModal(false)}
+        onClose={(_e, reason) => {
+          if (reason === "backdropClick") return;
+          setOpenModal(false);
+        }}
+        disableEscapeKeyDown
+        closeAfterTransition
+        sx={modalSx}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          <Agregar
-            setOpenModal={setOpenModal}
-            getPerdidos={() => getPerdidos()}
-          />
-        </Box>
+        <Grow in={openModal} timeout={280}>
+          <Box sx={modalBoxSx}>
+            <Agregar setOpenModal={setOpenModal} getPerdidos={() => getPerdidos()} />
+          </Box>
+        </Grow>
       </Modal>
     );
   };
@@ -252,7 +306,7 @@ export default function Perdidos() {
           <Body>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <HeaderBox setOpenModal={() => setOpenModal(true)} />
+                <HeaderBox setOpenModal={() => setOpenModal(true)} count={perdidos ? perdidos.length : 0} />
               </Grid>
               <Grid item xs={12} sx={{ marginTop: "20px" }}>
                 <Search
@@ -262,11 +316,13 @@ export default function Perdidos() {
                   handleSearch={() => handleSearch()}
                   handleStatus={(value: any) => handleStatus(value)}
                   handleDateTo={(value: any) => handleDateTo(value)}
+                  onClear={handleClearFilters}
                 />
-                <Box sx={{ height: 400, width: "100%" }}>
+                <Box sx={{ width: "100%" }} className="cya-table-card">
                   <DataGrid
                     rows={perdidos}
                     columns={columns}
+                    rowHeight={60}
                     initialState={{
                       pagination: {
                         paginationModel: {
@@ -275,9 +331,10 @@ export default function Perdidos() {
                       },
                     }}
                     autoHeight
-                    pageSizeOptions={[3]}
-                    checkboxSelection
+                    pageSizeOptions={[5, 8, 25]}
                     disableRowSelectionOnClick
+                    disableColumnFilter
+                    isCellEditable={() => false}
                     getRowId={(row) => row.idmascotaperdida}
                   />
                 </Box>

@@ -1,9 +1,11 @@
 import {
   Alert,
   Autocomplete,
+  Box,
   Button,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -14,11 +16,11 @@ import React from "react";
 
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
-import { isNull } from "util";
-import { isNullishCoalesce } from "typescript";
-import { deflate } from "zlib";
 import formatlocaldate from "../../../../../Config/helpersDate";
 import moment from "moment";
+import CloseIcon from "@mui/icons-material/Close";
+import FavoriteIcon from "@mui/icons-material/Favorite";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface props {
   setOpenModal: any;
@@ -168,7 +170,7 @@ export default function Agregar({ setOpenModal, getAdopciones, getReportes }: pr
   }, []);
   const alert = () => {
     return (
-      <Alert variant="filled" severity={severity}>
+      <Alert variant="filled" severity={severity} sx={{ borderRadius: 0 }}>
         {mssg}
       </Alert>
     );
@@ -176,102 +178,138 @@ export default function Agregar({ setOpenModal, getAdopciones, getReportes }: pr
   return (
     <>
       {openAlert ? alert() : null}
-      <Grid container spacing={2} sx={{ py: 1, px: 2 }}>
-        <Grid item xs={12} sx={{ display: "flex" }}>
-          <Grid item xs={10}>
-            <Typography variant="h5">Crear Nueva Adopcion</Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Button
-              onClick={createdata}
-              fullWidth
-              variant="contained"
-              sx={{
-                background: "#65c178",
-                fontWeight: "bolder",
-                textTransform: "capitalize",
-                "&:hover": {
-                  background: "#ed6436",
-                },
-              }}
-            >
-              Guardar
-            </Button>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 2.2,
+          borderBottom: "1px solid var(--cya-border)",
+          background: "var(--cya-bg-alt)",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(63, 158, 92, 0.14)",
+              color: "var(--cya-secondary-dark)",
+            }}
+          >
+            <FavoriteIcon fontSize="small" />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "var(--cya-dark)" }}>
+            Crear Nueva Adopción
+          </Typography>
+        </Box>
+        <IconButton onClick={() => setOpenModal(false)} size="small">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
+      <Box sx={{ px: 3, py: 2.5 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
             <Autocomplete
               disablePortal
               id="combo-box-demo"
               options={donante}
               size="small"
               fullWidth
-              renderInput={(params) => (
-                <TextField {...params} label="Adoptante" />
-              )}
+              renderInput={(params) => <TextField {...params} label="Adoptante" />}
               onChange={handleDonantes}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={12}>
             <Autocomplete
               disablePortal
               id="combo-box-demo"
               options={albergados}
               size="small"
               fullWidth
-              renderInput={(params) => (
-                <TextField {...params} label="Colitas" />
-              )}
+              renderInput={(params) => <TextField {...params} label="Colitas" />}
               onChange={handleAnimal}
             />
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
-            <FormControl fullWidth>
+          <Grid item xs={12}>
+            <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Estado</InputLabel>
               <Select
                 labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                //value={age}
                 label="Estado"
-                size="small"
+                defaultValue=""
                 onChange={(e) => setStatus(e.target.value)}
               >
-                <MenuItem value="">Todos</MenuItem>
                 <MenuItem value="proceso">Proceso</MenuItem>
                 <MenuItem value="adoptado">Adoptado</MenuItem>
               </Select>
             </FormControl>
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
+              Observaciones
+            </Typography>
             <textarea
               placeholder="Ingrese descripcion"
               onChange={(e) => setMotivo(e.target.value)}
               style={{
                 width: "100%",
-                borderRadius: "4px",
-                border: "1px solid #c2c2c2",
-                padding: "9px",
+                borderRadius: "8px",
+                border: "1px solid var(--cya-border)",
+                padding: "10px",
                 maxHeight: "300px",
-                height: "130px",
+                height: "110px",
                 fontFamily: "inherit",
+                boxSizing: "border-box",
               }}
             ></textarea>
           </Grid>
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
+          <Grid item xs={12}>
+            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
+              Fecha de adopción
+            </Typography>
             <input
               type="date"
               onChange={(e) => setfromDate(e.target.value)}
               style={{
                 padding: "8px",
                 width: "100%",
-                border: "1px solid #c2c2c2",
-                borderRadius: "4px",
+                border: "1px solid var(--cya-border)",
+                borderRadius: "8px",
+                boxSizing: "border-box",
               }}
             />
           </Grid>
         </Grid>
-      </Grid>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 1.2,
+          px: 3,
+          py: 2,
+          borderTop: "1px solid var(--cya-border)",
+        }}
+      >
+        <Button
+          onClick={() => setOpenModal(false)}
+          sx={{ textTransform: "none", color: "var(--cya-text-muted)" }}
+        >
+          Cancelar
+        </Button>
+        <Button onClick={createdata} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add">
+          Guardar
+        </Button>
+      </Box>
     </>
   );
 }

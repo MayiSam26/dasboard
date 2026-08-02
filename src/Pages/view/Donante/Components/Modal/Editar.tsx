@@ -1,8 +1,10 @@
 import {
   Alert,
+  Box,
   Button,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -11,6 +13,8 @@ import {
 } from "@mui/material";
 import React from "react";
 import SaveIcon from "@mui/icons-material/Save";
+import CloseIcon from "@mui/icons-material/Close";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 
 interface props {
   setOpenModalEdit: (value: boolean) => void;
@@ -36,6 +40,7 @@ interface props {
 }
 
 export default function Editar({
+  setOpenModalEdit,
   handleFullname,
   handleRedsocial,
   handleIdtipopersona,
@@ -55,104 +60,139 @@ export default function Editar({
   return (
     <>
       {openAlert && (
-        <Alert variant="filled" severity={severity} sx={{ mb: 2 }}>
+        <Alert variant="filled" severity={severity} sx={{ borderRadius: 0 }}>
           {mssg}
         </Alert>
       )}
 
-      <Grid container spacing={2} sx={{ py: 1, px: 2 }}>
-        <Grid item xs={12} sx={{ display: "flex" }}>
-          <Grid item xs={10}>
-            <Typography variant="h5">Editar Donante</Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Button
-              onClick={changeEditDonante}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 2.2,
+          borderBottom: "1px solid var(--cya-border)",
+          background: "var(--cya-bg-alt)",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(228, 96, 47, 0.12)",
+              color: "var(--cya-primary)",
+            }}
+          >
+            <VolunteerActivismIcon fontSize="small" />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "var(--cya-dark)" }}>
+            Editar Donante
+          </Typography>
+        </Box>
+        <IconButton onClick={() => setOpenModalEdit(false)} size="small">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
+      <Box sx={{ px: 3, py: 2.5 }}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              label="Nombre completo"
+              variant="outlined"
               fullWidth
-              variant="contained"
-              sx={{
-                background: "#65c178",
-                borderRadius: "20px",
-                fontWeight: "bolder",
-                textTransform: "capitalize",
-                "&:hover": {
-                  background: "#ed6436",
-                },
-              }}
-            >
-              <SaveIcon />
-              Guardar
-            </Button>
+              size="small"
+              value={fullname}
+              onChange={(e) => handleFullname(e.target.value)}
+            />
+          </Grid>
+
+          <Grid item xs={6}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Red Social</InputLabel>
+              <Select
+                value={redsocial}
+                onChange={(e) => handleRedsocial(e.target.value)}
+                label="Red Social"
+              >
+                <MenuItem value="Facebook">Facebook</MenuItem>
+                <MenuItem value="Instagram">Instagram</MenuItem>
+                <MenuItem value="Tiktok">Tiktok</MenuItem>
+                <MenuItem value="WhatsApp">WhatsApp</MenuItem>
+                <MenuItem value="Ninguno">Ninguno</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={6}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Tipo Persona</InputLabel>
+              <Select
+                value={idtipopersona}
+                onChange={(e) => handleIdtipopersona(e.target.value)}
+                label="Tipo Persona"
+              >
+                <MenuItem value="1">Persona Natural</MenuItem>
+                <MenuItem value="2">Persona Jurídica</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextField
+              label="RUC"
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={ruc}
+              onChange={(e) => handleRuc(e.target.value)}
+            />
+          </Grid>
+
+          <Grid item xs={6}>
+            <TextField
+              label="DNI"
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={dni}
+              onChange={(e) => handleDni(e.target.value)}
+            />
           </Grid>
         </Grid>
+      </Box>
 
-        <Grid item xs={12}>
-          <TextField
-            label="Ingrese Nombre completo"
-            variant="outlined"
-            fullWidth
-            size="small"
-            value={fullname}
-            onChange={(e) => handleFullname(e.target.value)}
-            sx={{ mt: 1 }}
-          />
-        </Grid>
-
-        <Grid item xs={12}>
-          <FormControl fullWidth size="small" sx={{ mt: 1 }}>
-            <InputLabel>Red Social</InputLabel>
-            <Select
-              value={redsocial}
-              onChange={(e) => handleRedsocial(e.target.value)}
-              label="Red Social"
-            >
-              <MenuItem value="Facebook">Facebook</MenuItem>
-              <MenuItem value="Instagram">Instagram</MenuItem>
-              <MenuItem value="Tiktok">Tiktok</MenuItem>
-              <MenuItem value="WhatsApp">WhatsApp</MenuItem>
-              <MenuItem value="Ninguno">Ninguno</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12}>
-          <FormControl fullWidth size="small" sx={{ mt: 1 }}>
-            <InputLabel>Tipo Persona</InputLabel>
-            <Select
-              value={idtipopersona}
-              onChange={(e) => handleIdtipopersona(e.target.value)}
-              label="Tipo Persona"
-            >
-              <MenuItem value="1">Persona Natural</MenuItem>
-              <MenuItem value="2">Persona Jurídica</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField
-            label="Ingrese Ruc"
-            variant="outlined"
-            fullWidth
-            size="small"
-            value={ruc}
-            onChange={(e) => handleRuc(e.target.value)}
-            sx={{ mt: 1 }}
-          />
-        </Grid>
-
-        <Grid item xs={12}>
-          <TextField
-            label="Ingrese DNI"
-            variant="outlined"
-            fullWidth
-            size="small"
-            value={dni}
-            onChange={(e) => handleDni(e.target.value)}
-            sx={{ mt: 1 }}
-          />
-        </Grid>
-      </Grid>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 1.2,
+          px: 3,
+          py: 2,
+          borderTop: "1px solid var(--cya-border)",
+        }}
+      >
+        <Button
+          onClick={() => setOpenModalEdit(false)}
+          sx={{ textTransform: "none", color: "var(--cya-text-muted)" }}
+        >
+          Cancelar
+        </Button>
+        <Button
+          onClick={changeEditDonante}
+          variant="contained"
+          startIcon={<SaveIcon />}
+          className="cya-btn-add"
+        >
+          Guardar
+        </Button>
+      </Box>
     </>
   );
 }

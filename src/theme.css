@@ -190,6 +190,19 @@ body {
   transition: background-color .3s ease;
 }
 
+/* La plantilla reserva 70px arriba (padding-top) para el logo, pero el
+   logo propio (con las dos variantes light/dark) no tenía una altura fija,
+   así que a veces terminaba más alto que esos 70px y se montaba sobre el
+   menú al hacer scroll. Lo fijamos en 70px con overflow:hidden. */
+.leftside-menu .logo {
+  height: 70px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  line-height: normal !important;
+}
+
 .cya-sidebar-item {
   border-left: 3px solid transparent;
   border-radius: 0 10px 10px 0;
@@ -211,6 +224,23 @@ body {
   color: var(--cya-primary) !important;
 }
 
+/* Sidebar colapsado (botón ☰): la plantilla base espera <ul class="side-nav">
+   para ocultar textos y submenús abiertos en modo "condensed", pero el menú
+   está armado con MUI List/Collapse — sin este bloque, el texto y los
+   submenús abiertos se quedan visibles y flotan sobre el contenido. */
+body[data-leftbar-compact-mode="condensed"] .leftside-menu .MuiListItemText-root,
+body[data-leftbar-compact-mode="condensed"] .leftside-menu .MuiCollapse-root {
+  display: none !important;
+}
+body[data-leftbar-compact-mode="condensed"] .leftside-menu .cya-sidebar-item {
+  justify-content: center;
+  margin-right: 0;
+}
+body[data-leftbar-compact-mode="condensed"] .leftside-menu .MuiListItemIcon-root {
+  min-width: auto;
+  justify-content: center;
+}
+
 .cya-theme-swatch {
   width: 34px;
   height: 34px;
@@ -225,4 +255,95 @@ body {
 }
 .cya-theme-swatch.cya-selected {
   border-color: var(--cya-dark);
+}
+
+/* ---------- Tablas de administración (Colitas y módulos similares) ---------- */
+
+.cya-table-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.cya-btn-export {
+  border-radius: 999px !important;
+  text-transform: none !important;
+  font-weight: 700 !important;
+  border-color: var(--cya-border) !important;
+  color: var(--cya-dark) !important;
+  white-space: nowrap;
+}
+.cya-btn-export:hover {
+  border-color: var(--cya-primary) !important;
+  color: var(--cya-primary) !important;
+  background-color: rgba(228, 96, 47, 0.06) !important;
+}
+
+.cya-btn-add {
+  background: var(--cya-secondary) !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+  box-shadow: none !important;
+  white-space: nowrap;
+  transition: transform .15s ease, box-shadow .15s ease !important;
+}
+.cya-btn-add:hover {
+  background: var(--cya-secondary-dark) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(63, 158, 92, 0.3) !important;
+}
+
+.cya-icon-edit {
+  background: rgba(228, 96, 47, 0.10) !important;
+  color: var(--cya-primary) !important;
+  transition: background-color .15s ease, transform .15s ease !important;
+}
+.cya-icon-edit:hover {
+  background: var(--cya-primary) !important;
+  color: #fff !important;
+  transform: scale(1.06);
+}
+
+.cya-filters-toggle {
+  color: var(--cya-primary) !important;
+  font-weight: 700 !important;
+  text-transform: none !important;
+}
+
+.cya-table-card {
+  border: 1px solid var(--cya-border);
+  border-radius: var(--cya-radius-md);
+  overflow: hidden;
+}
+.cya-table-card .MuiDataGrid-columnHeaders {
+  background-color: var(--cya-bg-alt);
+}
+.cya-table-card .MuiDataGrid-row:hover {
+  background-color: rgba(228, 96, 47, 0.04);
+}
+
+/* Encabezados de columna: en negrita y en un tono más oscuro para
+   diferenciarse claramente de los datos de las filas. */
+.cya-table-card .MuiDataGrid-columnHeaderTitle {
+  font-weight: 700 !important;
+  color: var(--cya-dark);
+}
+
+/* Centrado VERTICAL para todas las celdas (por defecto MUI no lo hace en
+   celdas con contenido propio vía renderCell, por eso "Mascota" y
+   "Observaciones" quedaban pegadas arriba). El horizontal se deja en
+   flex-start (izquierda) salvo que la columna pida align:"center". */
+.cya-table-card .MuiDataGrid-cell {
+  display: flex !important;
+  align-items: center !important;
+}
+/* Las columnas con align:"center" en MUI DataGrid usan display:block +
+   text-align:center, lo que NO centra contenido en bloque (Chips, íconos,
+   Avatares envueltos en Box) — solo texto/inline. Forzamos flexbox para
+   que cualquier tipo de contenido quede centrado de verdad. */
+.cya-table-card .MuiDataGrid-cell--textCenter {
+  justify-content: center !important;
 }

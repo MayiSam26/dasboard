@@ -4,11 +4,10 @@ import {
   Button,
   FormControl,
   Grid,
+  IconButton,
   InputLabel,
   MenuItem,
-  Modal,
   Select,
-  TextField,
   Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
@@ -16,6 +15,8 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
 import SaveIcon from "@mui/icons-material/Save";
+import CloseIcon from "@mui/icons-material/Close";
+import FavoriteIcon from "@mui/icons-material/Favorite";
 
 interface props {
   setOpenModalEdit?: any;
@@ -73,7 +74,7 @@ export default function Editar({
   
   const alert = () => {
     return (
-      <Alert variant="filled" severity={severity}>
+      <Alert variant="filled" severity={severity} sx={{ borderRadius: 0 }}>
         {mssg}
       </Alert>
     );
@@ -82,51 +83,77 @@ export default function Editar({
   return (
     <>
       {openAlert ? alert() : null}
-      <Grid container spacing={2} sx={{ py: 1, px: 2 }}>
-        <Grid item xs={12} sx={{ display: "flex" }}>
-          <Grid item xs={10}>
-            <Typography variant="h5">Actualizar Estado de Adopcion</Typography>
-          </Grid>
-          <Grid item xs={2}>
-            <Button
-             onClick={updateData}
-              fullWidth
-              variant="contained"
-              sx={{
-                background: "#65c178",
-                fontWeight: "bolder",
-                textTransform: "capitalize",
-                "&:hover": {
-                  background: "#ed6436",
-                },
-              }}
-            >
-                Actualizar
-            </Button>
-          </Grid>
-        </Grid>
-        <Grid item xs={12}>
-        
-          <Grid item xs={12} sx={{ marginTop: "10px" }}>
-            <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Estado</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                //value={age}
-                label="Estado"
-                size="small"
-                value={status ?? ""}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <MenuItem value="">Todos</MenuItem>
-                <MenuItem value="proceso">Proceso</MenuItem>
-                <MenuItem value="adoptado">Adoptado</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
-      </Grid>
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          px: 3,
+          py: 2.2,
+          borderBottom: "1px solid var(--cya-border)",
+          background: "var(--cya-bg-alt)",
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.2 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(228, 96, 47, 0.12)",
+              color: "var(--cya-primary)",
+            }}
+          >
+            <FavoriteIcon fontSize="small" />
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 800, color: "var(--cya-dark)" }}>
+            Actualizar Estado de Adopción
+          </Typography>
+        </Box>
+        <IconButton onClick={() => setOpenModalEdit(false)} size="small">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </Box>
+
+      <Box sx={{ px: 3, py: 2.5 }}>
+        <FormControl fullWidth size="small">
+          <InputLabel id="demo-simple-select-label">Estado</InputLabel>
+          <Select
+            labelId="demo-simple-select-label"
+            label="Estado"
+            value={status ?? ""}
+            onChange={(e) => setStatus(e.target.value)}
+          >
+            <MenuItem value="proceso">Proceso</MenuItem>
+            <MenuItem value="adoptado">Adoptado</MenuItem>
+          </Select>
+        </FormControl>
+      </Box>
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 1.2,
+          px: 3,
+          py: 2,
+          borderTop: "1px solid var(--cya-border)",
+        }}
+      >
+        <Button
+          onClick={() => setOpenModalEdit(false)}
+          sx={{ textTransform: "none", color: "var(--cya-text-muted)" }}
+        >
+          Cancelar
+        </Button>
+        <Button onClick={updateData} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add">
+          Actualizar
+        </Button>
+      </Box>
     </>
   );
 }

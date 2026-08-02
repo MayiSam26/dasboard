@@ -1,41 +1,42 @@
-import { Button, Grid, Paper, TextField } from "@mui/material";
+import { Button, Grid, InputAdornment, Paper, TextField } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 interface Props {
-    handleBusqueda: (e:any) => void
-    handleSearch:() => void
+  handleBusqueda: (e: any) => void;
+  handleSearch: () => void;
 }
-export default function Search({handleBusqueda,handleSearch}:Props) {
+export default function Search({ handleBusqueda, handleSearch }: Props) {
   return (
     <>
-      <Grid container spacing={2} sx={{marginBottom:'24px'}}>
+      <Grid container spacing={2} sx={{ marginBottom: "24px" }}>
         <Grid item xs={12}>
-          <Paper variant="outlined" sx={{ bgcolor: "background.paper" }}>
-            <Grid container spacing={2} sx={{ p: 2, display:'flex', justifyContent:'space-between' }}>
-              {/* Contenido dentro del Paper */}
-              <Grid item xs={12} md={3}>
+          <Paper variant="outlined" sx={{ bgcolor: "background.paper", borderColor: "var(--cya-border)" }}>
+            <Grid container spacing={2} sx={{ p: 2, alignItems: "center" }}>
+              <Grid item xs={12} md={4}>
                 <TextField
                   id="outlined-basic"
                   label="Buscar dueño"
                   variant="outlined"
                   fullWidth
                   size="small"
-                  onChange={(e) =>handleBusqueda(e.target.value)}
+                  placeholder="Escribe un nombre..."
+                  onChange={(e) => handleBusqueda(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <SearchIcon fontSize="small" color="action" />
+                      </InputAdornment>
+                    ),
+                  }}
                 />
               </Grid>
-              <Grid item xs={12} md={1} sm={2}>
+              <Grid item xs={12} md={2}>
                 <Button
                   onClick={handleSearch}
                   fullWidth
                   variant="contained"
-                  color='info'
-                  sx={{
-                    fontWeight: "bolder",
-                    borderRadius:'20px',
-                    textTransform: "capitalize",
-                    "&:hover": {
-                      background: "#ed6436",
-                    },
-                  }}
+                  className="cya-btn-add"
+                  startIcon={<SearchIcon />}
                 >
                   Buscar
                 </Button>
