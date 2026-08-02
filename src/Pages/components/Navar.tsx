@@ -67,7 +67,6 @@ const sections: Section[] = [
     items: [
       { label: "Ingreso", path: "/panel/ingresos" },
       { label: "Donante", path: "/panel/donante" },
-      { label: "Apadrinado", path: "/panel/apadrinado" },
     ],
   },
 ];

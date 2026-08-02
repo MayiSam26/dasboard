@@ -10,7 +10,6 @@ import Donante from "../Pages/view/Donante/Donante";
 import Adoptante from "../Pages/view/Adoptantes/Adoptante";
 import Colitas from "../Pages/view/Colitas/Colitas";
 import Adopcion from "../Pages/view/Adopciones/Adopcion";
-import Apadrinado from "../Pages/view/Apadrinado/Apadrinado";
 import Ingresos from "../Pages/view/Ingresos/Ingresos";
 import Amo from "../Pages/view/Amo/Amo";
 import Perdidos from "../Pages/view/Perdidos/Perdidos";
@@ -43,7 +42,6 @@ export function RoutesApp() {
             <Route path="/panel/colitas" element={<Colitas />} />
             <Route path="/panel/perdidos" element={<Perdidos />} />
             <Route path="/panel/adopcion" element={<Adopcion />} />
-            <Route path="/panel/apadrinado" element={<Apadrinado />} />
             <Route path="/panel/ingresos" element={<Ingresos />} />
             <Route path="/panel/apoderado" element={<Amo />} />
           </Route>

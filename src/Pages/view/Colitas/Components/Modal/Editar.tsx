@@ -16,6 +16,12 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
 
+function buildImgUrl(foto: string) {
+  const cleanBase = baseurl.replace(/\/+$/, "");
+  const cleanFoto = (foto || "").replace(/\\/g, "/").replace(/^\/+/, "");
+  return `${cleanBase}/${cleanFoto}`;
+}
+
 interface props {
   setOpenModalEdit?: any;
   idAnimal?: any;
@@ -142,12 +148,13 @@ export default function Editar({
             ></textarea>
           </Grid>
           <Grid item xs={12} sx={{ marginTop: "10px" }}>
-            <img
-              src={`${baseurl}${foto}`}
-              alt=""
-              width="100px"
-              height="100px"
-            />
+            {foto && (
+              <img
+                src={buildImgUrl(foto)}
+                alt=""
+                style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "8px" }}
+              />
+            )}
           </Grid>
           <Grid item xs={12} sx={{ marginTop: "10px" }}>
             <input

@@ -1,7 +1,7 @@
 import {
-    Button,
     FormControl,
     Grid,
+    InputAdornment,
     InputLabel,
     MenuItem,
     Paper,
@@ -9,18 +9,16 @@ import {
     TextField,
   } from "@mui/material";
   import SearchIcon from "@mui/icons-material/Search";
-  
+
   interface Props {
     handleBusqueda: (e: any) => void;
     handleTipoAnimal: (e: any) => void;
     handleGenero: (e: any) => void;
-    handleSearch: () => void;
     handleTamno: (e: any) => void;
     handleDateTo: (e: any) => void;
   }
   export default function Search({
     handleBusqueda,
-    handleSearch,
     handleTipoAnimal,
     handleGenero,
     handleTamno,
@@ -33,14 +31,22 @@ import {
             <Paper variant="outlined" sx={{ bgcolor: "background.paper" }}>
               <Grid container spacing={5} sx={{ p: 2 }}>
                 {/* Contenido dentro del Paper */}
-                <Grid item xs={12} md={2}>
+                <Grid item xs={12} md={3}>
                   <TextField
                     id="outlined-basic"
                     label="Buscar Colitas"
                     variant="outlined"
                     fullWidth
                     size="small"
+                    placeholder="Escribe un nombre..."
                     onChange={(e) => handleBusqueda(e.target.value)}
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon fontSize="small" color="action" />
+                        </InputAdornment>
+                      ),
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12} md={2}>
@@ -49,7 +55,7 @@ import {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      //value={age}
+                      defaultValue=""
                       label="Estado"
                       size="small"
                       onChange={(e) => handleTamno(e.target.value)}
@@ -67,7 +73,7 @@ import {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      //value={age}
+                      defaultValue=""
                       onChange={(e) => handleGenero(e.target.value)}
                       label="Genero"
                       size="small"
@@ -84,7 +90,7 @@ import {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      //value={age}
+                      defaultValue=""
                       label="Tipo"
                       onChange={(e) => handleTipoAnimal(e.target.value)}
                       size="small"
@@ -95,7 +101,7 @@ import {
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid item xs={12} md={2}>
+                <Grid item xs={12} md={3}>
                   <input
                     type="date"
                     onChange={(e) => handleDateTo(e.target.value)}
@@ -107,25 +113,6 @@ import {
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} md={2} sm={2}>
-                  <Button
-                    onClick={handleSearch}
-                    fullWidth
-                    variant="contained"
-                    color="info"
-                    sx={{
-                      fontWeight: "bolder",
-                      borderRadius: "20px",
-                      textTransform: "capitalize",
-                      "&:hover": {
-                        background: "#ed6436",
-                      },
-                    }}
-                  >
-                    <SearchIcon />
-                    Buscar
-                  </Button>
-                </Grid>
               </Grid>
             </Paper>
           </Grid>
@@ -133,4 +120,3 @@ import {
       </>
     );
   }
-  

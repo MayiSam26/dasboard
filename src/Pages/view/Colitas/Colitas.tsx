@@ -16,6 +16,12 @@ import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
 
+function buildImgUrl(foto: string) {
+  const cleanBase = baseurl.replace(/\/+$/, "");
+  const cleanFoto = (foto || "").replace(/\\/g, "/").replace(/^\/+/, "");
+  return `${cleanBase}/${cleanFoto}`;
+}
+
 export default function Colitas() {
   const [albergados, setAlbergados] = React.useState<any>([]);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
@@ -29,24 +35,30 @@ export default function Colitas() {
   const [tamano, setTamano] = React.useState<any>("");
   const [dateTo, setDateTo] = React.useState<any>("");
 
-  const getAlbergados = async () => {
+  const getAlbergados = React.useCallback(async () => {
+    const fechaBusqueda = dateTo === "Invalid date" ? null : dateTo;
     const body = {
-      search: "",
-      p_tamano: null,
-      p_idtipoanimal: null,
-      p_idgenero: null,
-      fechaBusqueda: null,
+      search: busquedaNombre || "",
+      p_tamano: tamano || null,
+      p_idtipoanimal: tipoAnimal ? parseInt(tipoAnimal) : null,
+      p_idgenero: genero ? parseInt(genero) : null,
+      fechaBusqueda: fechaBusqueda || null,
     };
     const url = baseurl + "colitas/list";
     await axios.post(url, body).then((response) => {
       const { data } = response;
       setAlbergados(data.data);
     });
-  };
+  }, [busquedaNombre, tamano, tipoAnimal, genero, dateTo]);
 
+  // Búsqueda automática: se dispara sola cuando cambia cualquier filtro,
+  // con una pequeña espera para no disparar una petición por cada tecla.
   React.useEffect(() => {
-    getAlbergados();
-  }, []);
+    const timer = setTimeout(() => {
+      getAlbergados();
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [getAlbergados]);
 
   const columns: GridColDef<(typeof albergados)[number]>[] = [
     { field: "nombre", headerName: "Nombre", width: 120, editable: true },
@@ -109,13 +121,14 @@ export default function Colitas() {
       editable: true,
       renderCell: (params) => (
         <img
-          src={`${baseurl}${params.row.foto}`}
-          alt="Imagen"
+          src={buildImgUrl(params.row.foto)}
+          alt={params.row.nombre}
           style={{
             objectFit: "cover",
-            backgroundSize: "cover",
             padding: "5px",
-            width: "100px",
+            width: "70px",
+            height: "70px",
+            borderRadius: "8px",
           }}
         />
       ),
@@ -144,24 +157,6 @@ export default function Colitas() {
   const handleGenero = (value: any) => setGenero(value);
   const handleTamno = (value: any) => setTamano(value);
   const handleDateTo = (value: any) => setDateTo(moment(value).format("YYYY-MM-DD"));
-
-  const handleSearch = async () => {
-    const fechaBusqueda: Date | null = dateTo === "Invalid date" ? null : dateTo;
-
-    const body = {
-      search: busquedaNombre ?? "",
-      p_tamano: tamano ?? null,
-      p_idtipoanimal: tipoAnimal ? parseInt(tipoAnimal) : null,
-      p_idgenero: genero ? parseInt(genero) : null,
-      fechaBusqueda: fechaBusqueda,
-    };
-
-    const url = baseurl + "colitas/list";
-    await axios.post(url, body).then((response) => {
-      const { data } = response;
-      setAlbergados(data.data);
-    });
-  };
 
   // ✅ ESTILO NUEVO PARA MODALES (RESPONSIVE + SCROLL)
   const modalBoxSx = {
@@ -229,7 +224,6 @@ export default function Colitas() {
                   handleBusqueda={handleBusqueda}
                   handleTipoAnimal={handleTipoAnimal}
                   handleGenero={handleGenero}
-                  handleSearch={handleSearch}
                   handleTamno={handleTamno}
                   handleDateTo={handleDateTo}
                 />
@@ -238,6 +232,7 @@ export default function Colitas() {
                   <DataGrid
                     rows={albergados}
                     columns={columns}
+                    rowHeight={84}
                     initialState={{
                       pagination: {
                         paginationModel: { pageSize: 8 },
