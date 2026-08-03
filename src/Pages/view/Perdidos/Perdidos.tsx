@@ -125,10 +125,10 @@ export default function Perdidos() {
     {
       field: "Edad",
       headerName: "Edad",
-      width: 90,
+      width: 100,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => `${params.value} año(s)`,
+      renderCell: (params) => params.value || "—",
     },
     { field: "tamano", headerName: "Tamaño", width: 100, align: "center", headerAlign: "center" },
     {

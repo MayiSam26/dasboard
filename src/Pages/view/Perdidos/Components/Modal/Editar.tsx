@@ -22,6 +22,7 @@ import axios from "axios";
 import baseurl from "../../../../../Config/axios";
 import SaveIcon from "@mui/icons-material/Save";
 import moment from "moment";
+import formatlocaldate from "../../../../../Config/helpersDate";
 
 function buildImgUrl(foto: string) {
     const cleanBase = baseurl.replace(/\/+$/, "");
@@ -145,7 +146,7 @@ export default function Editar({ setOpenModalEdit, idperdido, getPerdidos }: pro
         formData.append("tamano", tamano);
         formData.append("status", status);
         formData.append("Observaciones", descripcion);
-        formData.append("Fecha_Extravio", fechaExtravio);
+        formData.append("Fecha_Extravio", formatlocaldate(fechaExtravio));
         if (file) formData.append("foto", file);
 
         try {
@@ -240,9 +241,9 @@ export default function Editar({ setOpenModalEdit, idperdido, getPerdidos }: pro
                 </Grid>
                 <Grid item xs={6}>
                     <TextField
-                        label="Ingrese edad *"
+                        label="Edad *"
                         variant="outlined"
-                        type="number"
+                        placeholder="Ej: 2 años, 8 meses"
                         fullWidth
                         size="small"
                         value={edad}
