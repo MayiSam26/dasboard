@@ -35,7 +35,6 @@ export default function Editar({ setOpenModalEdit, iddueno, getApadrinado }: pro
   };
   useEffect(() => {
     getById();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateById = async () => {

@@ -56,7 +56,6 @@ export default function Editar({
   };
   useEffect(() => {
     getById();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const updateData = async () => {
