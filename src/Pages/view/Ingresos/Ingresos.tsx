@@ -102,18 +102,24 @@ export default function Ingresos() {
 
   const getIngresos = async () => {
     const url = baseurl + "ingresos/list";
-    await axios.get(url).then((response) => {
-      const { data } = response;
-      setIngresos(data.data);
-    });
+    await axios
+      .get(url)
+      .then((response) => {
+        const { data } = response;
+        setIngresos(data.data);
+      })
+      .catch(() => setIngresos([]));
   };
 
   const getReportes = async () => {
     const url = baseurl + "ingresos/reporte";
-    await axios.post(url).then((response) => {
-      const { data } = response;
-      setReporte(data.data);
-    });
+    await axios
+      .post(url)
+      .then((response) => {
+        const { data } = response;
+        setReporte(data.data);
+      })
+      .catch(() => setReporte([]));
   };
 
   React.useEffect(() => {

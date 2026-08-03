@@ -130,9 +130,12 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
     };
 
     const url = baseurl + "auditoria/update/" + id;
-    const response = await axios.put(url, body);
-    const { data } = response;
-    console.log(data);
+    try {
+      await axios.put(url, body);
+    } catch (e) {
+      // La auditoría es de mejor esfuerzo: si falla no debe interrumpir el
+      // guardado de la colita, que ya se confirmó exitoso antes de llamar aquí.
+    }
   };
   const alert = () => {
     return (

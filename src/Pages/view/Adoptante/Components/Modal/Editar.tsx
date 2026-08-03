@@ -37,6 +37,7 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
             setDetallesDos(detail[1]?detail[1].name:'')
             setDetallesTres(detail[2]?detail[2].name:'')
         })
+        .catch(e => console.log(e.message))
     }
     useEffect(() =>{
         getById()
@@ -106,22 +107,26 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
             }
     
             // Enviar solicitud con axios
-         
-            const response = await axios.post(url, dataToSend);
-            const { data } = response;
-        
-    
-            if (data.code === '000') {
-                setSeverity('success');
-                setMssg(data.message);
-                setOpenAlert(true);
-                setTimeout(() => {
-                    setOpenModalEdit(false);
-                    getPlanesMensual();
-                }, 1800);
-            } else {
+            try {
+                const response = await axios.post(url, dataToSend);
+                const { data } = response;
+
+                if (data.code === '000') {
+                    setSeverity('success');
+                    setMssg(data.message);
+                    setOpenAlert(true);
+                    setTimeout(() => {
+                        setOpenModalEdit(false);
+                        getPlanesMensual();
+                    }, 1800);
+                } else {
+                    setSeverity('error');
+                    setMssg(data.message);
+                    setOpenAlert(true);
+                }
+            } catch (e: any) {
                 setSeverity('error');
-                setMssg(data.message);
+                setMssg(e?.response?.data?.message || e.message || 'No se pudo actualizar.');
                 setOpenAlert(true);
             }
         }

@@ -63,20 +63,26 @@ export default function Agregar({
     //const fechaActual = new Date().toISOString();
     //formData.append("fechaRegistro", fechaActual);
     //formData.append("Fecha_Ingreso", dateTo);
-    const response: any = await axios.post(url, formData);
-    const { data } = response;
-    if (data.code === "000") {
-      setSeverity("success");
-      setMssg(data.message);
-      getReportes();
-      setOpenAlert(true);
-      getIngresos();
-      setTimeout(() => {
-        setOpenModal(false);
-      }, 1800);
-    } else {
+    try {
+      const response: any = await axios.post(url, formData);
+      const { data } = response;
+      if (data.code === "000") {
+        setSeverity("success");
+        setMssg(data.message);
+        getReportes();
+        setOpenAlert(true);
+        getIngresos();
+        setTimeout(() => {
+          setOpenModal(false);
+        }, 1800);
+      } else {
+        setSeverity("error");
+        setMssg(data.message);
+        setOpenAlert(true);
+      }
+    } catch (e: any) {
       setSeverity("error");
-      setMssg(data.message);
+      setMssg(e?.response?.data?.message || e.message || "No se pudo guardar.");
       setOpenAlert(true);
     }
   };
@@ -96,7 +102,8 @@ export default function Agregar({
       });
 
       setDonante(autocompletes);
-    });
+    })
+    .catch(() => setDonante([]));
   };
 
   const handleDonantes = (

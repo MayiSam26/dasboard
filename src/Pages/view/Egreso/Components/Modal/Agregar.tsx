@@ -3,9 +3,6 @@ import React from "react";
 
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
-import { isNull } from "util";
-import { isNullishCoalesce } from "typescript";
-import { deflate } from "zlib";
 
 import moment from "moment";
 
@@ -43,16 +40,19 @@ export default function Agregar({setOpenModal,getEgreso}:props){
                 setSeverity('error');
                 setMssg('Campo nombre requerido');
                 setOpenAlert(true);
+                return;
         }
         if(!precio){
             setSeverity('error');
             setMssg('Campo  precio requerido!');
             setOpenAlert(true);
+            return;
         }
         if(!fromto){
             setSeverity('error');
             setMssg('Campo fecha requerido!');
             setOpenAlert(true);
+            return;
         }
         const url = baseurl +"egreso/create"
         axios.post(url,body)
@@ -88,7 +88,7 @@ export default function Agregar({setOpenModal,getEgreso}:props){
                     <Grid item xs={12} sx={{display:'flex'}}>
                         <Grid item xs={10}>
                                 <Typography variant="h5">
-                                        Ingresar nuevo ingreso
+                                        Ingresar nuevo egreso
                                 </Typography>
                             </Grid>
                             <Grid item xs={2}>

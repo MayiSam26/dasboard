@@ -45,10 +45,13 @@ export default function Donante() {
 
   const getDonante = async () => {
     const url = baseurl + "donante/list";
-    await axios.get(url).then((response) => {
-      const { data } = response;
-      setDonante(data.data);
-    });
+    await axios
+      .get(url)
+      .then((response) => {
+        const { data } = response;
+        setDonante(data.data);
+      })
+      .catch(() => setDonante([]));
   };
 
   useEffect(() => {
@@ -59,15 +62,18 @@ export default function Donante() {
 
   const getEditDonante = async (idDonante: any) => {
     const url = baseurl + "donante/detail/" + idDonante;
-    await axios.get(url).then((response) => {
-      const { data } = response;
+    await axios
+      .get(url)
+      .then((response) => {
+        const { data } = response;
 
-      setFullname(data.data.fullname);
-      setRedsocial(data.data.redsocial);
-      setIdtipopersona(String(data.data.idtipopersona));
-      setRuc(data.data.Ruc);
-      setDni(data.data.Dni);
-    });
+        setFullname(data.data.fullname);
+        setRedsocial(data.data.redsocial);
+        setIdtipopersona(String(data.data.idtipopersona));
+        setRuc(data.data.Ruc);
+        setDni(data.data.Dni);
+      })
+      .catch((e) => console.log(e.message));
   };
 
   const changeEditDonante = async () => {

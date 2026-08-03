@@ -3,10 +3,7 @@ import React from "react";
 
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
-import { isNull } from "util";
-import { isNullishCoalesce } from "typescript";
-import { deflate } from "zlib";
- 
+
 interface props {
     setFlask:any,
     setOpenModal:any
@@ -83,22 +80,27 @@ export default function Agregar({setFlask,setOpenModal,getPlanesMensual}:props){
             setOpenAlert(true);
             return;
         }
-        const response :any = (await axios.post(url, formData));
-        const {data} = response
-        if(data.code === '000'){
-          setSeverity('success');
-          setMssg(data.message);
-          setOpenAlert(true);
-          getPlanesMensual()
-          setTimeout(() =>{
-              setOpenModal(false)
-          },1800)
-        }else{
-            setSeverity('error');
+        try {
+          const response :any = (await axios.post(url, formData));
+          const {data} = response
+          if(data.code === '000'){
+            setSeverity('success');
             setMssg(data.message);
             setOpenAlert(true);
+            getPlanesMensual()
+            setTimeout(() =>{
+                setOpenModal(false)
+            },1800)
+          }else{
+              setSeverity('error');
+              setMssg(data.message);
+              setOpenAlert(true);
+          }
+        } catch (e: any) {
+          setSeverity('error');
+          setMssg(e?.response?.data?.message || e.message || 'No se pudo guardar.');
+          setOpenAlert(true);
         }
-      
       }
     
     const alert = () =>{

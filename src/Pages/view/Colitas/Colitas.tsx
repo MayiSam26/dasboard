@@ -89,7 +89,6 @@ export default function Colitas() {
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
   const [idAnimal, setIdAnimal] = React.useState<any>("");
-  const [openModalDelete, setOpenModalDelete] = React.useState<boolean>(false);
 
   const [busquedaNombre, setBusquedNombre] = React.useState<any>("");
   const [tipoAnimal, setTipoAnimal] = React.useState<any>("");

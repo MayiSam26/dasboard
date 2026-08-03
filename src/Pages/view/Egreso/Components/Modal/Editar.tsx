@@ -50,7 +50,7 @@ export default function Editar({setOpenModalEdit,idEgreso,getEgreso}:props){
         axios.put(url,body)
         .then(response => {
             const {data} = response
-            if(data.code = '000'){
+            if(data.code === '000'){
                 setSeverity('success');
                 setMssg(data.message);
                 setOpenAlert(true);
@@ -82,7 +82,7 @@ export default function Editar({setOpenModalEdit,idEgreso,getEgreso}:props){
                     <Grid item xs={12} sx={{display:'flex'}}>
                         <Grid item xs={10}>
                                 <Typography variant="h5">
-                                        Ingresar nuevo ingreso
+                                        Editar egreso
                                 </Typography>
                             </Grid>
                             <Grid item xs={2}>
@@ -126,9 +126,10 @@ export default function Editar({setOpenModalEdit,idEgreso,getEgreso}:props){
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                                    <input 
+                                    <input
                                         type="date"
                                         value={formatDateToString(fromto) ?? ""}
+                                        onChange={(e) => setFromto(e.target.value)}
                                         style={{
                                             padding:'8px',
                                             width:'100%',

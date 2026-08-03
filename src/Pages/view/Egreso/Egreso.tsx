@@ -56,7 +56,7 @@ export default function Egreso(){
           editable: true,
           renderCell: (params) => (
             <>
-                {moment(params.value).format('L')}  <EventIcon />
+                {params.value ? moment(params.value).format('L') : '—'}  <EventIcon />
             </>
         )
         },

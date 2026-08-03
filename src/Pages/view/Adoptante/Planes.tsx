@@ -33,10 +33,13 @@ export default function Adoptante() {
 
   const getPlanesMensual = async () => {
     const url = baseurl + "plan-mensual/list";
-    axios.get(url).then((response) => {
-      const { data } = response;
-      setPlan(data.data);
-    });
+    axios
+      .get(url)
+      .then((response) => {
+        const { data } = response;
+        setPlan(data.data);
+      })
+      .catch(() => setPlan([]));
   };
 
   useEffect(() => {
