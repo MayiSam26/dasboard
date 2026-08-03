@@ -14,6 +14,7 @@ import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutli
 import PetsIcon from "@mui/icons-material/Pets";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import FavoriteIcon from "@mui/icons-material/Favorite";
+import CancelIcon from "@mui/icons-material/Cancel";
 import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
@@ -162,13 +163,13 @@ export default function Adopcion() {
       width: 130,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Chip
-          label={params.value === "adoptado" ? "Adoptado" : "Proceso"}
-          color={params.value === "adoptado" ? "success" : "warning"}
-          size="small"
-        />
-      ),
+      renderCell: (params) => {
+        const label =
+          params.value === "adoptado" ? "Adoptado" : params.value === "rechazado" ? "Rechazado" : "Proceso";
+        const color =
+          params.value === "adoptado" ? "success" : params.value === "rechazado" ? "error" : "warning";
+        return <Chip label={label} color={color} size="small" />;
+      },
     },
     {
       field: "Fecha_Adopcion",
@@ -184,20 +185,25 @@ export default function Adopcion() {
       flex: 1,
       minWidth: 180,
       headerAlign: "center",
-      renderCell: (params) => (
-        <Tooltip title={params.value || ""}>
-          <span
-            style={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              display: "block",
-            }}
-          >
-            {params.value}
-          </span>
-        </Tooltip>
-      ),
+      renderCell: (params) => {
+        const esRechazado = params.row.Estado === "rechazado" && params.row.MotivoRechazo;
+        const texto = esRechazado ? `Motivo de rechazo: ${params.row.MotivoRechazo}` : params.value;
+        return (
+          <Tooltip title={texto || ""}>
+            <span
+              style={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+                display: "block",
+                color: esRechazado ? "var(--cya-primary)" : "inherit",
+              }}
+            >
+              {texto}
+            </span>
+          </Tooltip>
+        );
+      },
     },
     {
       field: "view",
@@ -304,7 +310,7 @@ export default function Adopcion() {
                 <Grid container spacing={2} sx={{ mb: 3 }}>
                   {reporte.map((item: any, idx: number) => (
                     <React.Fragment key={idx}>
-                      <Grid item xs={12} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <ReporteCard
                           icon={<PetsIcon />}
                           label="Cantidad Adopciones"
@@ -312,7 +318,7 @@ export default function Adopcion() {
                           color="#E4602F"
                         />
                       </Grid>
-                      <Grid item xs={12} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <ReporteCard
                           icon={<HourglassBottomIcon />}
                           label="En proceso"
@@ -320,12 +326,20 @@ export default function Adopcion() {
                           color="#C99A2E"
                         />
                       </Grid>
-                      <Grid item xs={12} md={4}>
+                      <Grid item xs={12} sm={6} md={3}>
                         <ReporteCard
                           icon={<FavoriteIcon />}
                           label="Adoptado"
                           value={item.adoptado}
                           color="#3F9E5C"
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6} md={3}>
+                        <ReporteCard
+                          icon={<CancelIcon />}
+                          label="Rechazado"
+                          value={item.rechazado}
+                          color="#C0392B"
                         />
                       </Grid>
                     </React.Fragment>

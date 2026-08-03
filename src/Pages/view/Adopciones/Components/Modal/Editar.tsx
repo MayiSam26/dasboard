@@ -3,11 +3,11 @@ import {
   Box,
   Button,
   FormControl,
-  Grid,
   IconButton,
   InputLabel,
   MenuItem,
   Select,
+  TextField,
   Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
@@ -31,7 +31,8 @@ export default function Editar({
   updates
 }: props) {
   const [status, setStatus] = React.useState<any>("");
- 
+  const [motivoRechazo, setMotivoRechazo] = React.useState<string>("");
+
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
@@ -43,6 +44,7 @@ export default function Editar({
       .then((response) => {
         const { data } = response;
         setStatus(data.data.Estado);
+        setMotivoRechazo(data.data.MotivoRechazo || "");
       })
       .catch((e) => console.log(e.message));
   };
@@ -51,9 +53,16 @@ export default function Editar({
   }, []);
 
   const updateData = async() =>{
+    if (status === "rechazado" && !motivoRechazo.trim()) {
+      setSeverity("error");
+      setMssg("Indica el motivo del rechazo.");
+      setOpenAlert(true);
+      return;
+    }
     const url=baseurl+'adopciones/update/'+idAdopcion
     const body = {
         Estado:status,
+        MotivoRechazo: status === "rechazado" ? motivoRechazo : null,
     }
     axios.put(url,body)
     .then((response:any) =>{
@@ -68,8 +77,16 @@ export default function Editar({
                   getAdopciones()
               },1800)
 
+        } else {
+            setSeverity('error');
+            setMssg(data.message);
+            setOpenAlert(true);
         }
-    }).catch((e:any)=>{console.log(e.message)})
+    }).catch((e:any)=>{
+        setSeverity('error');
+        setMssg(e?.response?.data?.message || e.message);
+        setOpenAlert(true);
+    })
 }
   
   const alert = () => {
@@ -119,7 +136,7 @@ export default function Editar({
         </IconButton>
       </Box>
 
-      <Box sx={{ px: 3, py: 2.5 }}>
+      <Box sx={{ px: 3, py: 2.5, display: "flex", flexDirection: "column", gap: 2 }}>
         <FormControl fullWidth size="small">
           <InputLabel id="demo-simple-select-label">Estado</InputLabel>
           <Select
@@ -130,8 +147,24 @@ export default function Editar({
           >
             <MenuItem value="proceso">Proceso</MenuItem>
             <MenuItem value="adoptado">Adoptado</MenuItem>
+            <MenuItem value="rechazado">Rechazado</MenuItem>
           </Select>
         </FormControl>
+
+        {status === "rechazado" && (
+          <TextField
+            label="Motivo del rechazo"
+            variant="outlined"
+            fullWidth
+            size="small"
+            multiline
+            minRows={3}
+            required
+            value={motivoRechazo}
+            onChange={(e) => setMotivoRechazo(e.target.value)}
+            helperText="Se guarda como constancia y la mascota vuelve a estar disponible en refugio."
+          />
+        )}
       </Box>
 
       <Box

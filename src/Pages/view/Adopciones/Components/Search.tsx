@@ -27,6 +27,7 @@ export default function Search({ handleBusqueda, handleSearch, handleDateTo }: P
                     <MenuItem value="">Todos</MenuItem>
                     <MenuItem value="proceso">Proceso</MenuItem>
                     <MenuItem value="adoptado">Adoptado</MenuItem>
+                    <MenuItem value="rechazado">Rechazado</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
