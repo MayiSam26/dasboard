@@ -14,6 +14,7 @@ import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
 import GroupIcon from "@mui/icons-material/Group";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import React from "react";
 
 interface SubItem {
@@ -56,6 +57,13 @@ const sections: Section[] = [
       { label: "Reportes de Perdidas", path: "/panel/perdidos" },
       { label: "Dueños", path: "/panel/apoderado" },
     ],
+  },
+  {
+    key: "veterinaria",
+    label: "Veterinaria",
+    icon: <MedicalServicesIcon />,
+    roles: ["Administrador", "Veterinario"],
+    items: [{ label: "Información Veterinaria", path: "/panel/veterinaria" }],
   },
   {
     key: "adopcion",
