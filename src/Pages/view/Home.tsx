@@ -332,11 +332,15 @@ export default function HomePanel() {
                         {
                           data: estadoMascotas,
                           innerRadius: 45,
+                          outerRadius: 90,
                           paddingAngle: 2,
                           cornerRadius: 3,
                         },
                       ]}
-                      height={280}
+                      height={350}
+                      slotProps={{
+                        legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } },
+                      }}
                     />
                   )}
                 </Paper>
@@ -374,11 +378,15 @@ export default function HomePanel() {
                         {
                           data: tipoMascotas,
                           innerRadius: 45,
+                          outerRadius: 90,
                           paddingAngle: 2,
                           cornerRadius: 3,
                         },
                       ]}
-                      height={280}
+                      height={350}
+                      slotProps={{
+                        legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } },
+                      }}
                     />
                   )}
                 </Paper>

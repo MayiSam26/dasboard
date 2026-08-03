@@ -388,8 +388,11 @@ export default function Reportes() {
                   <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
                     <Typography sx={{ fontWeight: 700, mb: 1 }}>Perros vs. gatos</Typography>
                     <PieChart
-                      series={[{ data: tipoMascotas, innerRadius: 45, paddingAngle: 2, cornerRadius: 3 }]}
-                      height={260}
+                      series={[{ data: tipoMascotas, innerRadius: 45, outerRadius: 90, paddingAngle: 2, cornerRadius: 3 }]}
+                      height={330}
+                      slotProps={{
+                        legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } },
+                      }}
                     />
                   </Paper>
                 </Grid>
@@ -419,8 +422,11 @@ export default function Reportes() {
                   <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
                     <Typography sx={{ fontWeight: 700, mb: 1 }}>Usuarios por rol</Typography>
                     <PieChart
-                      series={[{ data: usuariosPorRol, innerRadius: 45, paddingAngle: 2, cornerRadius: 3 }]}
-                      height={260}
+                      series={[{ data: usuariosPorRol, innerRadius: 45, outerRadius: 90, paddingAngle: 2, cornerRadius: 3 }]}
+                      height={330}
+                      slotProps={{
+                        legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } },
+                      }}
                     />
                   </Paper>
                 </Grid>
