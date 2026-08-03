@@ -13,6 +13,7 @@ import SearchOffIcon from "@mui/icons-material/SearchOff";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
 import GroupIcon from "@mui/icons-material/Group";
+import AssessmentIcon from "@mui/icons-material/Assessment";
 import React from "react";
 
 interface SubItem {
@@ -81,6 +82,13 @@ const sections: Section[] = [
     icon: <GroupIcon />,
     roles: ["Administrador"],
     items: [{ label: "Usuarios y Roles", path: "/panel/usuarios" }],
+  },
+  {
+    key: "reportes",
+    label: "Reportes",
+    icon: <AssessmentIcon />,
+    roles: ["Administrador"],
+    items: [{ label: "Reportes Generales", path: "/panel/reportes" }],
   },
 ];
 
