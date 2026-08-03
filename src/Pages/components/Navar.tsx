@@ -12,6 +12,7 @@ import PetsIcon from "@mui/icons-material/Pets";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
 import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
+import GroupIcon from "@mui/icons-material/Group";
 import React from "react";
 
 interface SubItem {
@@ -24,6 +25,8 @@ interface Section {
   label: string;
   icon: React.ReactNode;
   items: SubItem[];
+  // Si no se define, la sección es visible para cualquier rol.
+  roles?: string[];
 }
 
 const sections: Section[] = [
@@ -31,6 +34,7 @@ const sections: Section[] = [
     key: "refugio",
     label: "Refugio",
     icon: <HomeIcon />,
+    roles: ["Administrador"],
     items: [
       { label: "Información", path: "/panel/informacion-pages" },
       { label: "Red Social", path: "/panel/redes-social" },
@@ -71,13 +75,25 @@ const sections: Section[] = [
       { label: "Donante", path: "/panel/donante" },
     ],
   },
+  {
+    key: "usuarios",
+    label: "Usuarios",
+    icon: <GroupIcon />,
+    roles: ["Administrador"],
+    items: [{ label: "Usuarios y Roles", path: "/panel/usuarios" }],
+  },
 ];
 
 export default function Navar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const sectionOfCurrentPath = sections.find((s) =>
+  // Si no hay rol guardado (sesiones que iniciaron antes de este cambio) se
+  // muestran todas las secciones, igual que hace el backend con esos tokens.
+  const rol = localStorage.getItem("rol");
+  const visibleSections = sections.filter((s) => !s.roles || !rol || s.roles.includes(rol));
+
+  const sectionOfCurrentPath = visibleSections.find((s) =>
     s.items.some((i) => i.path === location.pathname)
   );
 
@@ -120,7 +136,7 @@ export default function Navar() {
             component="nav"
             aria-labelledby="nested-list-subheader"
           >
-            {sections.map((section) => {
+            {visibleSections.map((section) => {
               const isSectionActive = section.items.some((i) => i.path === location.pathname);
               return (
                 <React.Fragment key={section.key}>

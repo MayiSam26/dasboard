@@ -37,6 +37,11 @@ export default function Home() {
         if (data.token) {
           localStorage.setItem("token", data.token);
           localStorage.setItem("user", data.usuario);
+          if (data.rol) {
+            localStorage.setItem("rol", data.rol);
+          } else {
+            localStorage.removeItem("rol");
+          }
           if (data.foto) {
             localStorage.setItem("userFoto", data.foto);
           } else {
