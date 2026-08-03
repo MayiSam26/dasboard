@@ -38,10 +38,27 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
   const [observacion, setObservacion] = React.useState<any>("");
   const [dateTo, setDateTo] = React.useState<any>("");
   const [file, setFile] = React.useState<any>("");
+  const [previewUrl, setPreviewUrl] = React.useState<string>("");
+  const previewUrlRef = React.useRef<string>("");
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
+
+  // Muestra de inmediato la imagen recién elegida, sin esperar la subida.
+  const handleFileChange = (selected: File | null) => {
+    setFile(selected);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    const nextUrl = selected ? URL.createObjectURL(selected) : "";
+    previewUrlRef.current = nextUrl;
+    setPreviewUrl(nextUrl);
+  };
+
+  React.useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    };
+  }, []);
 
   const validate = () => {
     const faltantes: string[] = [];
@@ -80,20 +97,26 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
     // guardado al siguiente (por eso "Blanquita" se guardó como 02-08 en vez
     // de 01-08). Con una hora del día de por medio, ese salto no ocurre.
     formData.append("Fecha_Ingreso", formatlocaldate(dateTo));
-    const response: any = await axios.post(url, formData);
-    const { data } = response;
-    if (data.code === "000") {
-      saveAuditoria();
-      setSeverity("success");
-      setMssg(data.message);
-      setOpenAlert(true);
-      getAlbergados();
-      setTimeout(() => {
-        setOpenModal(false);
-      }, 1800);
-    } else {
+    try {
+      const response: any = await axios.post(url, formData);
+      const { data } = response;
+      if (data.code === "000") {
+        saveAuditoria();
+        setSeverity("success");
+        setMssg(data.message);
+        setOpenAlert(true);
+        getAlbergados();
+        setTimeout(() => {
+          setOpenModal(false);
+        }, 1800);
+      } else {
+        setSeverity("error");
+        setMssg(data.message);
+        setOpenAlert(true);
+      }
+    } catch (e: any) {
       setSeverity("error");
-      setMssg(data.message);
+      setMssg(e?.response?.data?.message || e.message || "No se pudo guardar.");
       setOpenAlert(true);
     }
   };
@@ -291,18 +314,28 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
             <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
               Foto
             </Typography>
-            <input
-              type="file"
-              accept="image/*"
-              style={{
-                border: "1px solid var(--cya-border)",
-                padding: "8px",
-                width: "100%",
-                borderRadius: "8px",
-                boxSizing: "border-box",
-              }}
-              onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-            />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+              {previewUrl && (
+                <Box
+                  component="img"
+                  src={previewUrl}
+                  alt="Vista previa"
+                  sx={{ width: 56, height: 56, borderRadius: "10px", objectFit: "cover", border: "1px solid var(--cya-border)" }}
+                />
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                style={{
+                  border: "1px solid var(--cya-border)",
+                  padding: "8px",
+                  width: "100%",
+                  borderRadius: "8px",
+                  boxSizing: "border-box",
+                }}
+                onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)}
+              />
+            </Box>
           </Grid>
         </Grid>
       </Box>

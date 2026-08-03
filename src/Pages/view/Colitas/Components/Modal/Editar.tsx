@@ -35,8 +35,29 @@ export default function Editar({
   getAlbergados,
 }: props) {
   const [file, setFile] = React.useState<any>("");
+  const [previewUrl, setPreviewUrl] = React.useState<string>("");
+  const previewUrlRef = React.useRef<string>("");
   const [foto, setFoto] = React.useState("");
   const [fotoError, setFotoError] = React.useState(false);
+
+  // Al elegir un archivo nuevo se genera una URL local para previsualizarlo
+  // de inmediato, sin esperar a que el servidor confirme la subida. Se
+  // libera la URL anterior (la del propio cambio y la que quede al
+  // desmontar el modal) para no acumular memoria.
+  const handleFileChange = (selected: File | null) => {
+    setFile(selected);
+    setFotoError(false);
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    const nextUrl = selected ? URL.createObjectURL(selected) : "";
+    previewUrlRef.current = nextUrl;
+    setPreviewUrl(nextUrl);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    };
+  }, []);
   const [motivo, setMotivo] = React.useState("");
   const [esterelizado, setEsterilizado] = React.useState("");
 
@@ -65,18 +86,29 @@ export default function Editar({
     formData.append("esterelizacion", esterelizado);
     formData.append("observaciones", motivo);
     formData.append("foto", file);
-    axios.put(url, formData).then((response: any) => {
-      const { data } = response;
-      if (data.code === "000") {
+    axios
+      .put(url, formData)
+      .then((response: any) => {
+        const { data } = response;
+        if (data.code === "000") {
+          setOpenAlert(true);
+          setSeverity("success");
+          setMssg(data.message);
+          setTimeout(() => {
+            setOpenModalEdit(false);
+            getAlbergados();
+          }, 1800);
+        } else {
+          setOpenAlert(true);
+          setSeverity("error");
+          setMssg(data.message || "No se pudo actualizar.");
+        }
+      })
+      .catch((e) => {
         setOpenAlert(true);
-        setSeverity("success");
-        setMssg(data.message);
-        setTimeout(() => {
-          setOpenModalEdit(false);
-          getAlbergados();
-        }, 1800);
-      }
-    });
+        setSeverity("error");
+        setMssg(e?.response?.data?.message || e.message || "No se pudo actualizar.");
+      });
   };
 
   const alert = () => {
@@ -128,9 +160,10 @@ export default function Editar({
 
       <Box sx={{ px: 3, py: 2.5, display: "flex", flexDirection: "column", gap: 2.2 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          {foto && !fotoError ? (
+          {previewUrl || (foto && !fotoError) ? (
             <Avatar
-              src={buildImgUrl(foto)}
+              key={previewUrl || foto}
+              src={previewUrl || buildImgUrl(foto)}
               variant="rounded"
               onError={() => setFotoError(true)}
               sx={{ width: 76, height: 76, borderRadius: "14px" }}
@@ -164,7 +197,7 @@ export default function Editar({
                 borderRadius: "8px",
                 fontSize: "0.85rem",
               }}
-              onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
+              onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)}
             />
           </Box>
         </Box>

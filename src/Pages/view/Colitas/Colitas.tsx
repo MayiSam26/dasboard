@@ -269,7 +269,7 @@ export default function Colitas() {
       headerAlign: "center",
       renderCell: (params) => (
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <AnimalPhoto src={buildImgUrl(params.row.foto)} alt={params.row.nombre} />
+          <AnimalPhoto key={params.row.foto} src={buildImgUrl(params.row.foto)} alt={params.row.nombre} />
           <Typography
             variant="body2"
             sx={{
