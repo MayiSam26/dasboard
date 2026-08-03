@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { setAuthHeader } from "../../Config/axiosSetup";
 import baseurl from "../../Config/axios";
+import NotificationBell from "./NotificationBell";
 
 function buildImgUrl(foto: string) {
     const cleanBase = baseurl.replace(/\/+$/, "");
@@ -38,7 +39,10 @@ export default function Header(){
     return(<>
             <div className="navbar-custom">
                         <ul className="list-unstyled topbar-menu float-end mb-0">
-                            
+
+                            <li className="dropdown notification-list" style={{ display: "flex", alignItems: "center" }}>
+                                <NotificationBell />
+                            </li>
 
                             <li className="dropdown notification-list">
                                 <Link  className="nav-link dropdown-toggle nav-user arrow-none me-0"
