@@ -197,10 +197,27 @@ body {
 .leftside-menu .logo {
   height: 70px !important;
   overflow: hidden !important;
-  display: flex !important;
   align-items: center !important;
   justify-content: center !important;
   line-height: normal !important;
+}
+
+/* La plantilla decide con display:block/none cuál de los dos logos (claro/
+   oscuro) se muestra. Antes forzábamos display:flex en el selector genérico
+   de arriba, lo que pisaba ese display:none y mostraba ambos logos
+   superpuestos a la vez. Ahora reproducimos exactamente los mismos 4
+   selectores/especificidad del template, solo cambiando block por flex. */
+.leftside-menu .logo.logo-light {
+  display: flex !important;
+}
+.leftside-menu .logo.logo-dark {
+  display: none !important;
+}
+body[data-leftbar-theme="light"] .leftside-menu .logo.logo-light {
+  display: none !important;
+}
+body[data-leftbar-theme="light"] .leftside-menu .logo.logo-dark {
+  display: flex !important;
 }
 
 .cya-sidebar-item {
