@@ -14,6 +14,7 @@ import Entrevista from "../Pages/view/Entrevista/Entrevista";
 import Seguimiento from "../Pages/view/Seguimiento/Seguimiento";
 import Usuarios from "../Pages/view/Usuarios/Usuarios";
 import Reportes from "../Pages/view/Reportes/Reportes";
+import Noticias from "../Pages/view/Noticias/Noticias";
 import Ingresos from "../Pages/view/Ingresos/Ingresos";
 import Amo from "../Pages/view/Amo/Amo";
 import Perdidos from "../Pages/view/Perdidos/Perdidos";
@@ -50,6 +51,7 @@ export function RoutesApp() {
             <Route path="/panel/seguimiento" element={<Seguimiento />} />
             <Route path="/panel/usuarios" element={<Usuarios />} />
             <Route path="/panel/reportes" element={<Reportes />} />
+            <Route path="/panel/noticias" element={<Noticias />} />
             <Route path="/panel/ingresos" element={<Ingresos />} />
             <Route path="/panel/apoderado" element={<Amo />} />
           </Route>

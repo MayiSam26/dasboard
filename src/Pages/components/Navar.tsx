@@ -39,6 +39,7 @@ const sections: Section[] = [
     items: [
       { label: "Información", path: "/panel/informacion-pages" },
       { label: "Red Social", path: "/panel/redes-social" },
+      { label: "Noticias", path: "/panel/noticias" },
     ],
   },
   {
