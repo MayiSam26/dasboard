@@ -58,6 +58,7 @@ const sections: Section[] = [
     items: [
       { label: "Adoptante", path: "/panel/adoptante" },
       { label: "Adopción", path: "/panel/adopcion" },
+      { label: "Seguimiento", path: "/panel/seguimiento" },
     ],
   },
   {
