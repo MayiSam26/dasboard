@@ -1,72 +1,70 @@
-import { Alert, Avatar, Box, Button, IconButton, TextField, Typography, Grid } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  IconButton,
+  TextField,
+  Typography,
+  Grid,
+} from "@mui/material";
 import React, { useEffect } from "react";
-import SaveIcon from "@mui/icons-material/Save";
-import CloseIcon from "@mui/icons-material/Close";
-import HomeIcon from "@mui/icons-material/Home";
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
+import SaveIcon from "@mui/icons-material/Save";
+import CloseIcon from "@mui/icons-material/Close";
+import ShareIcon from "@mui/icons-material/Share";
 
 interface props {
   setFlask?: any;
   setOpenModalEdit: any;
-  idRefugio: any;
+  idRed: any;
   getRedesSocial: () => void;
 }
 
-export default function Editar({ setFlask, setOpenModalEdit, idRefugio, getRedesSocial }: props) {
+export default function Editar({ setFlask, setOpenModalEdit, idRed, getRedesSocial }: props) {
   const [nombre, setNombre] = React.useState<string>("");
+  const [icono, setIcono] = React.useState<string>("");
   const [link, setLink] = React.useState<string>("");
-  const [telefono, setTelefono] = React.useState<string>("");
-  const [correo, setCorreo] = React.useState<string>("");
-  const [descripcion, setDescripcion] = React.useState<string>("");
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
 
   const getById = async () => {
-    const url = baseurl + "home/" + idRefugio;
+    const url = baseurl + "redes-social/detail/" + idRed;
     await axios.get(url).then((response) => {
       const { data } = response;
       setNombre(data.data.nombre);
-      setDescripcion(data.data.Descripcion);
-      setLink(data.data.logo);
-      setTelefono(data.data.telefono);
-      setCorreo(data.data.correo);
+      setIcono(data.data.icono);
+      setLink(data.data.link);
     });
   };
 
   useEffect(() => {
     getById();
-  }, [idRefugio]);
+  }, []);
 
-  const updateRefugio = async () => {
-    const url = baseurl + "home/updates/" + idRefugio;
-    const body = {
-      nombre,
-      Descripcion: descripcion,
-      logo: link,
-      telefono,
-      correo,
-    };
+  const updateRedes = async () => {
+    const url = baseurl + "redes-social/update/" + idRed;
+    const body = { nombre, icono, link };
     await axios
       .put(url, body)
       .then((response) => {
         const { data } = response;
         if (data.code === "000") {
           setFlask?.(data.code);
+          getRedesSocial();
           setSeverity("success");
           setMssg(data.message);
           setOpenAlert(true);
           setTimeout(() => {
             setOpenModalEdit(false);
-            getRedesSocial();
           }, 1800);
         }
       })
       .catch((e) => {
         setSeverity("error");
-        setMssg(e?.message || "No se pudo actualizar la información.");
+        setMssg(e?.message || "No se pudo actualizar la red social.");
         setOpenAlert(true);
       });
   };
@@ -103,10 +101,10 @@ export default function Editar({ setFlask, setOpenModalEdit, idRefugio, getRedes
               color: "var(--cya-primary)",
             }}
           >
-            <HomeIcon fontSize="small" />
+            <ShareIcon fontSize="small" />
           </Box>
           <Typography variant="h6" sx={{ fontWeight: 800, color: "var(--cya-dark)" }}>
-            Editar Información del Refugio
+            Editar Red Social
           </Typography>
         </Box>
         <IconButton onClick={() => setOpenModalEdit(false)} size="small">
@@ -118,63 +116,34 @@ export default function Editar({ setFlask, setOpenModalEdit, idRefugio, getRedes
         <Grid container spacing={2}>
           <Grid item xs={12}>
             <TextField
-              label="Nombre"
+              label="Nombre (ej. Facebook, Instagram)"
               variant="outlined"
               fullWidth
               size="small"
-              value={nombre ?? ""}
+              value={nombre}
               onChange={(e) => setNombre(e.target.value)}
             />
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Descripción"
+              label="Icono"
               variant="outlined"
               fullWidth
               size="small"
-              multiline
-              minRows={4}
-              value={descripcion ?? ""}
-              onChange={(e) => setDescripcion(e.target.value)}
+              helperText="Nombre o clase del icono usado en el sitio público"
+              value={icono}
+              onChange={(e) => setIcono(e.target.value)}
             />
           </Grid>
           <Grid item xs={12}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Avatar
-                src={link || undefined}
-                variant="rounded"
-                sx={{ width: 56, height: 56, border: "1px solid var(--cya-border)", bgcolor: "var(--cya-bg-alt)" }}
-              >
-                <HomeIcon sx={{ color: "var(--cya-text-muted)" }} />
-              </Avatar>
-              <TextField
-                label="URL del logo"
-                variant="outlined"
-                fullWidth
-                size="small"
-                value={link ?? ""}
-                onChange={(e) => setLink(e.target.value)}
-              />
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
             <TextField
-              label="Teléfono"
+              label="Enlace"
               variant="outlined"
               fullWidth
               size="small"
-              value={telefono ?? ""}
-              onChange={(e) => setTelefono(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              label="Correo"
-              variant="outlined"
-              fullWidth
-              size="small"
-              value={correo ?? ""}
-              onChange={(e) => setCorreo(e.target.value)}
+              placeholder="https://..."
+              value={link}
+              onChange={(e) => setLink(e.target.value)}
             />
           </Grid>
         </Grid>
@@ -196,7 +165,7 @@ export default function Editar({ setFlask, setOpenModalEdit, idRefugio, getRedes
         >
           Cancelar
         </Button>
-        <Button onClick={updateRefugio} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add">
+        <Button onClick={updateRedes} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add">
           Guardar
         </Button>
       </Box>
