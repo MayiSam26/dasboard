@@ -150,7 +150,14 @@ export default function Reportes() {
     const token = localStorage.getItem("token");
     if (!token) navigate("/");
     const rol = localStorage.getItem("rol");
-    if (rol && rol !== "Administrador") navigate("/panel");
+    if (!rol || rol === "Administrador") return;
+    axios
+      .get(baseurl + "permisos/mios")
+      .then((response) => {
+        const secciones: string[] = response.data.data || [];
+        if (!secciones.includes("reportes")) navigate("/panel");
+      })
+      .catch(() => {}); // fail-open: si falla la consulta no bloqueamos el acceso
   }, [navigate]);
 
   // Animales

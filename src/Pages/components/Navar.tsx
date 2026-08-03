@@ -16,6 +16,8 @@ import GroupIcon from "@mui/icons-material/Group";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import React from "react";
+import axios from "axios";
+import baseurl from "../../Config/axios";
 
 interface SubItem {
   label: string;
@@ -29,6 +31,10 @@ interface Section {
   items: SubItem[];
   // Si no se define, la sección es visible para cualquier rol.
   roles?: string[];
+  // Secciones "configurables" consultan tblpermiso (panel de Permisos) para
+  // Voluntario/Veterinario en vez de tener un `roles` fijo. Administrador
+  // siempre las ve todas; "usuarios" queda fuera a propósito (ver Permisos.tsx).
+  configurable?: boolean;
 }
 
 const sections: Section[] = [
@@ -36,7 +42,7 @@ const sections: Section[] = [
     key: "refugio",
     label: "Refugio",
     icon: <HomeIcon />,
-    roles: ["Administrador"],
+    configurable: true,
     items: [
       { label: "Información", path: "/panel/informacion-pages" },
       { label: "Red Social", path: "/panel/redes-social" },
@@ -47,12 +53,14 @@ const sections: Section[] = [
     key: "colitas",
     label: "Colitas",
     icon: <PetsIcon />,
+    configurable: true,
     items: [{ label: "Albergados", path: "/panel/colitas" }],
   },
   {
     key: "perdidos",
     label: "Mascotas Perdidas",
     icon: <SearchOffIcon />,
+    configurable: true,
     items: [
       { label: "Reportes de Perdidas", path: "/panel/perdidos" },
       { label: "Dueños", path: "/panel/apoderado" },
@@ -62,13 +70,14 @@ const sections: Section[] = [
     key: "veterinaria",
     label: "Veterinaria",
     icon: <MedicalServicesIcon />,
-    roles: ["Administrador", "Veterinario"],
+    configurable: true,
     items: [{ label: "Información Veterinaria", path: "/panel/veterinaria" }],
   },
   {
     key: "adopcion",
     label: "Adopción",
     icon: <FolderSharedIcon />,
+    configurable: true,
     items: [
       { label: "Adoptante", path: "/panel/adoptante" },
       { label: "Adopción", path: "/panel/adopcion" },
@@ -80,6 +89,7 @@ const sections: Section[] = [
     key: "donaciones",
     label: "Donaciones",
     icon: <StackedBarChartIcon />,
+    configurable: true,
     items: [
       { label: "Ingreso", path: "/panel/ingresos" },
       { label: "Donante", path: "/panel/donante" },
@@ -90,16 +100,21 @@ const sections: Section[] = [
     label: "Usuarios",
     icon: <GroupIcon />,
     roles: ["Administrador"],
-    items: [{ label: "Usuarios y Roles", path: "/panel/usuarios" }],
+    items: [
+      { label: "Usuarios y Roles", path: "/panel/usuarios" },
+      { label: "Permisos de Roles", path: "/panel/permisos" },
+    ],
   },
   {
     key: "reportes",
     label: "Reportes",
     icon: <AssessmentIcon />,
-    roles: ["Administrador"],
+    configurable: true,
     items: [{ label: "Reportes Generales", path: "/panel/reportes" }],
   },
 ];
+
+const SECCIONES_CONFIGURABLES = sections.filter((s) => s.configurable).map((s) => s.key);
 
 export default function Navar() {
   const navigate = useNavigate();
@@ -108,7 +123,31 @@ export default function Navar() {
   // Si no hay rol guardado (sesiones que iniciaron antes de este cambio) se
   // muestran todas las secciones, igual que hace el backend con esos tokens.
   const rol = localStorage.getItem("rol");
-  const visibleSections = sections.filter((s) => !s.roles || !rol || s.roles.includes(rol));
+
+  // Secciones configurables: null = todavía no se sabe (evita mostrar y
+  // luego ocultar). Administrador siempre las ve todas sin consultar nada.
+  const [permisosVisibles, setPermisosVisibles] = React.useState<string[] | null>(
+    !rol || rol === "Administrador" ? SECCIONES_CONFIGURABLES : null
+  );
+
+  React.useEffect(() => {
+    if (!rol || rol === "Administrador") {
+      setPermisosVisibles(SECCIONES_CONFIGURABLES);
+      return;
+    }
+    axios
+      .get(baseurl + "permisos/mios")
+      .then((response) => setPermisosVisibles(response.data.data || []))
+      .catch(() => setPermisosVisibles(SECCIONES_CONFIGURABLES)); // fail-open, mismo criterio que el resto del sistema
+  }, [rol]);
+
+  const visibleSections = sections.filter((s) => {
+    if (s.configurable) {
+      if (permisosVisibles === null) return false; // esperando la respuesta
+      return permisosVisibles.includes(s.key);
+    }
+    return !s.roles || !rol || s.roles.includes(rol);
+  });
 
   const sectionOfCurrentPath = visibleSections.find((s) =>
     s.items.some((i) => i.path === location.pathname)

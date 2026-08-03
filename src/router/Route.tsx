@@ -27,6 +27,7 @@ const Amo = lazy(() => import("../Pages/view/Amo/Amo"));
 const Perdidos = lazy(() => import("../Pages/view/Perdidos/Perdidos"));
 const MiCuenta = lazy(() => import("../Pages/view/MiCuenta/MiCuenta"));
 const Veterinaria = lazy(() => import("../Pages/view/Veterinaria/Veterinaria"));
+const Permisos = lazy(() => import("../Pages/view/Usuarios/Permisos"));
 
 function PanelFallback() {
   return (
@@ -69,6 +70,7 @@ export function RoutesApp() {
               <Route path="/panel/ingresos" element={<Ingresos />} />
               <Route path="/panel/apoderado" element={<Amo />} />
               <Route path="/panel/veterinaria" element={<Veterinaria />} />
+              <Route path="/panel/permisos" element={<Permisos />} />
             </Route>
           </Routes>
         </Suspense>

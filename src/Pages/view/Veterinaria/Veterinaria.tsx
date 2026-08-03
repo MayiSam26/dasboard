@@ -33,7 +33,14 @@ export default function Veterinaria() {
     const token = localStorage.getItem("token");
     if (!token) navigate("/");
     const rol = localStorage.getItem("rol");
-    if (rol && rol !== "Administrador" && rol !== "Veterinario") navigate("/panel");
+    if (!rol || rol === "Administrador") return;
+    axios
+      .get(baseurl + "permisos/mios")
+      .then((response) => {
+        const secciones: string[] = response.data.data || [];
+        if (!secciones.includes("veterinaria")) navigate("/panel");
+      })
+      .catch(() => {}); // fail-open: si falla la consulta no bloqueamos el acceso
   }, [navigate]);
 
   const [registros, setRegistros] = React.useState<any>([]);
