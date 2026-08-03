@@ -18,6 +18,8 @@ import moment from "moment";
 import { TbCat, TbDog } from "react-icons/tb";
 import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
+import Editar from "./Components/Modal/Editar";
+import Delete from "./Components/Modal/Delete";
 
 // react-icons + los tipos de React 18 no siempre coinciden en el tipo de
 // retorno (ReactNode vs JSX.Element); se castean una sola vez acá.
@@ -27,7 +29,7 @@ const DogIcon = TbDog as React.FC<{ size?: number; color?: string }>;
 export default function Perdidos() {
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
-  const [iddueno, setIdIddueno] = React.useState<any>("");
+  const [idperdido, setIdperdido] = React.useState<any>("");
   const [openModalDelete, setOpenModalDelete] = React.useState<boolean>(false);
   const [perdidos, setPerdidos] = React.useState<any>([]);
   const [busquedaNombre, setBusquedNombre] = React.useState<any>("");
@@ -240,7 +242,7 @@ export default function Perdidos() {
               size="small"
               onClick={() => {
                 setOpenModalEdit(true);
-                setIdIddueno(params.row.idmascotaperdida);
+                setIdperdido(params.row.idmascotaperdida);
               }}
             >
               <DriveFileRenameOutlineIcon fontSize="small" />
@@ -252,7 +254,7 @@ export default function Perdidos() {
               sx={{ ml: 0.5, color: "#c0392b" }}
               onClick={() => {
                 setOpenModalDelete(true);
-                setIdIddueno(params.row.idmascotaperdida);
+                setIdperdido(params.row.idmascotaperdida);
               }}
             >
               <DeleteIcon fontSize="small" />
@@ -297,6 +299,48 @@ export default function Perdidos() {
       </Modal>
     );
   };
+  const ModalEditar = () => {
+    return (
+      <Modal
+        open={openModalEdit}
+        onClose={(_e, reason) => {
+          if (reason === "backdropClick") return;
+          setOpenModalEdit(false);
+        }}
+        disableEscapeKeyDown
+        closeAfterTransition
+        sx={modalSx}
+      >
+        <Grow in={openModalEdit} timeout={280}>
+          <Box sx={modalBoxSx}>
+            <Editar setOpenModalEdit={setOpenModalEdit} idperdido={idperdido} getPerdidos={() => getPerdidos()} />
+          </Box>
+        </Grow>
+      </Modal>
+    );
+  };
+
+  const ModalDelete = () => {
+    return (
+      <Modal
+        open={openModalDelete}
+        onClose={(_e, reason) => {
+          if (reason === "backdropClick") return;
+          setOpenModalDelete(false);
+        }}
+        disableEscapeKeyDown
+        closeAfterTransition
+        sx={modalSx}
+      >
+        <Grow in={openModalDelete} timeout={280}>
+          <Box sx={{ ...modalBoxSx, width: "min(420px, 92vw)" }}>
+            <Delete setOpenModalDelete={setOpenModalDelete} idperdido={idperdido} getPerdidos={() => getPerdidos()} />
+          </Box>
+        </Grow>
+      </Modal>
+    );
+  };
+
   return (
     <>
       <Layout>
@@ -344,6 +388,8 @@ export default function Perdidos() {
         </Content>
       </Layout>
       {ModalAgregar()}
+      {ModalEditar()}
+      {ModalDelete()}
     </>
   );
 }

@@ -19,7 +19,6 @@ import React from "react";
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
 import SaveIcon from "@mui/icons-material/Save";
-import moment from "moment";
 
 interface props {
     setOpenModal: any;
@@ -33,28 +32,38 @@ interface autocomplete {
 export default function Agregar({ setOpenModal, getPerdidos }: props) {
     const [amo, setAmo] = React.useState<autocomplete[]>([]);
 
-// 👇 ESTAS SON LAS 3 LÍNEAS QUE FALTABAN 👇
-  const [openAlert, setOpenAlert] = React.useState(false)
-  const [mssg, setMssg] = React.useState("")
-  const [severity, setSeverity] = React.useState<any>("success")
-  // 👆 ===================================== 👆
+    const [openAlert, setOpenAlert] = React.useState(false);
+    const [mssg, setMssg] = React.useState("");
+    const [severity, setSeverity] = React.useState<any>("success");
 
-  // AGREGA ESTO PARA QUE TUS INPUTS FUNCIONEN:
     const [nombre, setNombre] = React.useState("");
     const [edad, setEdad] = React.useState("");
     const [descripcion, setDescripcion] = React.useState("");
     const [file, setFile] = React.useState<any>(null);
+    const [previewUrl, setPreviewUrl] = React.useState<string>("");
+    const previewUrlRef = React.useRef<string>("");
 
-    // form
     const [amoSelect, setAmoSelect] = React.useState<any>("");
     const [genero, setGenero] = React.useState<any>("");
     const [tipoAnimal, setTipoAnimal] = React.useState<any>("");
-    const [fromto, setFromto] = React.useState<any>(null);
-    const saveApadrinado = async () => {
-        const body = {};
+    const [tamano, setTamano] = React.useState<any>("");
+    const [status, setStatus] = React.useState<any>("P");
+    const [fechaExtravio, setFechaExtravio] = React.useState<any>("");
+
+    const handleFileChange = (selected: File | null) => {
+        setFile(selected);
+        if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+        const nextUrl = selected ? URL.createObjectURL(selected) : "";
+        previewUrlRef.current = nextUrl;
+        setPreviewUrl(nextUrl);
     };
 
-    //search
+    React.useEffect(() => {
+        return () => {
+            if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+        };
+    }, []);
+
     const getAmo = async () => {
         const url = baseurl + "amo/list";
         const body = {
@@ -62,7 +71,6 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
         };
         await axios.post(url, body).then((response) => {
             const { data } = response;
-            console.log(data)
             const autocompletes: autocomplete[] = [];
             data.data.map((item: any) => {
                 const dates = {
@@ -99,9 +107,62 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
         }
     };
 
-    const handleFormatTo = async (e: any) => {
-        const selectedDate: any = new Date(e.target.value);
-        setFromto(moment(selectedDate).add(1, "days").toDate());
+    const validate = () => {
+        const faltantes: string[] = [];
+        if (!amoSelect) faltantes.push("Amo");
+        if (!nombre.trim()) faltantes.push("Nombre");
+        if (!edad) faltantes.push("Edad");
+        if (!tamano) faltantes.push("Tamaño");
+        if (!genero) faltantes.push("Genero");
+        if (!tipoAnimal) faltantes.push("Tipo");
+        if (!descripcion.trim()) faltantes.push("Observaciones");
+        if (!fechaExtravio) faltantes.push("Fecha de extravío");
+        if (!file) faltantes.push("Foto");
+        return faltantes;
+    };
+
+    const savePerdido = async () => {
+        const faltantes = validate();
+        if (faltantes.length > 0) {
+            setSeverity("warning");
+            setMssg(`Completa los campos obligatorios: ${faltantes.join(", ")}`);
+            setOpenAlert(true);
+            return;
+        }
+        const url = baseurl + "perdidos/create";
+        const formData = new FormData();
+        formData.append("iddueno", amoSelect);
+        formData.append("Nombre", nombre);
+        formData.append("Edad", edad);
+        formData.append("idtipoanimal", tipoAnimal);
+        formData.append("idgenero", genero);
+        formData.append("tamano", tamano);
+        formData.append("status", status);
+        formData.append("Observaciones", descripcion);
+        formData.append("Fecha_Extravio", fechaExtravio);
+        formData.append("foto", file);
+
+        try {
+            const response: any = await axios.post(url, formData);
+            const { data } = response;
+            if (data.code === "000") {
+                setSeverity("success");
+                setMssg(data.message);
+                setOpenAlert(true);
+                getPerdidos();
+                setTimeout(() => {
+                    setOpenModal(false);
+                }, 1500);
+            } else {
+                setSeverity("error");
+                setMssg(data.message);
+                setOpenAlert(true);
+            }
+        } catch (e: any) {
+            setSeverity("error");
+            setMssg(e?.response?.data?.message || e.message || "No se pudo guardar.");
+            setOpenAlert(true);
+        }
     };
 
     const alert = () => {
@@ -160,43 +221,41 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
                         size="small"
                         fullWidth
                         renderInput={(params) => (
-                            <TextField {...params} label="Amo" />
+                            <TextField {...params} label="Amo *" />
                         )}
                         onChange={handleDonantes}
                     />
                 </Grid>
                 <Grid item xs={6}>
                     <TextField
-                        id="outlined-basic"
-                        label="Ingrese Nombre"
+                        label="Ingrese Nombre *"
                         variant="outlined"
                         fullWidth
                         size="small"
-                    //onChange={(e) => setNombre(e.target.value)}
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
                     />
                 </Grid>
                 <Grid item xs={6}>
                     <TextField
-                        id="outlined-basic"
-                        label="Ingrese edad"
+                        label="Ingrese edad *"
                         variant="outlined"
                         type="number"
                         fullWidth
                         size="small"
-                    //onChange={(e) => setNombre(e.target.value)}
+                        value={edad}
+                        onChange={(e) => setEdad(e.target.value)}
                     />
                 </Grid>
                 <Grid item xs={6}>
                     <FormControl fullWidth size="small">
-                        <InputLabel id="demo-simple-select-label">Tamaño</InputLabel>
+                        <InputLabel id="tamano-select-label">Tamaño *</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label"
-                            id="demo-simple-select"
-                            //value={age}
-                            //onChange={(e) => handleGenero(e.target.value)}
-                            label="Tamaño"
+                            labelId="tamano-select-label"
+                            value={tamano}
+                            onChange={(e) => setTamano(e.target.value)}
+                            label="Tamaño *"
                         >
-                            <MenuItem value="">Todos</MenuItem>
                             <MenuItem value="pequeño">Pequeño</MenuItem>
                             <MenuItem value="mediano">Mediano</MenuItem>
                             <MenuItem value="grande">Grande</MenuItem>
@@ -205,15 +264,13 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
                 </Grid>
                 <Grid item xs={6}>
                     <FormControl fullWidth size="small">
-                        <InputLabel id="demo-simple-select-label2">Estado</InputLabel>
+                        <InputLabel id="status-select-label">Estado *</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label2"
-                            id="demo-simple-select2"
-                            //value={age}
-                            //onChange={(e) => handleTipoAnimal(e.target.value)}
-                            label="Estado"
+                            labelId="status-select-label"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                            label="Estado *"
                         >
-                            <MenuItem value="">Todos</MenuItem>
                             <MenuItem value="P">Perdido</MenuItem>
                             <MenuItem value="E">Encontrado</MenuItem>
                         </Select>
@@ -221,15 +278,13 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
                 </Grid>
                 <Grid item xs={6}>
                     <FormControl fullWidth size="small">
-                        <InputLabel id="demo-simple-select-label3">Genero</InputLabel>
+                        <InputLabel id="genero-select-label3">Genero *</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label3"
-                            id="demo-simple-select3"
-                            //value={age}
+                            labelId="genero-select-label3"
+                            value={genero}
                             onChange={(e) => handleGenero(e.target.value)}
-                            label="Genero"
+                            label="Genero *"
                         >
-                            <MenuItem value="">Todos</MenuItem>
                             <MenuItem value="1">Macho</MenuItem>
                             <MenuItem value="2">Hembra</MenuItem>
                         </Select>
@@ -237,15 +292,13 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
                 </Grid>
                 <Grid item xs={6}>
                     <FormControl fullWidth size="small">
-                        <InputLabel id="demo-simple-select-label4">Tipo</InputLabel>
+                        <InputLabel id="tipo-select-label4">Tipo *</InputLabel>
                         <Select
-                            labelId="demo-simple-select-label4"
-                            id="demo-simple-select4"
-                            //value={age}
+                            labelId="tipo-select-label4"
+                            value={tipoAnimal}
                             onChange={(e) => handleTipoAnimal(e.target.value)}
-                            label="Tipo"
+                            label="Tipo *"
                         >
-                            <MenuItem value="">Todos</MenuItem>
                             <MenuItem value="1">Perro</MenuItem>
                             <MenuItem value="2">Gato</MenuItem>
                         </Select>
@@ -253,12 +306,12 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-                      Observaciones
+                      Observaciones *
                     </Typography>
                     <textarea
                         placeholder="Ingrese Observaciones"
-                        //value={descripcion ?? ""}
-                        //onChange={(e) => setDescripcion(e.target.value)}
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
                         style={{
                             width: "100%",
                             borderRadius: "8px",
@@ -274,11 +327,12 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
 
                 <Grid item xs={12}>
                     <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-                      Fecha de extravío
+                      Fecha de extravío *
                     </Typography>
                     <input
                         type="date"
-                        onChange={handleFormatTo}
+                        value={fechaExtravio}
+                        onChange={(e) => setFechaExtravio(e.target.value)}
                         style={{
                             padding: "8px",
                             width: "100%",
@@ -290,20 +344,30 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
                 </Grid>
                 <Grid item xs={12}>
                     <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-                      Foto
+                      Foto *
                     </Typography>
-                    <input
-                        type="file"
-                        accept="image/*"
-                        style={{
-                            border: '1px solid var(--cya-border)',
-                            padding: '8px',
-                            width: '100%',
-                            borderRadius: '8px',
-                            boxSizing: "border-box",
-                        }}
-                        //onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-                    />
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                      {previewUrl && (
+                        <Box
+                          component="img"
+                          src={previewUrl}
+                          alt="Vista previa"
+                          sx={{ width: 56, height: 56, borderRadius: "10px", objectFit: "cover", border: "1px solid var(--cya-border)" }}
+                        />
+                      )}
+                      <input
+                          type="file"
+                          accept="image/*"
+                          style={{
+                              border: '1px solid var(--cya-border)',
+                              padding: '8px',
+                              width: '100%',
+                              borderRadius: '8px',
+                              boxSizing: "border-box",
+                          }}
+                          onChange={(e) => handleFileChange(e.target.files ? e.target.files[0] : null)}
+                      />
+                    </Box>
                 </Grid>
               </Grid>
             </Box>
@@ -325,7 +389,7 @@ export default function Agregar({ setOpenModal, getPerdidos }: props) {
                 Cancelar
               </Button>
               <Button
-                onClick={saveApadrinado}
+                onClick={savePerdido}
                 variant="contained"
                 startIcon={<SaveIcon />}
                 className="cya-btn-add"
