@@ -19,6 +19,10 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import DescriptionIcon from "@mui/icons-material/Description";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import MoneyOffIcon from "@mui/icons-material/MoneyOff";
+import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
+import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import axios from "axios";
 import moment from "moment";
 import "moment/locale/es";
@@ -186,6 +190,13 @@ export default function Reportes() {
   const [seguimientosPendientes, setSeguimientosPendientes] = React.useState(0);
   const [seguimientosRealizados, setSeguimientosRealizados] = React.useState(0);
 
+  // Donaciones y Finanzas
+  const [totalIngresos, setTotalIngresos] = React.useState(0);
+  const [totalEgresos, setTotalEgresos] = React.useState(0);
+  const [totalDonantes, setTotalDonantes] = React.useState(0);
+  const [ingresosPorMes, setIngresosPorMes] = React.useState<number[]>([]);
+  const [egresosPorMes, setEgresosPorMes] = React.useState<number[]>([]);
+
   const [cargado, setCargado] = React.useState(false);
 
   useEffect(() => {
@@ -266,7 +277,47 @@ export default function Reportes() {
       })
       .catch(() => {});
 
-    Promise.all([pAnimales, pUsuarios, pAdopciones, pSeguimientos]).then(() => setCargado(true));
+    const pIngresos = axios
+      .get(baseurl + "ingresos/list")
+      .then((res) => {
+        const data = res.data.data || [];
+        setTotalIngresos(data.reduce((sum: number, i: any) => sum + (Number(i.monto) || 0), 0));
+
+        const counts = meses.map((m) =>
+          data
+            .filter((i: any) => i.fecha_registro && moment(i.fecha_registro).isSame(m, "month"))
+            .reduce((sum: number, i: any) => sum + (Number(i.monto) || 0), 0)
+        );
+        setIngresosPorMes(counts);
+      })
+      .catch(() => {});
+
+    const pEgresos = axios
+      .get(baseurl + "egreso/list")
+      .then((res) => {
+        const data = res.data.data || [];
+        // Monto llega como STRING desde la BD, no DECIMAL.
+        setTotalEgresos(data.reduce((sum: number, e: any) => sum + (Number(e.Monto) || 0), 0));
+
+        const counts = meses.map((m) =>
+          data
+            .filter((e: any) => e.fechato && moment(e.fechato).isSame(m, "month"))
+            .reduce((sum: number, e: any) => sum + (Number(e.Monto) || 0), 0)
+        );
+        setEgresosPorMes(counts);
+      })
+      .catch(() => {});
+
+    const pDonantes = axios
+      .get(baseurl + "donante/list")
+      .then((res) => {
+        setTotalDonantes((res.data.data || []).length);
+      })
+      .catch(() => {});
+
+    Promise.all([pAnimales, pUsuarios, pAdopciones, pSeguimientos, pIngresos, pEgresos, pDonantes]).then(() =>
+      setCargado(true)
+    );
   }, []);
 
   const exportarPDF = async () => {
@@ -317,6 +368,10 @@ export default function Reportes() {
       ["Seguimientos", "Total", totalSeguimientos],
       ["Seguimientos", "Pendientes", seguimientosPendientes],
       ["Seguimientos", "Realizados", seguimientosRealizados],
+      ["Donaciones y Finanzas", "Total ingresos (S/.)", totalIngresos.toFixed(2)],
+      ["Donaciones y Finanzas", "Total egresos (S/.)", totalEgresos.toFixed(2)],
+      ["Donaciones y Finanzas", "Balance neto (S/.)", (totalIngresos - totalEgresos).toFixed(2)],
+      ["Donaciones y Finanzas", "Donantes registrados", totalDonantes],
     ];
 
     autoTable(doc, {
@@ -353,7 +408,7 @@ export default function Reportes() {
               <Grid item xs={12} md="auto">
                 <Typography variant="h4">Reportes Generales</Typography>
                 <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mt: 0.3 }}>
-                  Información consolidada de animales, usuarios, solicitudes, adopciones y seguimientos.
+                  Información consolidada de animales, usuarios, solicitudes, adopciones, seguimientos y finanzas.
                 </Typography>
               </Grid>
               <Grid item xs={12} md="auto">
@@ -499,6 +554,51 @@ export default function Reportes() {
               </Grid>
               <Grid item xs={12} sm={6} md={4}>
                 <StatCard icon={<CheckCircleIcon />} label="Realizados" value={seguimientosRealizados} color={CYA_SECONDARY} />
+              </Grid>
+            </Grid>
+
+            {/* Donaciones y Finanzas */}
+            <SectionHeader
+              icon={<VolunteerActivismIcon fontSize="small" />}
+              title="Donaciones y Finanzas"
+              subtitle="Ingresos, egresos y donantes registrados"
+            />
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard icon={<AttachMoneyIcon />} label="Total ingresos (S/.)" value={totalIngresos.toFixed(2)} color={CYA_SECONDARY} />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard icon={<MoneyOffIcon />} label="Total egresos (S/.)" value={totalEgresos.toFixed(2)} color={CYA_ERROR} />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard
+                  icon={<AccountBalanceWalletIcon />}
+                  label="Balance neto (S/.)"
+                  value={(totalIngresos - totalEgresos).toFixed(2)}
+                  color={CYA_PRIMARY}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <StatCard icon={<GroupIcon />} label="Donantes registrados" value={totalDonantes} color={CYA_ACCENT} />
+              </Grid>
+            </Grid>
+            <Grid container spacing={2} sx={{ mt: 0.5, mb: 2 }}>
+              <Grid item xs={12}>
+                <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
+                  <Typography sx={{ fontWeight: 700, mb: 1 }}>Ingresos vs. Egresos por mes</Typography>
+                  {mesesLabels.length > 0 && (
+                    <BarChart
+                      xAxis={[{ scaleType: "band", data: mesesLabels }]}
+                      yAxis={[{ valueFormatter: (v: number) => `S/. ${v}` }]}
+                      series={[
+                        { data: ingresosPorMes, color: CYA_SECONDARY, label: "Ingresos" },
+                        { data: egresosPorMes, color: CYA_ERROR, label: "Egresos" },
+                      ]}
+                      height={280}
+                      grid={{ horizontal: true }}
+                    />
+                  )}
+                </Paper>
               </Grid>
             </Grid>
           </Body>
