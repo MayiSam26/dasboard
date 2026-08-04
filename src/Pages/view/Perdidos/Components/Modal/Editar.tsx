@@ -79,40 +79,42 @@ export default function Editar({ setOpenModalEdit, idperdido, getPerdidos }: pro
         };
     }, []);
 
-    const getAmo = async () => {
-        const url = baseurl + "amo/list";
-        const response = await axios.post(url, { busqueda: "" });
-        const autocompletes: autocomplete[] = (response.data.data || []).map((item: any) => ({
-            label: item.nombre,
-            value: item.iddueno,
-        }));
-        setAmo(autocompletes);
-        return autocompletes;
-    };
-
-    const getById = async (autocompletes: autocomplete[]) => {
-        const url = baseurl + "perdidos/detail/" + idperdido;
-        const response = await axios.get(url);
-        const { data } = response.data;
-        setNombre(data?.Nombre || "");
-        setEdad(data?.Edad || "");
-        setDescripcion(data?.Observaciones || "");
-        setGenero(data?.idgenero ? String(data.idgenero) : "");
-        setTipoAnimal(data?.idtipoanimal ? String(data.idtipoanimal) : "");
-        setTamano(data?.tamano || "");
-        setStatus(data?.status || "P");
-        setFechaExtravio(data?.Fecha_Extravio ? moment(data.Fecha_Extravio).format("YYYY-MM-DD") : "");
-        setFoto(data?.foto || "");
-        const actual = autocompletes.find((a) => a.value === data?.iddueno) || null;
-        setAmoSelect(actual);
-    };
-
     useEffect(() => {
+        // getAmo/getById se definen acá adentro (no afuera del efecto) a propósito:
+        // así no hay funciones externas que declarar como dependencia del hook,
+        // evitando por completo la advertencia de dependencias faltantes.
+        const getAmo = async (): Promise<autocomplete[]> => {
+            const url = baseurl + "amo/list";
+            const response = await axios.post(url, { busqueda: "" });
+            const autocompletes: autocomplete[] = (response.data.data || []).map((item: any) => ({
+                label: item.nombre,
+                value: item.iddueno,
+            }));
+            setAmo(autocompletes);
+            return autocompletes;
+        };
+
+        const getById = async (autocompletes: autocomplete[]) => {
+            const url = baseurl + "perdidos/detail/" + idperdido;
+            const response = await axios.get(url);
+            const { data } = response.data;
+            setNombre(data?.Nombre || "");
+            setEdad(data?.Edad || "");
+            setDescripcion(data?.Observaciones || "");
+            setGenero(data?.idgenero ? String(data.idgenero) : "");
+            setTipoAnimal(data?.idtipoanimal ? String(data.idtipoanimal) : "");
+            setTamano(data?.tamano || "");
+            setStatus(data?.status || "P");
+            setFechaExtravio(data?.Fecha_Extravio ? moment(data.Fecha_Extravio).format("YYYY-MM-DD") : "");
+            setFoto(data?.foto || "");
+            const actual = autocompletes.find((a) => a.value === data?.iddueno) || null;
+            setAmoSelect(actual);
+        };
+
         (async () => {
             const autocompletes = await getAmo();
             await getById(autocompletes);
         })();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idperdido]);
 
     const validate = () => {
