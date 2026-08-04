@@ -28,6 +28,9 @@ export default function Agregar({ setOpenModal, getUsuarios }: props) {
   const [correo, setCorreo] = React.useState<string>("");
   const [pass, setPass] = React.useState<string>("");
   const [rol, setRol] = React.useState<string>("");
+  const [nombres, setNombres] = React.useState<string>("");
+  const [apellidos, setApellidos] = React.useState<string>("");
+  const [telefono, setTelefono] = React.useState<string>("");
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -41,7 +44,15 @@ export default function Agregar({ setOpenModal, getUsuarios }: props) {
       return;
     }
     const url = baseurl + "create-user";
-    const body = { usuario: usuario.trim(), correo: correo.trim(), pass, rol };
+    const body = {
+      usuario: usuario.trim(),
+      correo: correo.trim(),
+      pass,
+      rol,
+      nombres: nombres.trim(),
+      apellidos: apellidos.trim(),
+      telefono: telefono.trim(),
+    };
     await axios
       .post(url, body)
       .then((response) => {
@@ -112,6 +123,26 @@ export default function Agregar({ setOpenModal, getUsuarios }: props) {
 
       <Box sx={{ px: 3, py: 2.5 }}>
         <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Nombres"
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={nombres}
+              onChange={(e) => setNombres(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Apellidos"
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={apellidos}
+              onChange={(e) => setApellidos(e.target.value)}
+            />
+          </Grid>
           <Grid item xs={12}>
             <TextField
               label="Nombre de usuario"
@@ -122,7 +153,7 @@ export default function Agregar({ setOpenModal, getUsuarios }: props) {
               onChange={(e) => setUsuario(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={7}>
             <TextField
               label="Correo electrónico"
               type="email"
@@ -131,6 +162,16 @@ export default function Agregar({ setOpenModal, getUsuarios }: props) {
               size="small"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={5}>
+            <TextField
+              label="Teléfono"
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
             />
           </Grid>
           <Grid item xs={12}>

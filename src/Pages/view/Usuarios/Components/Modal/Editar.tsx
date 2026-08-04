@@ -2,7 +2,10 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
+  Collapse,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
@@ -27,6 +30,12 @@ interface props {
 export default function Editar({ setOpenModalEdit, usuarioSeleccionado, getUsuarios }: props) {
   const [correo, setCorreo] = React.useState<string>(usuarioSeleccionado?.correo || "");
   const [rol, setRol] = React.useState<string>(usuarioSeleccionado?.rol || "");
+  const [nombres, setNombres] = React.useState<string>(usuarioSeleccionado?.nombres || "");
+  const [apellidos, setApellidos] = React.useState<string>(usuarioSeleccionado?.apellidos || "");
+  const [telefono, setTelefono] = React.useState<string>(usuarioSeleccionado?.telefono || "");
+
+  const [cambiarPass, setCambiarPass] = React.useState<boolean>(false);
+  const [nuevaPassword, setNuevaPassword] = React.useState<string>("");
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -39,31 +48,54 @@ export default function Editar({ setOpenModalEdit, usuarioSeleccionado, getUsuar
       setOpenAlert(true);
       return;
     }
+    if (cambiarPass && nuevaPassword.length < 4) {
+      setSeverity("error");
+      setMssg("La nueva contraseña debe tener al menos 4 caracteres.");
+      setOpenAlert(true);
+      return;
+    }
+
     const url = baseurl + "usuario/update/" + usuarioSeleccionado.iduser;
-    const body = { correo: correo.trim(), rol };
-    await axios
-      .put(url, body)
-      .then((response) => {
-        const { data } = response;
-        if (data.code === "000") {
-          setSeverity("success");
-          setMssg(data.message);
-          setOpenAlert(true);
-          setTimeout(() => {
-            setOpenModalEdit(false);
-            getUsuarios();
-          }, 1500);
-        } else {
-          setSeverity("error");
-          setMssg(data.message);
-          setOpenAlert(true);
-        }
-      })
-      .catch((e) => {
+    const body = {
+      correo: correo.trim(),
+      rol,
+      nombres: nombres.trim(),
+      apellidos: apellidos.trim(),
+      telefono: telefono.trim(),
+    };
+
+    try {
+      const { data } = await axios.put(url, body);
+      if (data.code !== "000") {
         setSeverity("error");
-        setMssg(e?.response?.data?.message || e.message);
+        setMssg(data.message);
         setOpenAlert(true);
-      });
+        return;
+      }
+
+      if (cambiarPass) {
+        const urlPass = baseurl + "usuario/password/" + usuarioSeleccionado.iduser;
+        const { data: dataPass } = await axios.put(urlPass, { nuevaPassword });
+        if (dataPass.code !== "000") {
+          setSeverity("error");
+          setMssg(dataPass.message);
+          setOpenAlert(true);
+          return;
+        }
+      }
+
+      setSeverity("success");
+      setMssg("Usuario actualizado correctamente");
+      setOpenAlert(true);
+      setTimeout(() => {
+        setOpenModalEdit(false);
+        getUsuarios();
+      }, 1500);
+    } catch (e: any) {
+      setSeverity("error");
+      setMssg(e?.response?.data?.message || e.message);
+      setOpenAlert(true);
+    }
   };
 
   return (
@@ -111,6 +143,26 @@ export default function Editar({ setOpenModalEdit, usuarioSeleccionado, getUsuar
 
       <Box sx={{ px: 3, py: 2.5 }}>
         <Grid container spacing={2}>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Nombres"
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={nombres}
+              onChange={(e) => setNombres(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              label="Apellidos"
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={apellidos}
+              onChange={(e) => setApellidos(e.target.value)}
+            />
+          </Grid>
           <Grid item xs={12}>
             <TextField
               label="Nombre de usuario"
@@ -121,7 +173,7 @@ export default function Editar({ setOpenModalEdit, usuarioSeleccionado, getUsuar
               disabled
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} sm={7}>
             <TextField
               label="Correo electrónico"
               type="email"
@@ -130,6 +182,16 @@ export default function Editar({ setOpenModalEdit, usuarioSeleccionado, getUsuar
               size="small"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12} sm={5}>
+            <TextField
+              label="Teléfono"
+              variant="outlined"
+              fullWidth
+              size="small"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
             />
           </Grid>
           <Grid item xs={12}>
@@ -141,6 +203,34 @@ export default function Editar({ setOpenModalEdit, usuarioSeleccionado, getUsuar
                 <MenuItem value="Veterinario">Veterinario</MenuItem>
               </Select>
             </FormControl>
+          </Grid>
+
+          <Grid item xs={12}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={cambiarPass}
+                  onChange={(e) => {
+                    setCambiarPass(e.target.checked);
+                    if (!e.target.checked) setNuevaPassword("");
+                  }}
+                />
+              }
+              label="Cambiar contraseña"
+            />
+            <Collapse in={cambiarPass}>
+              <TextField
+                label="Nueva contraseña"
+                type="password"
+                variant="outlined"
+                fullWidth
+                size="small"
+                value={nuevaPassword}
+                onChange={(e) => setNuevaPassword(e.target.value)}
+                helperText="Mínimo 4 caracteres. Solo el Administrador puede hacer esto."
+                sx={{ mt: 1 }}
+              />
+            </Collapse>
           </Grid>
         </Grid>
       </Box>

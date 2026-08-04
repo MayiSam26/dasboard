@@ -72,12 +72,37 @@ export default function Usuarios() {
       ),
     },
     {
+      field: "nombreCompleto",
+      headerName: "Nombre completo",
+      width: 190,
+      headerAlign: "center",
+      valueGetter: (_value, row) => [row.nombres, row.apellidos].filter(Boolean).join(" "),
+      renderCell: (params) => params.value || "—",
+    },
+    {
       field: "correo",
       headerName: "Correo",
       flex: 1,
       minWidth: 200,
       headerAlign: "center",
       renderCell: (params) => params.value || "—",
+    },
+    {
+      field: "telefono",
+      headerName: "Teléfono",
+      width: 130,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => params.value || "—",
+    },
+    {
+      field: "fecha_registro",
+      headerName: "Fecha de registro",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) =>
+        params.value ? new Date(params.value).toLocaleDateString("es-PE") : "—",
     },
     {
       field: "rol",
