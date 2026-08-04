@@ -25,6 +25,16 @@ body {
   font-family: var(--cya-font-body);
 }
 
+/* Edge (y algunos Chromium) agregan su propio ícono de "mostrar
+   contraseña" dentro de todo <input type="password">, que se superpone
+   al ojo propio que ya dibuja el formulario (MUI Visibility/VisibilityOff)
+   - se ve como un "doble ojo". Estos son pseudo-elementos no estándar de
+   Edge, no hay forma de que React los evite; se ocultan por CSS. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}
+
 /* ---------- Login ---------- */
 
 .cya-login-shell {
