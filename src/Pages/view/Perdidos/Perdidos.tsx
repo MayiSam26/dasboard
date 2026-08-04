@@ -1,4 +1,4 @@
-import { Box, Chip, Grid, Grow, IconButton, Modal, Tooltip } from "@mui/material";
+import { Avatar, Box, Chip, Grid, Grow, IconButton, Modal, Tooltip, Typography } from "@mui/material";
 import Header from "../../components/Header";
 import Body from "../../components/Layout/Body";
 import Content from "../../components/Layout/Content";
@@ -6,11 +6,12 @@ import Layout from "../../components/Layout/Index";
 import Navar from "../../components/Navar";
 import HeaderBox from "./Components/HeaderBox";
 
-import React, { useEffect } from "react";
+import React from "react";
 import baseurl from "../../../Config/axios";
 import axios from "axios";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
+import PetsIcon from "@mui/icons-material/Pets";
 import MaleIcon from "@mui/icons-material/Male";
 import FemaleIcon from "@mui/icons-material/Female";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
@@ -26,6 +27,35 @@ import Delete from "./Components/Modal/Delete";
 const CatIcon = TbCat as React.FC<{ size?: number; color?: string }>;
 const DogIcon = TbDog as React.FC<{ size?: number; color?: string }>;
 
+function buildImgUrl(foto: string) {
+  const cleanBase = baseurl.replace(/\/+$/, "");
+  const cleanFoto = (foto || "").replace(/\\/g, "/").replace(/^\/+/, "");
+  return `${cleanBase}/${cleanFoto}`;
+}
+
+function AnimalPhoto({ src, alt }: { src: string; alt: string }) {
+  const [error, setError] = React.useState(false);
+  if (!src || error) {
+    return (
+      <Avatar
+        variant="rounded"
+        sx={{ width: 48, height: 48, borderRadius: "8px", bgcolor: "var(--cya-bg-alt)", color: "var(--cya-primary)" }}
+      >
+        <PetsIcon fontSize="small" />
+      </Avatar>
+    );
+  }
+  return (
+    <Avatar
+      src={src}
+      alt={alt}
+      variant="rounded"
+      sx={{ width: 48, height: 48, borderRadius: "8px" }}
+      onError={() => setError(true)}
+    />
+  );
+}
+
 export default function Perdidos() {
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
@@ -38,13 +68,13 @@ export default function Perdidos() {
   const [status, setStatus] = React.useState<any>("");
   const [dateTo, setDateTo] = React.useState<any>("");
 
-  const getPerdidos = async () => {
+  const getPerdidos = React.useCallback(async () => {
     const body = {
-      nombreBusqueda: "",
-      idTipoAnimalBusqueda: null,
-      idGeneroBusqueda: null,
-      statusBusqueda: null,
-      fechaBusqueda: null,
+      nombreBusqueda: busquedaNombre || "",
+      idTipoAnimalBusqueda: tipoAnimal ? parseInt(tipoAnimal) : null,
+      idGeneroBusqueda: genero ? parseInt(genero) : null,
+      statusBusqueda: status || null,
+      fechaBusqueda: dateTo || null,
     };
     const url = baseurl + "perdidos/list";
     await axios
@@ -53,12 +83,21 @@ export default function Perdidos() {
         const { data } = response;
         setPerdidos(data.data);
       })
-      .catch(() => setPerdidos([]));
-  };
+      .catch(() => {
+        // Si el filtro manda algo raro (o el servidor falla), no tumbamos
+        // la app: mostramos "sin resultados" en vez de un error visible.
+        setPerdidos([]);
+      });
+  }, [busquedaNombre, tipoAnimal, genero, status, dateTo]);
 
+  // Búsqueda automática: se dispara sola cuando cambia cualquier filtro,
+  // con una pequeña espera para no disparar una petición por cada tecla.
   React.useEffect(() => {
-    getPerdidos();
-  }, []);
+    const timer = setTimeout(() => {
+      getPerdidos();
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [getPerdidos]);
 
   const handleBusqueda = (value: any) => {
     setBusquedNombre(value);
@@ -87,41 +126,37 @@ export default function Perdidos() {
     setDateTo(parsed.format("YYYY-MM-DD"));
   };
 
-  const handleSearch = async () => {
-    const body = {
-      nombreBusqueda: busquedaNombre ?? "",
-      idTipoAnimalBusqueda: tipoAnimal ? parseInt(tipoAnimal) : null,
-      idGeneroBusqueda: genero ? parseInt(genero) : null,
-      statusBusqueda: status ? status : null,
-      fechaBusqueda: dateTo || null,
-    };
-    const url = baseurl + "perdidos/list";
-    await axios
-      .post(url, body)
-      .then((response) => {
-        const { data } = response;
-        setPerdidos(data.data);
-      })
-      .catch(() => setPerdidos([]));
-  };
-
   const handleClearFilters = () => {
     setBusquedNombre("");
     setTipoAnimal("");
     setGenero("");
     setStatus("");
     setDateTo("");
-    getPerdidos();
   };
 
-  useEffect(() => {
-    if (busquedaNombre === "") {
-      getPerdidos();
-    }
-  }, [busquedaNombre]);
-
   const columns: GridColDef<(typeof perdidos)[number]>[] = [
-    { field: "Nombre", headerName: "Colitas", width: 140, headerAlign: "center" },
+    {
+      field: "Nombre",
+      headerName: "Colitas",
+      width: 180,
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <AnimalPhoto key={params.row.foto} src={buildImgUrl(params.row.foto)} alt={params.row.Nombre} />
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 700,
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {params.row.Nombre}
+          </Typography>
+        </Box>
+      ),
+    },
     {
       field: "Edad",
       headerName: "Edad",
@@ -357,7 +392,6 @@ export default function Perdidos() {
                   handleBusqueda={(value: any) => handleBusqueda(value)}
                   handleTipoAnimal={(value: any) => handleTipoAnimal(value)}
                   handleGenero={(value: any) => handleGenero(value)}
-                  handleSearch={() => handleSearch()}
                   handleStatus={(value: any) => handleStatus(value)}
                   handleDateTo={(value: any) => handleDateTo(value)}
                   onClear={handleClearFilters}

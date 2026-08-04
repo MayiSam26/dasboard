@@ -21,14 +21,12 @@ interface Props {
   handleBusqueda: (e: any) => void;
   handleTipoAnimal: (e: any) => void;
   handleGenero: (e: any) => void;
-  handleSearch: () => void;
   handleStatus: (e: any) => void;
   handleDateTo: (e: any) => void;
   onClear: () => void;
 }
 export default function Search({
   handleBusqueda,
-  handleSearch,
   handleTipoAnimal,
   handleGenero,
   handleStatus,
@@ -36,6 +34,9 @@ export default function Search({
   onClear,
 }: Props) {
   const [showMore, setShowMore] = React.useState(false);
+
+  // Los <Select> son no controlados (usan defaultValue), así que para
+  // "Limpiar filtros" forzamos un remount cambiando esta key.
   const [resetKey, setResetKey] = React.useState(0);
 
   const handleClear = () => {
@@ -43,13 +44,15 @@ export default function Search({
     onClear();
   };
 
+  const selectSx = { "& .MuiSelect-select": { textAlign: "center" as const } };
+
   return (
     <>
       <Grid container spacing={2} sx={{ marginBottom: "24px" }}>
         <Grid item xs={12}>
           <Paper variant="outlined" sx={{ bgcolor: "background.paper", borderColor: "var(--cya-border)" }}>
-            <Grid container spacing={2} sx={{ p: 2, alignItems: "center" }} key={resetKey}>
-              <Grid item xs={12} md={4}>
+            <Grid container spacing={1.5} sx={{ p: 2, alignItems: "center" }} key={resetKey}>
+              <Grid item xs={12} sm={6} md={4}>
                 <TextField
                   id="outlined-basic"
                   label="Buscar Colitas"
@@ -67,7 +70,7 @@ export default function Search({
                   }}
                 />
               </Grid>
-              <Grid item xs={12} md={3}>
+              <Grid item xs={6} sm={3} md={2}>
                 <FormControl fullWidth size="small">
                   <InputLabel id="status-select-label">Estado</InputLabel>
                   <Select
@@ -76,7 +79,7 @@ export default function Search({
                     label="Estado"
                     size="small"
                     onChange={(e) => handleStatus(e.target.value)}
-                    sx={{ "& .MuiSelect-select": { textAlign: "center" } }}
+                    sx={selectSx}
                   >
                     <MenuItem value="">Todos</MenuItem>
                     <MenuItem value="P">Perdido</MenuItem>
@@ -84,21 +87,11 @@ export default function Search({
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={2}>
-                <Button
-                  onClick={handleSearch}
-                  fullWidth
-                  variant="contained"
-                  className="cya-btn-add"
-                  startIcon={<SearchIcon />}
-                >
-                  Buscar
-                </Button>
-              </Grid>
               <Grid
                 item
                 xs={12}
-                md={3}
+                sm={3}
+                md={6}
                 sx={{ display: "flex", alignItems: "center", gap: 1, justifyContent: { md: "flex-end" } }}
               >
                 <Button
@@ -121,8 +114,8 @@ export default function Search({
 
               <Grid item xs={12}>
                 <Collapse in={showMore} timeout="auto" unmountOnExit>
-                  <Grid container spacing={2} sx={{ pt: 1 }}>
-                    <Grid item xs={12} md={4}>
+                  <Grid container spacing={1.5} sx={{ pt: 1 }}>
+                    <Grid item xs={6} sm={4} md={3}>
                       <FormControl fullWidth size="small">
                         <InputLabel id="genero-select-label">Genero</InputLabel>
                         <Select
@@ -131,7 +124,7 @@ export default function Search({
                           onChange={(e) => handleGenero(e.target.value)}
                           label="Genero"
                           size="small"
-                          sx={{ "& .MuiSelect-select": { textAlign: "center" } }}
+                          sx={selectSx}
                         >
                           <MenuItem value="">Todos</MenuItem>
                           <MenuItem value="1">Macho</MenuItem>
@@ -139,7 +132,7 @@ export default function Search({
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={6} sm={4} md={3}>
                       <FormControl fullWidth size="small">
                         <InputLabel id="tipo-select-label">Tipo</InputLabel>
                         <Select
@@ -148,7 +141,7 @@ export default function Search({
                           label="Tipo"
                           onChange={(e) => handleTipoAnimal(e.target.value)}
                           size="small"
-                          sx={{ "& .MuiSelect-select": { textAlign: "center" } }}
+                          sx={selectSx}
                         >
                           <MenuItem value="">Todos</MenuItem>
                           <MenuItem value="1">Perro</MenuItem>
@@ -156,7 +149,7 @@ export default function Search({
                         </Select>
                       </FormControl>
                     </Grid>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12} sm={4} md={3}>
                       <input
                         type="date"
                         onChange={(e) => handleDateTo(e.target.value)}
