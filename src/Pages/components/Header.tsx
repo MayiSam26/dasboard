@@ -37,8 +37,11 @@ export default function Header(){
         verifyToken()
     }
     return(<>
-            <div className="navbar-custom">
-                        <ul className="list-unstyled topbar-menu float-end mb-0">
+            <div className="navbar-custom" style={{ display: "flex", alignItems: "center" }}>
+                        <ul
+                            className="list-unstyled topbar-menu float-end mb-0"
+                            style={{ display: "flex", alignItems: "center", height: "100%" }}
+                        >
 
                             <li className="dropdown notification-list" style={{ display: "flex", alignItems: "center" }}>
                                 <NotificationBell />
