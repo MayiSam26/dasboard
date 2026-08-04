@@ -43,31 +43,7 @@ export default function Amo() {
   const [openModalDelete, setOpenModalDelete] = React.useState<boolean>(false);
   const [busquedas, setBusqueda] = React.useState<any>("");
 
-  const getApadrinado = async () => {
-    const url = baseurl + "amo/list";
-    const body = {
-      busqueda: "",
-    };
-    await axios.post(url, body).then((response) => {
-      const { data } = response;
-      setApoderado(data.data);
-    });
-  };
-  const handleBusqueda = (value: any) => {
-    setBusqueda(value);
-  };
-
-  useEffect(() => {
-    if (busquedas === "") {
-      getApadrinado();
-    }
-  }, [busquedas]);
-
-  React.useEffect(() => {
-    getApadrinado();
-  }, []);
-
-  const handleSearch = async () => {
+  const getApadrinado = React.useCallback(async () => {
     const url = baseurl + "amo/list";
     const body = {
       busqueda: busquedas,
@@ -79,7 +55,18 @@ export default function Amo() {
         setApoderado(data.data);
       })
       .catch((e) => console.log(e.message));
+  }, [busquedas]);
+
+  const handleBusqueda = (value: any) => {
+    setBusqueda(value);
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      getApadrinado();
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [getApadrinado]);
 
   const columns: GridColDef<(typeof apoderado)[number]>[] = [
     { field: "nombre", headerName: "Nombre Apoderado", width: 220, headerAlign: "center" },
@@ -244,7 +231,7 @@ export default function Amo() {
                 <HeaderBox setOpenModal={() => setOpenModal(true)} count={apoderado ? apoderado.length : 0} />
               </Grid>
               <Grid item xs={12} sx={{ marginTop: "20px" }}>
-                <Search handleBusqueda={(value: any) => handleBusqueda(value)} handleSearch={() => handleSearch()} />
+                <Search handleBusqueda={(value: any) => handleBusqueda(value)} />
                 <Box sx={{ width: "100%" }} className="cya-table-card">
                   <DataGrid
                     rows={apoderado}

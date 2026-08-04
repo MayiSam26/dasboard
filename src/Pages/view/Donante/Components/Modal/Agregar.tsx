@@ -40,8 +40,15 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
+  const [sending, setSending] = React.useState<boolean>(false);
 
   const createData = async () => {
+    if (!fullname.trim() || !idtipopersona) {
+      setSeverity("warning");
+      setMssg("Completa el nombre completo y el tipo de persona.");
+      setOpenAlert(true);
+      return;
+    }
     const url = baseurl + "donante/create";
     const body = {
       idtipopersona: idtipopersona,
@@ -51,6 +58,7 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
       Dni: dni,
       Fecha_Registro:formatlocaldate(dateTo),
     };
+    setSending(true);
     await axios
       .post(url, body)
       .then((response) => {
@@ -63,13 +71,18 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
             setOpenModal(false);
             getDonante();
           }, 1800);
+        } else {
+          setSeverity("error");
+          setMssg(data.message);
+          setOpenAlert(true);
         }
       })
       .catch((e) => {
         setSeverity("error");
-        setMssg(e.message);
+        setMssg(e?.response?.data?.message || e.message);
         setOpenAlert(true);
-      });
+      })
+      .finally(() => setSending(false));
   };
 
   const alert = () => {
@@ -213,8 +226,8 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
         >
           Cancelar
         </Button>
-        <Button onClick={createData} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add">
-          Guardar
+        <Button onClick={createData} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add" disabled={sending}>
+          {sending ? "Guardando..." : "Guardar"}
         </Button>
       </Box>
     </>

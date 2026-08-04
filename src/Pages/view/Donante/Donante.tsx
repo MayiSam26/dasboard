@@ -18,6 +18,7 @@ import moment from "moment";
 import Header from "../../components/Header";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
+import Search from "./Components/Search";
 
 const SOCIAL_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
   Facebook: { icon: <FacebookIcon fontSize="small" />, color: "#3b5998" },
@@ -32,6 +33,7 @@ export default function Donante() {
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
   const [idDonante, setIdDonante] = React.useState<any>("");
+  const [busqueda, setBusqueda] = React.useState<string>("");
 
   const [fullname, setFullname] = React.useState<string>("");
   const [redsocial, setRedsocial] = React.useState<string>("");
@@ -122,6 +124,16 @@ export default function Donante() {
   React.useEffect(() => {
     getDonante();
   }, []);
+
+  // El backend no soporta filtros (sp_getdonante() trae todo), así que la
+  // búsqueda se hace en el cliente sobre la lista ya cargada.
+  const donanteFiltrado = React.useMemo(() => {
+    const texto = busqueda.trim().toLowerCase();
+    if (!texto) return donante;
+    return (donante || []).filter((d: any) =>
+      [d.fullname, d.Ruc, d.Dni].some((campo) => (campo || "").toString().toLowerCase().includes(texto))
+    );
+  }, [donante, busqueda]);
 
   const columns: GridColDef<(typeof donante)[number]>[] = [
     { field: "fullname", headerName: "Nombre Completo", width: 180, headerAlign: "center" },
@@ -281,9 +293,10 @@ export default function Donante() {
                 <HeaderBox setOpenModal={() => setOpenModal(true)} count={donante ? donante.length : 0} />
               </Grid>
               <Grid item xs={12} sx={{ marginTop: "20px" }}>
+                <Search handleBusqueda={(value: any) => setBusqueda(value)} />
                 <Box sx={{ width: "100%" }} className="cya-table-card">
                   <DataGrid
-                    rows={donante}
+                    rows={donanteFiltrado}
                     columns={columns}
                     rowHeight={56}
                     initialState={{

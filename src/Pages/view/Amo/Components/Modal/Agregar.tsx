@@ -19,6 +19,7 @@ export default function Agregar({ setOpenModal, getApadrinado }: props) {
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
+  const [sending, setSending] = React.useState<boolean>(false);
 
   const createPlanMensual = async () => {
     if (!nombre.trim()) {
@@ -34,6 +35,7 @@ export default function Agregar({ setOpenModal, getApadrinado }: props) {
       instagram: instagram,
     };
     const url = baseurl + "amo/create";
+    setSending(true);
     axios
       .post(url, body)
       .then((response) => {
@@ -52,7 +54,12 @@ export default function Agregar({ setOpenModal, getApadrinado }: props) {
           setOpenAlert(true);
         }
       })
-      .catch((e) => console.log(e.message));
+      .catch((e) => {
+        setSeverity("error");
+        setMssg(e.message);
+        setOpenAlert(true);
+      })
+      .finally(() => setSending(false));
   };
 
   const alert = () => {
@@ -154,8 +161,9 @@ export default function Agregar({ setOpenModal, getApadrinado }: props) {
           variant="contained"
           startIcon={<SaveIcon />}
           className="cya-btn-add"
+          disabled={sending}
         >
-          Guardar
+          {sending ? "Guardando..." : "Guardar"}
         </Button>
       </Box>
     </>

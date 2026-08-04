@@ -15,6 +15,7 @@ import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import Agregar from "./Components/Modal/Agregar";
+import Search from "./Components/Search";
 import { Modal, Grow } from "@mui/material";
 
 function buildImgUrl(evidencia: string) {
@@ -99,6 +100,7 @@ export default function Ingresos() {
   const [ingresos, setIngresos] = React.useState<any>([]);
   const [reporte, setReporte] = React.useState<any>([]);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
+  const [busqueda, setBusqueda] = React.useState<string>("");
 
   const getIngresos = async () => {
     const url = baseurl + "ingresos/list";
@@ -126,6 +128,18 @@ export default function Ingresos() {
     getIngresos();
     getReportes();
   }, []);
+
+  // El backend no soporta filtros en ingresos/list, así que la búsqueda se
+  // hace en el cliente sobre la lista ya cargada.
+  const ingresosFiltrados = React.useMemo(() => {
+    const texto = busqueda.trim().toLowerCase();
+    if (!texto) return ingresos;
+    return (ingresos || []).filter((i: any) =>
+      [i.donante?.fullname, i.suministro, i.donacion, i.pago].some((campo) =>
+        (campo || "").toString().toLowerCase().includes(texto)
+      )
+    );
+  }, [ingresos, busqueda]);
 
   const columns: GridColDef<(typeof ingresos)[number]>[] = [
     {
@@ -292,9 +306,10 @@ export default function Ingresos() {
                     </React.Fragment>
                   ))}
                 </Grid>
+                <Search handleBusqueda={(value: any) => setBusqueda(value)} />
                 <Box sx={{ width: "100%" }} className="cya-table-card">
                   <DataGrid
-                    rows={ingresos}
+                    rows={ingresosFiltrados}
                     columns={columns}
                     rowHeight={56}
                     initialState={{

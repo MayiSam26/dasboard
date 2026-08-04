@@ -48,8 +48,16 @@ export default function Agregar({
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
+  const [sending, setSending] = React.useState<boolean>(false);
 
   const createData = async () => {
+    if (!donateSelect || !monto || Number(monto) <= 0 || !suministro || !donacion || !tipoyape || !dateTo) {
+      setSeverity("warning");
+      setMssg("Completa el donante, el monto, la fecha y todos los campos obligatorios.");
+      setOpenAlert(true);
+      return;
+    }
+    setSending(true);
     const url = baseurl + "ingresos/create";
     const formData = new FormData();
     formData.append("iddonantes", donateSelect);
@@ -84,6 +92,8 @@ export default function Agregar({
       setSeverity("error");
       setMssg(e?.response?.data?.message || e.message || "No se pudo guardar.");
       setOpenAlert(true);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -288,8 +298,8 @@ export default function Agregar({
         >
           Cancelar
         </Button>
-        <Button onClick={createData} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add">
-          Guardar
+        <Button onClick={createData} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add" disabled={sending}>
+          {sending ? "Guardando..." : "Guardar"}
         </Button>
       </Box>
     </>

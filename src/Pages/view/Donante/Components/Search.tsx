@@ -14,11 +14,11 @@ export default function Search({ handleBusqueda }: Props) {
               <Grid item xs={12} md={4}>
                 <TextField
                   id="outlined-basic"
-                  label="Buscar dueño"
+                  label="Buscar donante"
                   variant="outlined"
                   fullWidth
                   size="small"
-                  placeholder="Escribe un nombre..."
+                  placeholder="Nombre, RUC o DNI..."
                   onChange={(e) => handleBusqueda(e.target.value)}
                   InputProps={{
                     startAdornment: (
