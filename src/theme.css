@@ -220,25 +220,89 @@ body[data-leftbar-theme="light"] .leftside-menu .logo.logo-dark {
   display: flex !important;
 }
 
+/* Línea sutil que separa el logo del menú, para que no queden pegados */
+.cya-sidebar-divider {
+  height: 1px;
+  margin: 0 20px 10px;
+  background: rgba(255, 255, 255, .08);
+}
+
 .cya-sidebar-item {
   border-left: 3px solid transparent;
-  border-radius: 0 10px 10px 0;
-  margin-right: 8px;
+  border-radius: 8px;
+  margin: 2px 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
   transition: background-color .15s ease, border-color .15s ease;
 }
 .cya-sidebar-item:hover {
   background-color: rgba(255, 255, 255, .07);
 }
 .cya-sidebar-item.cya-active {
-  background-color: rgba(255, 255, 255, .09);
+  background-color: rgba(228, 96, 47, .14);
   border-left-color: var(--cya-primary);
 }
 .cya-sidebar-item.cya-active .MuiListItemText-primary {
   font-weight: 700 !important;
-  color: var(--cya-primary) !important;
+  color: #fff !important;
 }
-.cya-sidebar-item.cya-active .MuiListItemIcon-root svg {
+.cya-sidebar-item.cya-active .cya-sidebar-icon {
   color: var(--cya-primary) !important;
+  opacity: 1 !important;
+}
+
+/* Ícono y texto un poco atenuados por defecto (look más "diseñado", no todo
+   a blanco puro) y a opacidad completa en hover/activo para que el estado
+   resalte de verdad en vez de que todo se vea igual de "encendido". */
+.cya-sidebar-icon {
+  color: #fff !important;
+  opacity: .62;
+  transition: opacity .15s ease;
+}
+.cya-sidebar-label .MuiListItemText-primary {
+  color: rgba(255, 255, 255, .88) !important;
+  font-size: .925rem;
+  letter-spacing: .1px;
+}
+.cya-sidebar-item:hover .cya-sidebar-icon,
+.cya-sidebar-item.cya-active .cya-sidebar-icon {
+  opacity: 1;
+}
+.cya-sidebar-item:hover .cya-sidebar-label .MuiListItemText-primary {
+  color: #fff !important;
+}
+
+.cya-sidebar-chevron {
+  color: rgba(255, 255, 255, .45) !important;
+  transition: transform .2s ease, color .15s ease;
+  flex-shrink: 0;
+}
+.cya-sidebar-item:hover .cya-sidebar-chevron,
+.cya-sidebar-item.cya-active .cya-sidebar-chevron {
+  color: rgba(255, 255, 255, .8) !important;
+}
+
+/* Submenú: una guía vertical sutil para que se lea como un grupo, no como
+   filas sueltas al mismo nivel que las secciones principales. */
+.cya-sidebar-sublist {
+  position: relative;
+  margin-left: 28px;
+  padding-left: 4px !important;
+  border-left: 1px solid rgba(255, 255, 255, .08);
+}
+.cya-sidebar-subitem {
+  border-radius: 6px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+}
+.cya-sidebar-subitem .cya-sidebar-icon {
+  opacity: .4;
+}
+.cya-sidebar-subitem .cya-sidebar-label .MuiListItemText-primary {
+  font-size: .87rem;
+}
+.cya-sidebar-subitem.cya-active {
+  background-color: rgba(228, 96, 47, .10);
 }
 
 /* Sidebar colapsado (botón ☰): la plantilla base espera <ul class="side-nav">
@@ -246,7 +310,8 @@ body[data-leftbar-theme="light"] .leftside-menu .logo.logo-dark {
    está armado con MUI List/Collapse — sin este bloque, el texto y los
    submenús abiertos se quedan visibles y flotan sobre el contenido. */
 body[data-leftbar-compact-mode="condensed"] .leftside-menu .MuiListItemText-root,
-body[data-leftbar-compact-mode="condensed"] .leftside-menu .MuiCollapse-root {
+body[data-leftbar-compact-mode="condensed"] .leftside-menu .MuiCollapse-root,
+body[data-leftbar-compact-mode="condensed"] .leftside-menu .cya-sidebar-chevron {
   display: none !important;
 }
 body[data-leftbar-compact-mode="condensed"] .leftside-menu .cya-sidebar-item {

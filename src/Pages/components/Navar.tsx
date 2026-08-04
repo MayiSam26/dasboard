@@ -11,6 +11,7 @@ import FolderSharedIcon from "@mui/icons-material/FolderShared";
 import PetsIcon from "@mui/icons-material/Pets";
 import SearchOffIcon from "@mui/icons-material/SearchOff";
 import KeyboardArrowRightIcon from "@mui/icons-material/KeyboardArrowRight";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
 import GroupIcon from "@mui/icons-material/Group";
 import AssessmentIcon from "@mui/icons-material/Assessment";
@@ -187,13 +188,15 @@ export default function Navar() {
         </Link>
 
         <div className="h-100" id="leftside-menu-container" data-simplebar="">
+          <div className="cya-sidebar-divider" />
           <List
-            sx={{ width: "100%", maxWidth: 360, bgcolor: "transparent" }}
+            sx={{ width: "100%", maxWidth: 360, bgcolor: "transparent", px: "8px" }}
             component="nav"
             aria-labelledby="nested-list-subheader"
           >
             {visibleSections.map((section) => {
               const isSectionActive = section.items.some((i) => i.path === location.pathname);
+              const isOpen = openSection === section.key;
               return (
                 <React.Fragment key={section.key}>
                   <ListItemButton
@@ -202,27 +205,32 @@ export default function Navar() {
                   >
                     <ListItemIcon>
                       {React.cloneElement(section.icon as React.ReactElement, {
-                        sx: { color: "white" },
+                        className: "cya-sidebar-icon",
                       })}
                     </ListItemIcon>
-                    <ListItemText sx={{ color: "white" }} primary={section.label} />
+                    <ListItemText className="cya-sidebar-label" primary={section.label} />
+                    <ExpandMoreIcon
+                      className="cya-sidebar-chevron"
+                      fontSize="small"
+                      style={{ transform: isOpen ? "rotate(180deg)" : "rotate(0deg)" }}
+                    />
                   </ListItemButton>
 
-                  <Collapse in={openSection === section.key} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
+                  <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding className="cya-sidebar-sublist">
                       {section.items.map((item) => {
                         const active = location.pathname === item.path;
                         return (
                           <ListItemButton
                             key={item.path}
-                            className={`cya-sidebar-item${active ? " cya-active" : ""}`}
+                            className={`cya-sidebar-item cya-sidebar-subitem${active ? " cya-active" : ""}`}
                             sx={{ pl: 4 }}
                             onClick={() => navigate(item.path)}
                           >
                             <ListItemIcon>
-                              <KeyboardArrowRightIcon sx={{ color: "white" }} />
+                              <KeyboardArrowRightIcon className="cya-sidebar-icon" fontSize="small" />
                             </ListItemIcon>
-                            <ListItemText sx={{ color: "white" }} primary={item.label} />
+                            <ListItemText className="cya-sidebar-label" primary={item.label} />
                           </ListItemButton>
                         );
                       })}

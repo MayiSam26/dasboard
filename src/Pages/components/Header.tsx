@@ -37,10 +37,13 @@ export default function Header(){
         verifyToken()
     }
     return(<>
-            <div className="navbar-custom" style={{ display: "flex", alignItems: "center" }}>
+            <div className="navbar-custom" style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <button className="button-menu-mobile open-left">
+                            <i className="mdi mdi-menu"></i>
+                        </button>
                         <ul
-                            className="list-unstyled topbar-menu float-end mb-0"
-                            style={{ display: "flex", alignItems: "center", height: "100%" }}
+                            className="list-unstyled topbar-menu mb-0"
+                            style={{ display: "flex", alignItems: "center", height: "100%", marginLeft: "auto" }}
                         >
 
                             <li className="dropdown notification-list" style={{ display: "flex", alignItems: "center" }}>
@@ -49,9 +52,9 @@ export default function Header(){
 
                             <li className="dropdown notification-list">
                                 <Link  className="nav-link dropdown-toggle nav-user arrow-none me-0"
-                                     data-bs-toggle="dropdown" 
-                                     to="#" role="button" 
-                                     aria-haspopup="false" 
+                                     data-bs-toggle="dropdown"
+                                     to="#" role="button"
+                                     aria-haspopup="false"
                                      aria-expanded="false"
                                      style={{display:'flex',alignItems:'center'}}
                                 >
@@ -82,9 +85,6 @@ export default function Header(){
                             </li>
 
                         </ul>
-                        <button className="button-menu-mobile open-left">
-                            <i className="mdi mdi-menu"></i>
-                        </button>
                     </div>
     </>)
 }
