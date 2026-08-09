@@ -60,6 +60,7 @@ export default function Editar({
   }, []);
   const [motivo, setMotivo] = React.useState("");
   const [esterelizado, setEsterilizado] = React.useState("");
+  const [estado, setEstado] = React.useState("");
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -73,6 +74,7 @@ export default function Editar({
       setFoto(data.data.foto);
       setMotivo(data.data.observaciones);
       setEsterilizado(data.data.esterelizacion);
+      setEstado(data.data.estado);
     });
   };
   useEffect(() => {
@@ -85,6 +87,7 @@ export default function Editar({
     const formData = new FormData();
     formData.append("esterelizacion", esterelizado);
     formData.append("observaciones", motivo);
+    formData.append("estado", estado);
     formData.append("foto", file);
     axios
       .put(url, formData)
@@ -201,6 +204,23 @@ export default function Editar({
             />
           </Box>
         </Box>
+
+        <FormControl fullWidth>
+          <InputLabel id="estado-select-label">Estado</InputLabel>
+          <Select
+            labelId="estado-select-label"
+            id="estado-select"
+            value={estado ?? ""}
+            label="Estado"
+            onChange={(e) => setEstado(e.target.value)}
+            size="small"
+          >
+            <MenuItem value="En refugio">En refugio</MenuItem>
+            <MenuItem value="proceso">En proceso</MenuItem>
+            <MenuItem value="adoptado">Adoptado</MenuItem>
+            <MenuItem value="Fallecido">Fallecido</MenuItem>
+          </Select>
+        </FormControl>
 
         <FormControl fullWidth>
           <InputLabel id="esterilizado-select-label">Esterilizado</InputLabel>

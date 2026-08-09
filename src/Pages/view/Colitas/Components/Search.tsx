@@ -107,6 +107,7 @@ export default function Search({
                     <MenuItem value="En refugio">En refugio</MenuItem>
                     <MenuItem value="proceso">En proceso</MenuItem>
                     <MenuItem value="adoptado">Adoptado</MenuItem>
+                    <MenuItem value="Fallecido">Fallecido</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
