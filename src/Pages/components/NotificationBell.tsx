@@ -16,7 +16,7 @@ import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import React from "react";
 import axios from "axios";
 import moment from "moment";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import baseurl from "../../Config/axios";
 
 const POLL_MS = 60000;
@@ -33,6 +33,7 @@ interface NotifItem {
 
 export default function NotificationBell() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [items, setItems] = React.useState<NotifItem[]>([]);
 
@@ -143,11 +144,25 @@ export default function NotificationBell() {
     return () => clearInterval(timer);
   }, [cargarNotificaciones]);
 
+  // No hay un estado de "leído" — el número refleja lo que sigue pendiente
+  // en la base de datos ahora mismo. Sin esto, si resolvías algo (ej.
+  // marcabas una entrevista como realizada) el contador se quedaba con el
+  // número viejo hasta el siguiente sondeo (podía tardar hasta 60s).
+  React.useEffect(() => {
+    cargarNotificaciones();
+  }, [location.pathname, cargarNotificaciones]);
+
   const open = Boolean(anchorEl);
 
   return (
     <>
-      <IconButton onClick={(e) => setAnchorEl(e.currentTarget)} sx={{ color: "var(--cya-topbar-icon, #6c757d)" }}>
+      <IconButton
+        onClick={(e) => {
+          setAnchorEl(e.currentTarget);
+          cargarNotificaciones();
+        }}
+        sx={{ color: "var(--cya-topbar-icon, #6c757d)" }}
+      >
         <Badge badgeContent={items.length} color="error" max={9}>
           <NotificationsIcon />
         </Badge>

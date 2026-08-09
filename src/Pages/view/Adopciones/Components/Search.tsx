@@ -1,12 +1,10 @@
-import { Button, FormControl, Grid, InputLabel, MenuItem, Paper, Select } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
+import { FormControl, Grid, InputLabel, MenuItem, Paper, Select } from "@mui/material";
 
 interface Props {
   handleBusqueda: (e: any) => void;
-  handleSearch: () => void;
   handleDateTo: (e: any) => void;
 }
-export default function Search({ handleBusqueda, handleSearch, handleDateTo }: Props) {
+export default function Search({ handleBusqueda, handleDateTo }: Props) {
   return (
     <>
       <Grid container spacing={2} sx={{ marginBottom: "24px" }}>
@@ -44,17 +42,6 @@ export default function Search({ handleBusqueda, handleSearch, handleDateTo }: P
                     boxSizing: "border-box",
                   }}
                 />
-              </Grid>
-              <Grid item xs={12} md={2}>
-                <Button
-                  onClick={handleSearch}
-                  fullWidth
-                  variant="contained"
-                  className="cya-btn-add"
-                  startIcon={<SearchIcon />}
-                >
-                  Buscar
-                </Button>
               </Grid>
             </Grid>
           </Paper>

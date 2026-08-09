@@ -80,10 +80,10 @@ export default function Adopcion() {
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
   const [idAdopcion, setIdAdopacion] = React.useState<any>("");
 
-  const getAdopciones = async () => {
+  const getAdopciones = React.useCallback(async () => {
     const body = {
-      fechaBusqueda: null,
-      state: "",
+      fechaBusqueda: dateTo || null,
+      state: busqueda ?? "",
     };
     const url = baseurl + "adopciones/list";
     await axios
@@ -93,11 +93,17 @@ export default function Adopcion() {
         setAdopciones(data.data);
       })
       .catch(() => setAdopciones([]));
-  };
+  }, [busqueda, dateTo]);
 
+  // Búsqueda automática: se dispara sola cuando cambia cualquier filtro,
+  // con una pequeña espera para no disparar una petición por cada tecla.
   React.useEffect(() => {
-    getAdopciones();
-  }, []);
+    const timer = setTimeout(() => {
+      getAdopciones();
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [getAdopciones]);
+
   const handleBusqueda = (value: any) => {
     setBusquedNombre(value);
   };
@@ -112,21 +118,6 @@ export default function Adopcion() {
       return;
     }
     setDateTo(parsed.format("YYYY-MM-DD"));
-  };
-
-  const handleSearch = async () => {
-    const body = {
-      fechaBusqueda: dateTo || null,
-      state: busqueda ?? "",
-    };
-    const url = baseurl + "adopciones/list";
-    await axios
-      .post(url, body)
-      .then((response) => {
-        const { data } = response;
-        setAdopciones(data.data);
-      })
-      .catch(() => setAdopciones([]));
   };
 
   const getReportes = async () => {
@@ -347,7 +338,6 @@ export default function Adopcion() {
                 </Grid>
                 <Search
                   handleBusqueda={(value: any) => handleBusqueda(value)}
-                  handleSearch={() => handleSearch()}
                   handleDateTo={(value: any) => handleDateTo(value)}
                 />
                 <Box sx={{ width: "100%" }} className="cya-table-card">
