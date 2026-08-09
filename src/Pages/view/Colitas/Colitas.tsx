@@ -70,8 +70,9 @@ function AnimalPhoto({ src, alt }: { src: string; alt: string }) {
   );
 }
 
-function estadoChipProps(estado: string): { label: string; color: "success" | "warning" | "error" | "info" } {
+function estadoChipProps(estado: string): { label: string; color: "success" | "warning" | "error" | "info"; sx?: object } {
   const e = (estado || "").toLowerCase();
+  if (e.includes("fallecid")) return { label: estado, color: "error", sx: { bgcolor: "#000", color: "#fff" } };
   if (e.includes("adopt")) return { label: estado, color: "success" };
   if (e.includes("tratamiento") || e.includes("proceso")) return { label: estado, color: "warning" };
   if (e.includes("perdid")) return { label: estado, color: "error" };
@@ -356,8 +357,8 @@ export default function Colitas() {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => {
-        const { label, color } = estadoChipProps(params.value);
-        return <Chip label={label} color={color} size="small" className="cya-status-chip" />;
+        const { label, color, sx } = estadoChipProps(params.value);
+        return <Chip label={label} color={color} size="small" className="cya-status-chip" sx={sx} />;
       },
     },
     {
