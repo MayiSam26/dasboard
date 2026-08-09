@@ -1,9 +1,13 @@
 import {
+  ClickAwayListener,
   Collapse,
+  Grow,
   List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  Paper,
+  Popper,
 } from "@mui/material";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import HomeIcon from "@mui/icons-material/Home";
@@ -159,9 +163,44 @@ export default function Navar() {
     sectionOfCurrentPath?.key ?? null
   );
 
+  // El botón ☰ (fuera de React, en la plantilla legada app.min.js) alterna
+  // body[data-leftbar-compact-mode="condensed"]. En vez de duplicar ese
+  // toggle, solo lo observamos para saber si el sidebar está en modo
+  // ícono-solo y así decidir cómo mostrar los sub-ítems de cada sección.
+  const [isCondensed, setIsCondensed] = React.useState(
+    () => document.body.getAttribute("data-leftbar-compact-mode") === "condensed"
+  );
+
+  React.useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setIsCondensed(document.body.getAttribute("data-leftbar-compact-mode") === "condensed");
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["data-leftbar-compact-mode"] });
+    return () => observer.disconnect();
+  }, []);
+
+  // Modo condensado: los sub-ítems no caben empujando contenido hacia abajo
+  // (no hay texto visible al lado del ícono), así que en vez de un Collapse
+  // se muestra un panel flotante (Popper) anclado al ícono de la sección.
+  const [flyoutSection, setFlyoutSection] = React.useState<string | null>(null);
+  const sectionRefs = React.useRef<Record<string, HTMLElement | null>>({});
+
   const toggleSection = (key: string) => {
+    if (isCondensed) {
+      setFlyoutSection((prev) => (prev === key ? null : key));
+      return;
+    }
     setOpenSection((prev) => (prev === key ? null : key));
   };
+
+  // Si el sidebar pasa a modo expandido con un flyout abierto, se cierra el
+  // flyout (ya no aplica) y se abre esa misma sección en el acordeón normal.
+  React.useEffect(() => {
+    if (!isCondensed && flyoutSection) {
+      setOpenSection(flyoutSection);
+      setFlyoutSection(null);
+    }
+  }, [isCondensed, flyoutSection]);
 
   return (
     <>
@@ -198,9 +237,13 @@ export default function Navar() {
             {visibleSections.map((section) => {
               const isSectionActive = section.items.some((i) => i.path === location.pathname);
               const isOpen = openSection === section.key;
+              const isFlyoutOpen = isCondensed && flyoutSection === section.key;
               return (
                 <React.Fragment key={section.key}>
                   <ListItemButton
+                    ref={(el) => {
+                      sectionRefs.current[section.key] = el;
+                    }}
                     className={`cya-sidebar-item${isSectionActive ? " cya-active" : ""}`}
                     onClick={() => toggleSection(section.key)}
                   >
@@ -217,7 +260,7 @@ export default function Navar() {
                     />
                   </ListItemButton>
 
-                  <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                  <Collapse in={isOpen && !isCondensed} timeout="auto" unmountOnExit>
                     <List component="div" disablePadding className="cya-sidebar-sublist">
                       {section.items.map((item) => {
                         const active = location.pathname === item.path;
@@ -237,6 +280,45 @@ export default function Navar() {
                       })}
                     </List>
                   </Collapse>
+
+                  <Popper
+                    open={isFlyoutOpen}
+                    anchorEl={sectionRefs.current[section.key]}
+                    placement="right-start"
+                    transition
+                    className="cya-sidebar-flyout"
+                    modifiers={[{ name: "offset", options: { offset: [0, 8] } }]}
+                  >
+                    {({ TransitionProps }) => (
+                      <ClickAwayListener onClickAway={() => setFlyoutSection(null)}>
+                        <Grow {...TransitionProps} timeout={150}>
+                          <Paper className="cya-sidebar-flyout-panel">
+                            <List component="div" disablePadding>
+                              <ListItemText
+                                className="cya-sidebar-flyout-title"
+                                primary={section.label}
+                              />
+                              {section.items.map((item) => {
+                                const active = location.pathname === item.path;
+                                return (
+                                  <ListItemButton
+                                    key={item.path}
+                                    className={`cya-sidebar-item cya-sidebar-subitem${active ? " cya-active" : ""}`}
+                                    onClick={() => {
+                                      navigate(item.path);
+                                      setFlyoutSection(null);
+                                    }}
+                                  >
+                                    <ListItemText className="cya-sidebar-label" primary={item.label} />
+                                  </ListItemButton>
+                                );
+                              })}
+                            </List>
+                          </Paper>
+                        </Grow>
+                      </ClickAwayListener>
+                    )}
+                  </Popper>
                 </React.Fragment>
               );
             })}

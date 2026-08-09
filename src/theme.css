@@ -197,7 +197,7 @@ input[type="password"]::-ms-clear {
 
 .leftside-menu {
   background-color: var(--cya-sidebar-bg) !important;
-  transition: background-color .3s ease;
+  transition: background-color .3s ease, width .25s ease;
 }
 
 /* La plantilla reserva 70px arriba (padding-top) para el logo, pero el
@@ -210,6 +210,15 @@ input[type="password"]::-ms-clear {
   align-items: center !important;
   justify-content: center !important;
   line-height: normal !important;
+}
+
+/* El logo de la plantilla es position:fixed sin "left" propio: en modo
+   condensado terminaba anclado a un ancho/posición pensado para el sidebar
+   expandido (260px) y se montaba sobre los íconos. Se fija explícitamente
+   a los mismos 70px del sidebar condensado, pegado a la izquierda. */
+body[data-leftbar-compact-mode="condensed"] .leftside-menu .logo {
+  left: 0 !important;
+  width: 70px !important;
 }
 
 /* La plantilla decide con display:block/none cuál de los dos logos (claro/
@@ -331,6 +340,34 @@ body[data-leftbar-compact-mode="condensed"] .leftside-menu .cya-sidebar-item {
 body[data-leftbar-compact-mode="condensed"] .leftside-menu .MuiListItemIcon-root {
   min-width: auto;
   justify-content: center;
+}
+
+/* Panel flotante que reemplaza al Collapse cuando el sidebar está
+   condensado: mismo lenguaje visual que el resto del menú (fondo oscuro,
+   bordes redondeados), pero flotando al lado del ícono en vez de empujar
+   contenido. Se renderiza en un portal (MUI Popper), fuera de .leftside-menu,
+   así que no lo alcanzan las reglas de "modo condensado" de arriba. */
+.cya-sidebar-flyout {
+  z-index: 1002;
+}
+.cya-sidebar-flyout-panel {
+  background: var(--cya-sidebar-bg) !important;
+  border-radius: var(--cya-radius-md);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  padding: 6px;
+  min-width: 200px;
+  overflow: hidden;
+}
+.cya-sidebar-flyout-title .MuiListItemText-primary {
+  color: rgba(255, 255, 255, .5) !important;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 8px 12px 4px;
+}
+.cya-sidebar-flyout-panel .cya-sidebar-subitem {
+  border-radius: 6px;
 }
 
 .cya-theme-swatch {
