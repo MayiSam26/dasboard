@@ -39,9 +39,11 @@ export default function Agregar({ setOpenModal, getRegistros }: props) {
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
 
   React.useEffect(() => {
+    // Solo mascotas que siguen en el refugio — una vez adoptada o fallecida
+    // ya no debería poder registrársele un nuevo control veterinario.
     const url = baseurl + "colitas/list";
     axios
-      .post(url, {})
+      .post(url, { estado: "En refugio" })
       .then((response) => setAnimales(response.data.data || []))
       .catch(() => setAnimales([]));
   }, []);
