@@ -206,12 +206,15 @@ export default function HomePanel() {
             data.filter(
               (r: any) =>
                 r.proxima_fecha &&
+                r.Estado !== "Realizado" &&
                 moment(r.proxima_fecha).isSameOrAfter(moment(), "day") &&
                 moment(r.proxima_fecha).isSameOrBefore(moment().add(7, "days"), "day")
             )
           );
           setControlesVencidos(
-            data.filter((r: any) => r.proxima_fecha && moment(r.proxima_fecha).isBefore(moment(), "day"))
+            data.filter(
+              (r: any) => r.proxima_fecha && r.Estado !== "Realizado" && moment(r.proxima_fecha).isBefore(moment(), "day")
+            )
           );
 
           const counts = meses.map((m) => data.filter((r: any) => r.fecha && moment(r.fecha).isSame(m, "month")).length);

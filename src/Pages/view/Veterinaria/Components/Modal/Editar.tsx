@@ -33,6 +33,7 @@ export default function Editar({ setOpenModalEdit, idRegistro, getRegistros }: p
   const [fecha, setFecha] = React.useState<string>("");
   const [proximaFecha, setProximaFecha] = React.useState<string>("");
   const [observaciones, setObservaciones] = React.useState<string>("");
+  const [estado, setEstado] = React.useState<string>("Pendiente");
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -47,6 +48,7 @@ export default function Editar({ setOpenModalEdit, idRegistro, getRegistros }: p
       setFecha(data?.fecha ? moment(data.fecha).format("YYYY-MM-DD") : "");
       setProximaFecha(data?.proxima_fecha ? moment(data.proxima_fecha).format("YYYY-MM-DD") : "");
       setObservaciones(data?.observaciones || "");
+      setEstado(data?.Estado || "Pendiente");
     });
   };
 
@@ -68,6 +70,7 @@ export default function Editar({ setOpenModalEdit, idRegistro, getRegistros }: p
       fecha,
       proxima_fecha: proximaFecha || null,
       observaciones: observaciones || null,
+      Estado: proximaFecha ? estado : undefined,
     };
     await axios
       .put(url, body)
@@ -173,7 +176,7 @@ export default function Editar({ setOpenModalEdit, idRegistro, getRegistros }: p
               onChange={(e) => setDescripcion(e.target.value)}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={proximaFecha ? 6 : 12}>
             <TextField
               label="Próximo control (opcional)"
               type="date"
@@ -185,6 +188,17 @@ export default function Editar({ setOpenModalEdit, idRegistro, getRegistros }: p
               onChange={(e) => setProximaFecha(e.target.value)}
             />
           </Grid>
+          {proximaFecha && (
+            <Grid item xs={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Estado del control</InputLabel>
+                <Select value={estado} label="Estado del control" onChange={(e) => setEstado(e.target.value)}>
+                  <MenuItem value="Pendiente">Pendiente</MenuItem>
+                  <MenuItem value="Realizado">Realizado</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+          )}
           <Grid item xs={12}>
             <TextField
               label="Observaciones (opcional)"

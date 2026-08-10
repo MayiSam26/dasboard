@@ -108,7 +108,9 @@ export default function NotificationBell() {
         (data?.data || [])
           .filter(
             (row: any) =>
-              row.proxima_fecha && moment(row.proxima_fecha).isSameOrBefore(moment().add(7, "days"), "day")
+              row.proxima_fecha &&
+              row.Estado !== "Realizado" &&
+              moment(row.proxima_fecha).isSameOrBefore(moment().add(7, "days"), "day")
           )
           .forEach((row: any) => {
             const vencido = moment(row.proxima_fecha).isBefore(moment(), "day");

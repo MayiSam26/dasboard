@@ -13,6 +13,8 @@ import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import moment from "moment";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ReplayIcon from "@mui/icons-material/Replay";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
 import Delete from "./Components/Modal/Delete";
@@ -69,6 +71,15 @@ export default function Veterinaria() {
     return () => clearTimeout(timer);
   }, [getRegistros]);
 
+  const cambiarEstado = async (row: any) => {
+    const nuevoEstado = row.Estado === "Realizado" ? "Pendiente" : "Realizado";
+    const url = baseurl + "veterinaria/estado/" + row.idveterinaria;
+    await axios
+      .put(url, { Estado: nuevoEstado })
+      .then(() => getRegistros())
+      .catch((e) => alert(e?.response?.data?.message || e.message));
+  };
+
   const columns: GridColDef<(typeof registros)[number]>[] = [
     {
       field: "animal",
@@ -100,11 +111,21 @@ export default function Veterinaria() {
     {
       field: "proxima_fecha",
       headerName: "Próximo control",
-      width: 150,
+      width: 160,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => {
         if (!params.value) return "—";
+        if (params.row.Estado === "Realizado") {
+          return (
+            <Chip
+              label={`✓ ${moment(params.value).format("DD-MM-YYYY")}`}
+              size="small"
+              color="success"
+              variant="outlined"
+            />
+          );
+        }
         const vencido = moment(params.value).isBefore(moment(), "day");
         return (
           <Chip
@@ -140,13 +161,27 @@ export default function Veterinaria() {
     {
       field: "view",
       headerName: "Opción",
-      width: 100,
+      width: 130,
       sortable: false,
       resizable: false,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
         <Box sx={{ display: "flex", gap: 0.5 }}>
+          {params.row.proxima_fecha && (
+            <Tooltip title={params.row.Estado === "Realizado" ? "Volver a marcar como pendiente" : "Marcar como realizado"}>
+              <IconButton
+                size="small"
+                sx={{
+                  background: params.row.Estado === "Realizado" ? "rgba(184, 92, 0, 0.10)" : "rgba(10, 207, 151, 0.10)",
+                  color: params.row.Estado === "Realizado" ? "#b85c00" : "#0acf97",
+                }}
+                onClick={() => cambiarEstado(params.row)}
+              >
+                {params.row.Estado === "Realizado" ? <ReplayIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="Editar">
             <IconButton
               className="cya-icon-edit"
