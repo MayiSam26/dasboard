@@ -150,11 +150,16 @@ const ROL_COLORS: Record<string, string> = {
 export default function Reportes() {
   const navigate = useNavigate();
 
+  // "usuario/list" solo lo puede consultar un Administrador (rol fijo en el
+  // backend, no configurable desde Permisos) — Voluntario/Veterinario no
+  // deberían ni pedirlo ni ver el panel de Usuarios, o les sale todo en 0.
+  const rol = localStorage.getItem("rol");
+  const esAdmin = !rol || rol === "Administrador";
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) navigate("/");
-    const rol = localStorage.getItem("rol");
-    if (!rol || rol === "Administrador") return;
+    if (esAdmin) return;
     axios
       .get(baseurl + "permisos/mios")
       .then((response) => {
@@ -228,27 +233,29 @@ export default function Reportes() {
       })
       .catch(() => {});
 
-    const pUsuarios = axios
-      .get(baseurl + "usuario/list")
-      .then((res) => {
-        const data = res.data.data || [];
-        setTotalUsuarios(data.length);
-        setUsuariosActivos(data.filter((u: any) => u.activo).length);
-        setUsuariosInactivos(data.filter((u: any) => !u.activo).length);
+    const pUsuarios = esAdmin
+      ? axios
+          .get(baseurl + "usuario/list")
+          .then((res) => {
+            const data = res.data.data || [];
+            setTotalUsuarios(data.length);
+            setUsuariosActivos(data.filter((u: any) => u.activo).length);
+            setUsuariosInactivos(data.filter((u: any) => !u.activo).length);
 
-        const roles: Record<string, number> = {};
-        data.forEach((u: any) => {
-          roles[u.rol] = (roles[u.rol] || 0) + 1;
-        });
-        setUsuariosPorRol(
-          Object.entries(roles).map(([label, value]) => ({
-            label,
-            value,
-            color: ROL_COLORS[label] || CYA_MUTED,
-          }))
-        );
-      })
-      .catch(() => {});
+            const roles: Record<string, number> = {};
+            data.forEach((u: any) => {
+              roles[u.rol] = (roles[u.rol] || 0) + 1;
+            });
+            setUsuariosPorRol(
+              Object.entries(roles).map(([label, value]) => ({
+                label,
+                value,
+                color: ROL_COLORS[label] || CYA_MUTED,
+              }))
+            );
+          })
+          .catch(() => {})
+      : Promise.resolve();
 
     const pAdopciones = axios
       .post(baseurl + "adopciones/list", {})
@@ -318,7 +325,7 @@ export default function Reportes() {
     Promise.all([pAnimales, pUsuarios, pAdopciones, pSeguimientos, pIngresos, pEgresos, pDonantes]).then(() =>
       setCargado(true)
     );
-  }, []);
+  }, [esAdmin]);
 
   const exportarPDF = async () => {
     const doc = new jsPDF({ orientation: "portrait" });
@@ -357,10 +364,14 @@ export default function Reportes() {
       ["Animales", "En proceso de adopción", enProcesoAnimal],
       ["Animales", "Adoptados", adoptadosAnimal],
       ...tipoMascotas.map((t) => ["Animales", `Tipo: ${t.label}`, t.value]),
-      ["Usuarios", "Total registrados", totalUsuarios],
-      ["Usuarios", "Activos", usuariosActivos],
-      ["Usuarios", "Inactivos", usuariosInactivos],
-      ...usuariosPorRol.map((r) => ["Usuarios", `Rol: ${r.label}`, r.value]),
+      ...(esAdmin
+        ? [
+            ["Usuarios", "Total registrados", totalUsuarios],
+            ["Usuarios", "Activos", usuariosActivos],
+            ["Usuarios", "Inactivos", usuariosInactivos],
+            ...usuariosPorRol.map((r) => ["Usuarios", `Rol: ${r.label}`, r.value]),
+          ]
+        : []),
       ["Solicitudes de adopción", "Total", totalSolicitudes],
       ["Solicitudes de adopción", "En proceso", solicitudesProceso],
       ["Solicitudes de adopción", "Rechazadas", solicitudesRechazadas],
@@ -461,38 +472,42 @@ export default function Reportes() {
               </Grid>
             )}
 
-            {/* Usuarios */}
-            <SectionHeader
-              icon={<GroupIcon fontSize="small" />}
-              title="Usuarios"
-              subtitle="Cuentas del personal del refugio"
-            />
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={4}>
-                <StatCard icon={<GroupIcon />} label="Total registrados" value={totalUsuarios} color={CYA_SECONDARY} />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <StatCard icon={<CheckCircleIcon />} label="Activos" value={usuariosActivos} color={CYA_SECONDARY} />
-              </Grid>
-              <Grid item xs={12} sm={6} md={4}>
-                <StatCard icon={<PersonOffIcon />} label="Inactivos" value={usuariosInactivos} color={CYA_MUTED} />
-              </Grid>
-            </Grid>
-            {usuariosPorRol.length > 0 && (
-              <Grid container spacing={2} sx={{ mt: 0.5 }}>
-                <Grid item xs={12} md={6}>
-                  <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
-                    <Typography sx={{ fontWeight: 700, mb: 1 }}>Usuarios por rol</Typography>
-                    <PieChart
-                      series={[{ data: usuariosPorRol, innerRadius: 45, outerRadius: 90, paddingAngle: 2, cornerRadius: 3 }]}
-                      height={330}
-                      slotProps={{
-                        legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } },
-                      }}
-                    />
-                  </Paper>
+            {/* Usuarios — solo Administrador, es el único que puede ver esos datos */}
+            {esAdmin && (
+              <>
+                <SectionHeader
+                  icon={<GroupIcon fontSize="small" />}
+                  title="Usuarios"
+                  subtitle="Cuentas del personal del refugio"
+                />
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <StatCard icon={<GroupIcon />} label="Total registrados" value={totalUsuarios} color={CYA_SECONDARY} />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <StatCard icon={<CheckCircleIcon />} label="Activos" value={usuariosActivos} color={CYA_SECONDARY} />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={4}>
+                    <StatCard icon={<PersonOffIcon />} label="Inactivos" value={usuariosInactivos} color={CYA_MUTED} />
+                  </Grid>
                 </Grid>
-              </Grid>
+                {usuariosPorRol.length > 0 && (
+                  <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                    <Grid item xs={12} md={6}>
+                      <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
+                        <Typography sx={{ fontWeight: 700, mb: 1 }}>Usuarios por rol</Typography>
+                        <PieChart
+                          series={[{ data: usuariosPorRol, innerRadius: 45, outerRadius: 90, paddingAngle: 2, cornerRadius: 3 }]}
+                          height={330}
+                          slotProps={{
+                            legend: { direction: "row", position: { vertical: "bottom", horizontal: "middle" } },
+                          }}
+                        />
+                      </Paper>
+                    </Grid>
+                  </Grid>
+                )}
+              </>
             )}
 
             {/* Solicitudes de adopción */}

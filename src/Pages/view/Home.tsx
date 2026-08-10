@@ -121,9 +121,13 @@ export default function HomePanel() {
   // datos — antes se veían en 0 porque esas llamadas fallaban en silencio.
   const rol = localStorage.getItem("rol");
   const esVeterinario = rol === "Veterinario";
+  // "usuario/list" solo lo puede ver un Administrador (rol fijo en el
+  // backend) — Voluntario tampoco debería pedirlo ni mostrar ese total.
+  const esAdmin = !rol || rol === "Administrador";
 
   const [totalMascotas, setTotalMascotas] = React.useState(0);
   const [totalAdoptadas, setTotalAdoptadas] = React.useState(0);
+  const [enRefugio, setEnRefugio] = React.useState(0);
   const [totalUsuarios, setTotalUsuarios] = React.useState(0);
   const [solicitudesPendientes, setSolicitudesPendientes] = React.useState<any[]>([]);
   const [openSolicitudes, setOpenSolicitudes] = React.useState(false);
@@ -161,6 +165,7 @@ export default function HomePanel() {
       .then((res) => {
         const data = res.data.data || [];
         setTotalMascotas(data.length);
+        setEnRefugio(data.filter((item: any) => item.estado === "En refugio").length);
 
         const estados: Record<string, number> = {};
         const tipos: Record<string, number> = {};
@@ -239,14 +244,16 @@ export default function HomePanel() {
       })
       .catch((e) => console.log(e.message));
 
-    // Usuarios: total
-    axios
-      .get(baseurl + "usuario/list")
-      .then((res) => {
-        const data = res.data.data || [];
-        setTotalUsuarios(data.length);
-      })
-      .catch((e) => console.log(e.message));
+    // Usuarios: total (solo Administrador tiene acceso a esta lista)
+    if (esAdmin) {
+      axios
+        .get(baseurl + "usuario/list")
+        .then((res) => {
+          const data = res.data.data || [];
+          setTotalUsuarios(data.length);
+        })
+        .catch((e) => console.log(e.message));
+    }
 
     // Ingresos: por mes
     axios
@@ -262,7 +269,7 @@ export default function HomePanel() {
         setDonacionesPorMes(sums);
       })
       .catch((e) => console.log(e.message));
-  }, [esVeterinario]);
+  }, [esVeterinario, esAdmin]);
 
   return (
     <>
@@ -415,12 +422,21 @@ export default function HomePanel() {
                     />
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
-                    <StatCard
-                      icon={<PeopleAltIcon />}
-                      label="Total de Usuarios Registrados"
-                      value={totalUsuarios}
-                      color={CYA_SECONDARY}
-                    />
+                    {esAdmin ? (
+                      <StatCard
+                        icon={<PeopleAltIcon />}
+                        label="Total de Usuarios Registrados"
+                        value={totalUsuarios}
+                        color={CYA_SECONDARY}
+                      />
+                    ) : (
+                      <StatCard
+                        icon={<PetsIcon />}
+                        label="Colitas En Refugio"
+                        value={enRefugio}
+                        color={CYA_SECONDARY}
+                      />
+                    )}
                   </Grid>
                 </Grid>
 
