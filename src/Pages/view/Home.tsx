@@ -212,7 +212,14 @@ export default function HomePanel() {
         .post(baseurl + "voluntario-visita/list", {})
         .then((res) => {
           const data = res.data.data || [];
-          setEventosCalendario(data.map((v: any) => ({ fecha: v.fecha, titulo: v.nota || "Visita al refugio" })));
+          setEventosCalendario(
+            data.map((v: any) => ({
+              fecha: v.fecha,
+              titulo: "Visita al refugio",
+              detalle: v.nota || "Sin nota adicional.",
+              estado: v.Estado,
+            }))
+          );
         })
         .catch((e) => console.log(e.message));
     }
@@ -224,7 +231,12 @@ export default function HomePanel() {
         .then((res) => {
           const data = res.data.data || [];
           setEventosCalendario(
-            data.map((r: any) => ({ fecha: r.proxima_fecha, titulo: `${r.tipo} — ${r.animal?.nombre || "Colita"}` }))
+            data.map((r: any) => ({
+              fecha: r.proxima_fecha,
+              titulo: `${r.tipo} — ${r.animal?.nombre || "Colita"}`,
+              detalle: r.descripcion || "Sin descripción adicional.",
+              estado: r.Estado,
+            }))
           );
         })
         .catch((e) => console.log(e.message));

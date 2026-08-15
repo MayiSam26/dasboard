@@ -1,13 +1,32 @@
 import React from "react";
-import { Box, IconButton, Paper, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Paper,
+  Typography,
+} from "@mui/material";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import EventIcon from "@mui/icons-material/Event";
+import CloseIcon from "@mui/icons-material/Close";
+import EventBusyIcon from "@mui/icons-material/EventBusy";
 import moment from "moment";
 
 export interface EventoCalendario {
   fecha: string; // YYYY-MM-DD
   titulo: string;
+  // Texto adicional mostrado solo dentro del modal de detalle (opcional).
+  detalle?: string;
+  // "Pendiente" | "Realizado" u otro valor libre — se muestra como Chip si viene.
+  estado?: string;
 }
 
 interface Props {
@@ -17,6 +36,7 @@ interface Props {
 
 export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Props) {
   const [mes, setMes] = React.useState(() => moment().startOf("month"));
+  const [diaSeleccionado, setDiaSeleccionado] = React.useState<number | null>(null);
 
   const eventosPorDia = React.useMemo(() => {
     const map: Record<string, EventoCalendario[]> = {};
@@ -46,6 +66,15 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
     ...Array(primerDiaSemana).fill(null),
     ...Array.from({ length: diasEnMes }, (_, i) => i + 1),
   ];
+
+  const eventosDelDiaSeleccionado = diaSeleccionado ? eventosPorDia[diaSeleccionado] || [] : [];
+  const fechaDialogo = diaSeleccionado ? mes.clone().date(diaSeleccionado) : null;
+
+  const estadoColor = (estado?: string) => {
+    if (estado === "Realizado") return "success";
+    if (estado === "Pendiente") return "warning";
+    return "default";
+  };
 
   return (
     <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #ECE4DA", height: "100%" }}>
@@ -84,6 +113,7 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
           return (
             <Box
               key={dia}
+              onClick={() => setDiaSeleccionado(dia)}
               sx={{
                 position: "relative",
                 aspectRatio: "1 / 1",
@@ -95,6 +125,11 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
                 fontWeight: esHoy ? 800 : 500,
                 color: esHoy ? "#fff" : "text.primary",
                 backgroundColor: esHoy ? "var(--cya-primary)" : "transparent",
+                cursor: "pointer",
+                transition: "background-color .15s ease",
+                "&:hover": {
+                  backgroundColor: esHoy ? "var(--cya-primary)" : "var(--cya-bg-alt)",
+                },
               }}
             >
               {dia}
@@ -125,7 +160,21 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
       ) : (
         <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8 }}>
           {eventosDelMes.map((e, idx) => (
-            <Box key={idx} sx={{ display: "flex", gap: 1, alignItems: "baseline" }}>
+            <Box
+              key={idx}
+              onClick={() => setDiaSeleccionado(moment(e.fecha).date())}
+              sx={{
+                display: "flex",
+                gap: 1,
+                alignItems: "baseline",
+                cursor: "pointer",
+                borderRadius: "8px",
+                px: 0.8,
+                py: 0.3,
+                mx: -0.8,
+                "&:hover": { backgroundColor: "var(--cya-bg-alt)" },
+              }}
+            >
               <Typography variant="body2" sx={{ fontWeight: 700, color: "var(--cya-primary)", minWidth: 70 }}>
                 {moment(e.fecha).format("DD MMM")}
               </Typography>
@@ -136,6 +185,42 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
           ))}
         </Box>
       )}
+
+      <Dialog open={diaSeleccionado !== null} onClose={() => setDiaSeleccionado(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", textTransform: "capitalize" }}>
+          {fechaDialogo ? fechaDialogo.format("dddd D [de] MMMM") : ""}
+          <IconButton onClick={() => setDiaSeleccionado(null)}>
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          {eventosDelDiaSeleccionado.length === 0 ? (
+            <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 1, py: 3, color: "text.secondary" }}>
+              <EventBusyIcon />
+              <Typography color="text.secondary">No tienes citas programadas este día.</Typography>
+            </Box>
+          ) : (
+            <List disablePadding>
+              {eventosDelDiaSeleccionado.map((e, idx) => (
+                <React.Fragment key={idx}>
+                  <ListItem disablePadding sx={{ py: 1.2 }}>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <strong style={{ color: "var(--cya-primary)" }}>{e.titulo}</strong>
+                          {e.estado && <Chip label={e.estado} size="small" color={estadoColor(e.estado) as any} />}
+                        </Box>
+                      }
+                      secondary={e.detalle || "Sin detalles adicionales."}
+                    />
+                  </ListItem>
+                  {idx < eventosDelDiaSeleccionado.length - 1 && <Divider component="li" />}
+                </React.Fragment>
+              ))}
+            </List>
+          )}
+        </DialogContent>
+      </Dialog>
     </Paper>
   );
 }
