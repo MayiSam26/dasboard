@@ -29,6 +29,7 @@ const MiCuenta = lazy(() => import("../Pages/view/MiCuenta/MiCuenta"));
 const Veterinaria = lazy(() => import("../Pages/view/Veterinaria/Veterinaria"));
 const Permisos = lazy(() => import("../Pages/view/Usuarios/Permisos"));
 const Apadrinado = lazy(() => import("../Pages/view/Apadrinado/Apadrinado"));
+const Voluntariado = lazy(() => import("../Pages/view/Voluntariado/Voluntariado"));
 
 function PanelFallback() {
   return (
@@ -73,6 +74,7 @@ export function RoutesApp() {
               <Route path="/panel/veterinaria" element={<Veterinaria />} />
               <Route path="/panel/permisos" element={<Permisos />} />
               <Route path="/panel/apadrinado" element={<Apadrinado />} />
+              <Route path="/panel/voluntariado" element={<Voluntariado />} />
             </Route>
           </Routes>
         </Suspense>

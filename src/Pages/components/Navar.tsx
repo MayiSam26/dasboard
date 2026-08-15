@@ -20,6 +20,7 @@ import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
 import GroupIcon from "@mui/icons-material/Group";
 import AssessmentIcon from "@mui/icons-material/Assessment";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
+import EventIcon from "@mui/icons-material/Event";
 import React from "react";
 import axios from "axios";
 import baseurl from "../../Config/axios";
@@ -100,6 +101,13 @@ const sections: Section[] = [
       { label: "Donante", path: "/panel/donante" },
       { label: "Apadrinamientos", path: "/panel/apadrinado" },
     ],
+  },
+  {
+    key: "voluntariado",
+    label: "Voluntariado",
+    icon: <EventIcon />,
+    roles: ["Administrador"],
+    items: [{ label: "Visitas de Voluntariado", path: "/panel/voluntariado" }],
   },
   {
     key: "usuarios",

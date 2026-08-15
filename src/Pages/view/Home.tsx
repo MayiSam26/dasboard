@@ -33,6 +33,7 @@ import axios from "axios";
 import moment from "moment";
 import "moment/locale/es";
 import baseurl from "../../Config/axios";
+import MiniCalendario, { EventoCalendario } from "../components/MiniCalendario";
 
 moment.locale("es");
 
@@ -121,6 +122,7 @@ export default function HomePanel() {
   // datos — antes se veían en 0 porque esas llamadas fallaban en silencio.
   const rol = localStorage.getItem("rol");
   const esVeterinario = rol === "Veterinario";
+  const esVoluntario = rol === "Voluntario";
   // "usuario/list" solo lo puede ver un Administrador (rol fijo en el
   // backend) — Voluntario tampoco debería pedirlo ni mostrar ese total.
   const esAdmin = !rol || rol === "Administrador";
@@ -145,6 +147,10 @@ export default function HomePanel() {
   const [controlesVencidos, setControlesVencidos] = React.useState<any[]>([]);
   const [openControles, setOpenControles] = React.useState(false);
   const [controlesPorMes, setControlesPorMes] = React.useState<number[]>([]);
+
+  // "Mi Calendario": citas del Veterinario (proxima_fecha) o visitas
+  // asignadas al Voluntario, según el rol de quien inició sesión.
+  const [eventosCalendario, setEventosCalendario] = React.useState<EventoCalendario[]>([]);
 
   useEffect(() => {
     userName(localStorage.getItem("user"));
@@ -200,7 +206,29 @@ export default function HomePanel() {
       })
       .catch((e) => console.log(e.message));
 
+    if (esVoluntario) {
+      // Mi Calendario: visitas que el Administrador le asignó a este voluntario.
+      axios
+        .post(baseurl + "voluntario-visita/list", {})
+        .then((res) => {
+          const data = res.data.data || [];
+          setEventosCalendario(data.map((v: any) => ({ fecha: v.fecha, titulo: v.nota || "Visita al refugio" })));
+        })
+        .catch((e) => console.log(e.message));
+    }
+
     if (esVeterinario) {
+      // Mi Calendario: citas (próxima_fecha) que este veterinario agendó.
+      axios
+        .post(baseurl + "veterinaria/list", { misCitas: true })
+        .then((res) => {
+          const data = res.data.data || [];
+          setEventosCalendario(
+            data.map((r: any) => ({ fecha: r.proxima_fecha, titulo: `${r.tipo} — ${r.animal?.nombre || "Colita"}` }))
+          );
+        })
+        .catch((e) => console.log(e.message));
+
       // Controles veterinarios: total, pendientes (próximos 7 días), vencidos, por mes
       axios
         .post(baseurl + "veterinaria/list", {})
@@ -269,7 +297,7 @@ export default function HomePanel() {
         setDonacionesPorMes(sums);
       })
       .catch((e) => console.log(e.message));
-  }, [esVeterinario, esAdmin]);
+  }, [esVeterinario, esVoluntario, esAdmin]);
 
   return (
     <>
@@ -392,6 +420,12 @@ export default function HomePanel() {
                     </Paper>
                   </Grid>
                 </Grid>
+
+                <Grid container spacing={2} sx={{ mt: 0.5 }}>
+                  <Grid item xs={12} md={6}>
+                    <MiniCalendario titulo="Mi Calendario de Citas" eventos={eventosCalendario} />
+                  </Grid>
+                </Grid>
               </>
             ) : (
               <>
@@ -479,6 +513,14 @@ export default function HomePanel() {
                     </List>
                   </DialogContent>
                 </Dialog>
+
+                {esVoluntario && (
+                  <Grid container spacing={2} sx={{ mb: 3 }}>
+                    <Grid item xs={12} md={6}>
+                      <MiniCalendario titulo="Mi Calendario de Visitas" eventos={eventosCalendario} />
+                    </Grid>
+                  </Grid>
+                )}
 
                 <Grid container spacing={2} sx={{ mb: 2 }}>
                   <Grid item xs={12} md={8}>
