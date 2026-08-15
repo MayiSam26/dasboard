@@ -51,6 +51,42 @@ function lastNMonths(n: number) {
   return months;
 }
 
+// Ajuste por mínimos cuadrados sobre los últimos N meses (x = índice de mes,
+// y = valor). Es la Recomendación #2 de la tesis ("herramientas predictivas
+// para anticipar tendencias") resuelta de forma simple y explicable: una
+// tendencia lineal, no un modelo de caja negra. Nunca negativo.
+function linearRegression(values: number[]): { slope: number; intercept: number } {
+  const n = values.length;
+  const meanX = (n - 1) / 2;
+  const meanY = values.reduce((a, b) => a + b, 0) / n;
+  let num = 0;
+  let den = 0;
+  values.forEach((y, x) => {
+    num += (x - meanX) * (y - meanY);
+    den += (x - meanX) ** 2;
+  });
+  const slope = den === 0 ? 0 : num / den;
+  const intercept = meanY - slope * meanX;
+  return { slope, intercept };
+}
+
+function linearForecast(values: number[], stepsAhead: number): number[] {
+  if (values.length < 2) return Array(stepsAhead).fill(Math.max(0, values[0] ?? 0));
+  const { slope, intercept } = linearRegression(values);
+  return Array.from({ length: stepsAhead }, (_, k) =>
+    Math.max(0, Math.round(intercept + slope * (values.length + k)))
+  );
+}
+
+function tendenciaDe(values: number[]): { label: string; color: string } {
+  const { slope } = linearRegression(values);
+  const media = values.reduce((a, b) => a + b, 0) / values.length;
+  const umbral = Math.max(0.5, media * 0.05);
+  if (slope > umbral) return { label: "↑ En aumento", color: CYA_SECONDARY };
+  if (slope < -umbral) return { label: "↓ En descenso", color: CYA_ERROR };
+  return { label: "→ Estable", color: CYA_MUTED };
+}
+
 function loadImageAsDataUrl(url: string): Promise<string> {
   return fetch(url)
     .then((r) => r.blob())
@@ -203,6 +239,35 @@ export default function Reportes() {
   const [egresosPorMes, setEgresosPorMes] = React.useState<number[]>([]);
 
   const [cargado, setCargado] = React.useState(false);
+
+  // Tendencias y proyección (Recomendación #2 de la tesis) — se derivan de
+  // los mismos arrays ya cargados arriba, sin pedir nada nuevo a la API.
+  const hayDatosAdopciones = React.useMemo(
+    () => adopcionesPorMes.filter((v) => v > 0).length >= 2,
+    [adopcionesPorMes]
+  );
+  const hayDatosIngresos = React.useMemo(() => ingresosPorMes.filter((v) => v > 0).length >= 2, [ingresosPorMes]);
+  const proyeccionAdopciones = React.useMemo(() => linearForecast(adopcionesPorMes, 2), [adopcionesPorMes]);
+  const proyeccionIngresos = React.useMemo(() => linearForecast(ingresosPorMes, 2), [ingresosPorMes]);
+  const tendenciaAdopciones = React.useMemo(() => tendenciaDe(adopcionesPorMes), [adopcionesPorMes]);
+  const tendenciaIngresos = React.useMemo(() => tendenciaDe(ingresosPorMes), [ingresosPorMes]);
+  const mesesLabelsProyeccion = React.useMemo(() => {
+    const futuros = [moment().add(1, "months"), moment().add(2, "months")];
+    return [...mesesLabels, ...futuros.map((m) => `${m.format("MMM YY")} (proy.)`)];
+  }, [mesesLabels]);
+  const adopcionesReal = React.useMemo(
+    () => [...adopcionesPorMes, null, null] as (number | null)[],
+    [adopcionesPorMes]
+  );
+  const adopcionesProy = React.useMemo(
+    () => [...adopcionesPorMes.map(() => null), ...proyeccionAdopciones] as (number | null)[],
+    [adopcionesPorMes, proyeccionAdopciones]
+  );
+  const ingresosReal = React.useMemo(() => [...ingresosPorMes, null, null] as (number | null)[], [ingresosPorMes]);
+  const ingresosProy = React.useMemo(
+    () => [...ingresosPorMes.map(() => null), ...proyeccionIngresos] as (number | null)[],
+    [ingresosPorMes, proyeccionIngresos]
+  );
 
   useEffect(() => {
     const meses = lastNMonths(6);
@@ -383,6 +448,18 @@ export default function Reportes() {
       ["Donaciones y Finanzas", "Total egresos (S/.)", totalEgresos.toFixed(2)],
       ["Donaciones y Finanzas", "Balance neto (S/.)", (totalIngresos - totalEgresos).toFixed(2)],
       ["Donaciones y Finanzas", "Donantes registrados", totalDonantes],
+      ...(hayDatosAdopciones
+        ? [
+            ["Tendencias", "Proyección adopciones próximo mes", proyeccionAdopciones[0]],
+            ["Tendencias", "Tendencia de adopciones", tendenciaAdopciones.label],
+          ]
+        : []),
+      ...(hayDatosIngresos
+        ? [
+            ["Tendencias", "Proyección donaciones próximo mes (S/.)", proyeccionIngresos[0]],
+            ["Tendencias", "Tendencia de donaciones", tendenciaIngresos.label],
+          ]
+        : []),
     ];
 
     autoTable(doc, {
@@ -616,6 +693,103 @@ export default function Reportes() {
                 </Paper>
               </Grid>
             </Grid>
+
+            {/* Tendencias y Proyección */}
+            <SectionHeader
+              icon={<AccountBalanceWalletIcon fontSize="small" />}
+              title="Tendencias y Proyección"
+              subtitle="Estimación simple a partir del historial de los últimos 6 meses"
+            />
+            <Typography variant="caption" sx={{ color: "var(--cya-text-muted)", display: "block", mb: 2 }}>
+              Proyección estadística simple (tendencia lineal de los últimos 6 meses) — una referencia, no una
+              garantía.
+            </Typography>
+
+            {hayDatosAdopciones ? (
+              <>
+                <Grid container spacing={2} sx={{ mb: 0.5 }}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <StatCard
+                      icon={<FavoriteIcon />}
+                      label="Adopciones — próximo mes (estimado)"
+                      value={proyeccionAdopciones[0]}
+                      color={CYA_PRIMARY}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <StatCard
+                      icon={<FavoriteIcon />}
+                      label="Tendencia de adopciones"
+                      value={tendenciaAdopciones.label}
+                      color={tendenciaAdopciones.color}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                  <Grid item xs={12}>
+                    <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
+                      <Typography sx={{ fontWeight: 700, mb: 1 }}>Adopciones: real vs. proyectado</Typography>
+                      <BarChart
+                        xAxis={[{ scaleType: "band", data: mesesLabelsProyeccion }]}
+                        yAxis={[{ tickMinStep: 1, valueFormatter: (v: number) => `${v}` }]}
+                        series={[
+                          { data: adopcionesReal, color: CYA_PRIMARY, label: "Real" },
+                          { data: adopcionesProy, color: CYA_MUTED, label: "Proyección" },
+                        ]}
+                        height={240}
+                        grid={{ horizontal: true }}
+                      />
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </>
+            ) : (
+              <Typography color="text.secondary" sx={{ mb: 2 }}>
+                Datos insuficientes para proyectar adopciones.
+              </Typography>
+            )}
+
+            {hayDatosIngresos ? (
+              <>
+                <Grid container spacing={2} sx={{ mb: 0.5 }}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <StatCard
+                      icon={<AttachMoneyIcon />}
+                      label="Donaciones — próximo mes (estimado, S/.)"
+                      value={proyeccionIngresos[0]}
+                      color={CYA_SECONDARY}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <StatCard
+                      icon={<AttachMoneyIcon />}
+                      label="Tendencia de donaciones"
+                      value={tendenciaIngresos.label}
+                      color={tendenciaIngresos.color}
+                    />
+                  </Grid>
+                </Grid>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
+                      <Typography sx={{ fontWeight: 700, mb: 1 }}>Donaciones: real vs. proyectado (S/.)</Typography>
+                      <BarChart
+                        xAxis={[{ scaleType: "band", data: mesesLabelsProyeccion }]}
+                        yAxis={[{ valueFormatter: (v: number) => `S/. ${v}` }]}
+                        series={[
+                          { data: ingresosReal, color: CYA_SECONDARY, label: "Real" },
+                          { data: ingresosProy, color: CYA_MUTED, label: "Proyección" },
+                        ]}
+                        height={240}
+                        grid={{ horizontal: true }}
+                      />
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </>
+            ) : (
+              <Typography color="text.secondary">Datos insuficientes para proyectar donaciones.</Typography>
+            )}
           </Body>
         </Content>
       </Layout>
