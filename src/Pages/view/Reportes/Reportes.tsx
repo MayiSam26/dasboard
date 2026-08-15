@@ -29,19 +29,9 @@ import "moment/locale/es";
 import baseurl from "../../../Config/axios";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { CYA_PRIMARY, CYA_SECONDARY, CYA_ACCENT, CYA_ERROR, CYA_MUTED, linearForecast, tendenciaDe } from "./forecast";
 
 moment.locale("es");
-
-function cssVar(name: string, fallback: string) {
-  const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-  return value || fallback;
-}
-
-const CYA_PRIMARY = cssVar("--cya-primary", "#E4602F");
-const CYA_SECONDARY = cssVar("--cya-secondary", "#3F9E5C");
-const CYA_ACCENT = "#F4A731";
-const CYA_ERROR = "#C0392B";
-const CYA_MUTED = "#B7C2C9";
 
 function lastNMonths(n: number) {
   const months = [];
@@ -49,42 +39,6 @@ function lastNMonths(n: number) {
     months.push(moment().subtract(i, "months"));
   }
   return months;
-}
-
-// Ajuste por mínimos cuadrados sobre los últimos N meses (x = índice de mes,
-// y = valor). Es la Recomendación #2 de la tesis ("herramientas predictivas
-// para anticipar tendencias") resuelta de forma simple y explicable: una
-// tendencia lineal, no un modelo de caja negra. Nunca negativo.
-function linearRegression(values: number[]): { slope: number; intercept: number } {
-  const n = values.length;
-  const meanX = (n - 1) / 2;
-  const meanY = values.reduce((a, b) => a + b, 0) / n;
-  let num = 0;
-  let den = 0;
-  values.forEach((y, x) => {
-    num += (x - meanX) * (y - meanY);
-    den += (x - meanX) ** 2;
-  });
-  const slope = den === 0 ? 0 : num / den;
-  const intercept = meanY - slope * meanX;
-  return { slope, intercept };
-}
-
-function linearForecast(values: number[], stepsAhead: number): number[] {
-  if (values.length < 2) return Array(stepsAhead).fill(Math.max(0, values[0] ?? 0));
-  const { slope, intercept } = linearRegression(values);
-  return Array.from({ length: stepsAhead }, (_, k) =>
-    Math.max(0, Math.round(intercept + slope * (values.length + k)))
-  );
-}
-
-function tendenciaDe(values: number[]): { label: string; color: string } {
-  const { slope } = linearRegression(values);
-  const media = values.reduce((a, b) => a + b, 0) / values.length;
-  const umbral = Math.max(0.5, media * 0.05);
-  if (slope > umbral) return { label: "↑ En aumento", color: CYA_SECONDARY };
-  if (slope < -umbral) return { label: "↓ En descenso", color: CYA_ERROR };
-  return { label: "→ Estable", color: CYA_MUTED };
 }
 
 function loadImageAsDataUrl(url: string): Promise<string> {
