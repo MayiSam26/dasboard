@@ -34,6 +34,7 @@ import moment from "moment";
 import "moment/locale/es";
 import baseurl from "../../Config/axios";
 import MiniCalendario, { EventoCalendario } from "../components/MiniCalendario";
+import ProximasCitas from "../components/ProximasCitas";
 
 moment.locale("es");
 
@@ -225,19 +226,33 @@ export default function HomePanel() {
     }
 
     if (esVeterinario) {
-      // Mi Calendario: citas (próxima_fecha) que este veterinario agendó.
+      // Mi Calendario: cada atención que este veterinario registra es una
+      // cita en su propia fecha; si además tiene próxima fecha, se agrega
+      // un segundo evento de seguimiento con su Estado (Pendiente/Realizado).
       axios
         .post(baseurl + "veterinaria/list", { misCitas: true })
         .then((res) => {
           const data = res.data.data || [];
-          setEventosCalendario(
-            data.map((r: any) => ({
-              fecha: r.proxima_fecha,
-              titulo: `${r.tipo} — ${r.animal?.nombre || "Colita"}`,
-              detalle: r.descripcion || "Sin descripción adicional.",
-              estado: r.Estado,
-            }))
-          );
+          const eventos: EventoCalendario[] = [];
+          data.forEach((r: any) => {
+            const nombreAnimal = r.animal?.nombre || "Colita";
+            if (r.fecha) {
+              eventos.push({
+                fecha: r.fecha,
+                titulo: `${r.tipo} — ${nombreAnimal}`,
+                detalle: r.descripcion || "Sin descripción adicional.",
+              });
+            }
+            if (r.proxima_fecha) {
+              eventos.push({
+                fecha: r.proxima_fecha,
+                titulo: `Próximo control — ${nombreAnimal}`,
+                detalle: r.observaciones || "Sin observaciones adicionales.",
+                estado: r.Estado,
+              });
+            }
+          });
+          setEventosCalendario(eventos);
         })
         .catch((e) => console.log(e.message));
 
@@ -437,6 +452,9 @@ export default function HomePanel() {
                   <Grid item xs={12} md={6}>
                     <MiniCalendario titulo="Mi Calendario de Citas" eventos={eventosCalendario} />
                   </Grid>
+                  <Grid item xs={12} md={6}>
+                    <ProximasCitas titulo="Próximas Citas" eventos={eventosCalendario} />
+                  </Grid>
                 </Grid>
               </>
             ) : (
@@ -530,6 +548,9 @@ export default function HomePanel() {
                   <Grid container spacing={2} sx={{ mb: 3 }}>
                     <Grid item xs={12} md={6}>
                       <MiniCalendario titulo="Mi Calendario de Visitas" eventos={eventosCalendario} />
+                    </Grid>
+                    <Grid item xs={12} md={6}>
+                      <ProximasCitas titulo="Próximas Visitas" eventos={eventosCalendario} />
                     </Grid>
                   </Grid>
                 )}

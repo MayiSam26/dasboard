@@ -2,7 +2,9 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   InputLabel,
@@ -32,6 +34,7 @@ export default function Agregar({ setOpenModal, getRegistros }: props) {
   const [descripcion, setDescripcion] = React.useState<string>("");
   const [fecha, setFecha] = React.useState<string>("");
   const [proximaFecha, setProximaFecha] = React.useState<string>("");
+  const [sinSeguimiento, setSinSeguimiento] = React.useState<boolean>(false);
   const [observaciones, setObservaciones] = React.useState<string>("");
 
   const [severity, setSeverity] = React.useState<any>("");
@@ -188,10 +191,29 @@ export default function Agregar({ setOpenModal, getRegistros }: props) {
               variant="outlined"
               fullWidth
               size="small"
+              disabled={sinSeguimiento}
               InputLabelProps={{ shrink: true }}
               value={proximaFecha}
               onChange={(e) => setProximaFecha(e.target.value)}
               helperText="Si aplica: próxima dosis, próximo chequeo, etc."
+            />
+            <FormControlLabel
+              sx={{ mt: 0.5, ml: 0 }}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={sinSeguimiento}
+                  onChange={(e) => {
+                    setSinSeguimiento(e.target.checked);
+                    if (e.target.checked) setProximaFecha("");
+                  }}
+                />
+              }
+              label={
+                <Typography variant="body2" sx={{ color: "var(--cya-text-muted)" }}>
+                  No aplica otro control (ej. una sola vacuna, sin seguimiento)
+                </Typography>
+              }
             />
           </Grid>
           <Grid item xs={12}>

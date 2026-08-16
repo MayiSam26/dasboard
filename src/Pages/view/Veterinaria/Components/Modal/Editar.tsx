@@ -2,7 +2,9 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   FormControl,
+  FormControlLabel,
   IconButton,
   InputLabel,
   MenuItem,
@@ -34,6 +36,7 @@ export default function Editar({ setOpenModalEdit, idRegistro, getRegistros }: p
   const [proximaFecha, setProximaFecha] = React.useState<string>("");
   const [observaciones, setObservaciones] = React.useState<string>("");
   const [estado, setEstado] = React.useState<string>("Pendiente");
+  const [sinSeguimiento, setSinSeguimiento] = React.useState<boolean>(false);
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -49,6 +52,7 @@ export default function Editar({ setOpenModalEdit, idRegistro, getRegistros }: p
       setProximaFecha(data?.proxima_fecha ? moment(data.proxima_fecha).format("YYYY-MM-DD") : "");
       setObservaciones(data?.observaciones || "");
       setEstado(data?.Estado || "Pendiente");
+      setSinSeguimiento(!data?.proxima_fecha);
     });
   };
 
@@ -183,9 +187,28 @@ export default function Editar({ setOpenModalEdit, idRegistro, getRegistros }: p
               variant="outlined"
               fullWidth
               size="small"
+              disabled={sinSeguimiento}
               InputLabelProps={{ shrink: true }}
               value={proximaFecha}
               onChange={(e) => setProximaFecha(e.target.value)}
+            />
+            <FormControlLabel
+              sx={{ mt: 0.5, ml: 0 }}
+              control={
+                <Checkbox
+                  size="small"
+                  checked={sinSeguimiento}
+                  onChange={(e) => {
+                    setSinSeguimiento(e.target.checked);
+                    if (e.target.checked) setProximaFecha("");
+                  }}
+                />
+              }
+              label={
+                <Typography variant="body2" sx={{ color: "var(--cya-text-muted)" }}>
+                  No aplica otro control
+                </Typography>
+              }
             />
           </Grid>
           {proximaFecha && (
