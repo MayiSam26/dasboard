@@ -13,15 +13,13 @@ interface Props {
 // Panel de solo lectura: lista las próximas citas/visitas (hoy en adelante,
 // sin contar lo ya marcado como Realizado) como recordatorio rápido junto
 // al calendario, sin necesidad de entrar a un día en particular.
-export default function ProximasCitas({ titulo = "Próximas Citas", eventos, limite = 6 }: Props) {
-  const proximas = React.useMemo(
-    () =>
-      eventos
-        .filter((e) => e.fecha && moment(e.fecha).isSameOrAfter(moment(), "day") && e.estado !== "Realizado")
-        .sort((a, b) => moment(a.fecha).valueOf() - moment(b.fecha).valueOf())
-        .slice(0, limite),
-    [eventos, limite]
-  );
+export default function ProximasCitas({ titulo = "Próximas Citas", eventos, limite }: Props) {
+  const proximas = React.useMemo(() => {
+    const filtradas = eventos
+      .filter((e) => e.fecha && moment(e.fecha).isSameOrAfter(moment(), "day") && e.estado !== "Realizado")
+      .sort((a, b) => moment(a.fecha).valueOf() - moment(b.fecha).valueOf());
+    return limite ? filtradas.slice(0, limite) : filtradas;
+  }, [eventos, limite]);
 
   return (
     <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid #ECE4DA", height: "100%" }}>
@@ -34,7 +32,7 @@ export default function ProximasCitas({ titulo = "Próximas Citas", eventos, lim
           No tienes citas pendientes por ahora.
         </Typography>
       ) : (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 1, maxHeight: 360, overflowY: "auto", pr: 0.5 }}>
           {proximas.map((e, idx) => (
             <Box
               key={idx}

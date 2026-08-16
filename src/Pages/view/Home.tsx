@@ -219,7 +219,7 @@ export default function HomePanel() {
               titulo: "Visita al refugio",
               detalle: v.nota || "Sin nota adicional.",
               estado: v.Estado,
-              color: CYA_SECONDARY,
+              color: v.Estado === "Realizado" ? CYA_SECONDARY : CYA_ACCENT,
             }))
           );
         })
@@ -251,7 +251,7 @@ export default function HomePanel() {
                 titulo: `Próximo control — ${nombreAnimal}`,
                 detalle: r.observaciones || "Sin observaciones adicionales.",
                 estado: r.Estado,
-                color: CYA_PRIMARY,
+                color: r.Estado === "Realizado" ? CYA_SECONDARY : CYA_ACCENT,
               });
             }
           });
@@ -451,17 +451,7 @@ export default function HomePanel() {
                   </Grid>
                 </Grid>
 
-                <Box sx={{ display: "flex", alignItems: "center", gap: 2.5, mt: 2, mb: 0.5 }}>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                    <Box sx={{ width: 9, height: 9, borderRadius: "50%", backgroundColor: CYA_SECONDARY }} />
-                    <Typography variant="caption" color="text.secondary">Atención</Typography>
-                  </Box>
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 0.6 }}>
-                    <Box sx={{ width: 9, height: 9, borderRadius: "50%", backgroundColor: CYA_PRIMARY }} />
-                    <Typography variant="caption" color="text.secondary">Seguimiento</Typography>
-                  </Box>
-                </Box>
-                <Grid container spacing={2}>
+                <Grid container spacing={2} sx={{ mt: 0.5 }}>
                   <Grid item xs={12} md={6}>
                     <MiniCalendario titulo="Mi Calendario de Citas" eventos={eventosCalendario} />
                   </Grid>
