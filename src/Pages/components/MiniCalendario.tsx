@@ -52,14 +52,6 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
     return map;
   }, [eventos, mes]);
 
-  const eventosDelMes = React.useMemo(
-    () =>
-      Object.values(eventosPorDia)
-        .flat()
-        .sort((a, b) => moment(a.fecha).valueOf() - moment(b.fecha).valueOf()),
-    [eventosPorDia]
-  );
-
   const diasEnMes = mes.daysInMonth();
   const primerDiaSemana = (mes.day() - moment.localeData().firstDayOfWeek() + 7) % 7;
   const nombresDias = moment.weekdaysMin(true);
@@ -154,51 +146,6 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
           );
         })}
       </Box>
-
-      <Typography variant="body2" sx={{ fontWeight: 700, mt: 2, mb: 1 }}>
-        Citas de este mes
-      </Typography>
-      {eventosDelMes.length === 0 ? (
-        <Typography variant="body2" color="text.secondary">
-          No tienes citas programadas este mes.
-        </Typography>
-      ) : (
-        <Box sx={{ display: "flex", flexDirection: "column", gap: 0.8 }}>
-          {eventosDelMes.map((e, idx) => (
-            <Box
-              key={idx}
-              onClick={() => setDiaSeleccionado(moment(e.fecha).date())}
-              sx={{
-                display: "flex",
-                gap: 1,
-                alignItems: "baseline",
-                cursor: "pointer",
-                borderRadius: "8px",
-                px: 0.8,
-                py: 0.3,
-                mx: -0.8,
-                "&:hover": { backgroundColor: "var(--cya-bg-alt)" },
-              }}
-            >
-              <Box
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: "50%",
-                  backgroundColor: e.color || "var(--cya-secondary)",
-                  flexShrink: 0,
-                }}
-              />
-              <Typography variant="body2" sx={{ fontWeight: 700, color: "var(--cya-primary)", minWidth: 62 }}>
-                {moment(e.fecha).format("DD MMM")}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {e.titulo}
-              </Typography>
-            </Box>
-          ))}
-        </Box>
-      )}
 
       <Dialog open={diaSeleccionado !== null} onClose={() => setDiaSeleccionado(null)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", textTransform: "capitalize" }}>
