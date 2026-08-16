@@ -45,6 +45,7 @@ export default function ProximasCitas({ titulo = "Próximas Citas", eventos, lim
                 p: 1.2,
                 borderRadius: "10px",
                 border: "1px solid var(--cya-border)",
+                borderLeft: `4px solid ${e.color || "var(--cya-primary)"}`,
                 backgroundColor: "var(--cya-bg-alt)",
               }}
             >
@@ -54,7 +55,7 @@ export default function ProximasCitas({ titulo = "Próximas Citas", eventos, lim
                   textAlign: "center",
                   borderRadius: "8px",
                   py: 0.5,
-                  backgroundColor: "var(--cya-primary)",
+                  backgroundColor: e.color || "var(--cya-primary)",
                   color: "#fff",
                 }}
               >

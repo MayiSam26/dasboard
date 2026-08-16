@@ -27,6 +27,9 @@ export interface EventoCalendario {
   detalle?: string;
   // "Pendiente" | "Realizado" u otro valor libre — se muestra como Chip si viene.
   estado?: string;
+  // Color para distinguir tipos de evento (ej. atención vs. seguimiento).
+  // Si no viene, se usa el color primario del tema.
+  color?: string;
 }
 
 interface Props {
@@ -109,7 +112,9 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
         {celdas.map((dia, idx) => {
           if (dia === null) return <Box key={`vacio-${idx}`} />;
           const esHoy = hoy.isSame(mes.clone().date(dia), "day");
-          const tieneEvento = !!eventosPorDia[dia];
+          const eventosDia = eventosPorDia[dia];
+          const tieneEvento = !!eventosDia;
+          const colorEvento = eventosDia?.[0]?.color || "var(--cya-secondary)";
           return (
             <Box
               key={dia}
@@ -138,10 +143,10 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
                   sx={{
                     position: "absolute",
                     bottom: 3,
-                    width: 5,
-                    height: 5,
+                    width: 6,
+                    height: 6,
                     borderRadius: "50%",
-                    backgroundColor: esHoy ? "#fff" : "var(--cya-secondary)",
+                    backgroundColor: esHoy ? "#fff" : colorEvento,
                   }}
                 />
               )}
@@ -175,7 +180,16 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
                 "&:hover": { backgroundColor: "var(--cya-bg-alt)" },
               }}
             >
-              <Typography variant="body2" sx={{ fontWeight: 700, color: "var(--cya-primary)", minWidth: 70 }}>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  backgroundColor: e.color || "var(--cya-secondary)",
+                  flexShrink: 0,
+                }}
+              />
+              <Typography variant="body2" sx={{ fontWeight: 700, color: "var(--cya-primary)", minWidth: 62 }}>
                 {moment(e.fecha).format("DD MMM")}
               </Typography>
               <Typography variant="body2" color="text.secondary">
@@ -207,6 +221,15 @@ export default function MiniCalendario({ titulo = "Mi Calendario", eventos }: Pr
                     <ListItemText
                       primary={
                         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Box
+                            sx={{
+                              width: 9,
+                              height: 9,
+                              borderRadius: "50%",
+                              backgroundColor: e.color || "var(--cya-secondary)",
+                              flexShrink: 0,
+                            }}
+                          />
                           <strong style={{ color: "var(--cya-primary)" }}>{e.titulo}</strong>
                           {e.estado && <Chip label={e.estado} size="small" color={estadoColor(e.estado) as any} />}
                         </Box>
