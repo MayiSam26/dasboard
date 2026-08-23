@@ -179,13 +179,36 @@ export default function Navar() {
     () => document.body.getAttribute("data-leftbar-compact-mode") === "condensed"
   );
 
+  // En pantallas chicas el sidebar no empuja el contenido: se superpone, y la
+  // plantilla legada lo abre agregando la clase "sidebar-enable" al body. Como
+  // esa plantilla fue pensada para navegación con recarga de página, al ser una
+  // SPA el menú quedaba abierto tapando el contenido después de elegir una
+  // opción. Observamos la clase para saber cuándo está abierto.
+  const [menuMovilAbierto, setMenuMovilAbierto] = React.useState(
+    () => document.body.classList.contains("sidebar-enable")
+  );
+
   React.useEffect(() => {
     const observer = new MutationObserver(() => {
       setIsCondensed(document.body.getAttribute("data-leftbar-compact-mode") === "condensed");
+      setMenuMovilAbierto(document.body.classList.contains("sidebar-enable"));
     });
-    observer.observe(document.body, { attributes: true, attributeFilter: ["data-leftbar-compact-mode"] });
+    observer.observe(document.body, {
+      attributes: true,
+      attributeFilter: ["data-leftbar-compact-mode", "class"],
+    });
     return () => observer.disconnect();
   }, []);
+
+  const cerrarMenuMovil = React.useCallback(() => {
+    document.body.classList.remove("sidebar-enable");
+    setMenuMovilAbierto(false);
+  }, []);
+
+  // Al cambiar de pantalla se cierra solo, como espera cualquiera en un celular.
+  React.useEffect(() => {
+    cerrarMenuMovil();
+  }, [location.pathname, cerrarMenuMovil]);
 
   // Modo condensado: los sub-ítems no caben empujando contenido hacia abajo
   // (no hay texto visible al lado del ícono), así que en vez de un Collapse
@@ -212,6 +235,10 @@ export default function Navar() {
 
   return (
     <>
+      {/* Capa oscura detrás del menú en celular: tocar fuera lo cierra. */}
+      {menuMovilAbierto && (
+        <div className="cya-menu-backdrop" onClick={cerrarMenuMovil} aria-hidden="true" />
+      )}
       <div className="leftside-menu" style={{ background: "var(--cya-sidebar-bg)" }}>
         <Link
           to="/panel"

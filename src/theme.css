@@ -476,3 +476,64 @@ body[data-leftbar-compact-mode="condensed"] .leftside-menu .MuiListItemIcon-root
 .cya-table-card .MuiDataGrid-cell--textCenter {
   justify-content: center !important;
 }
+
+/* ============================================================
+   RNF03 — Compatibilidad con distintos tamaños de pantalla
+   ============================================================ */
+
+/* Capa oscura detrás del menú lateral cuando se abre en celular. Va por
+   debajo del sidebar (z-index 10 en la plantilla) pero por encima del
+   contenido, y por debajo de la barra superior para no tapar el botón ☰. */
+.cya-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(36, 40, 44, 0.45);
+  z-index: 9;
+  animation: cya-backdrop-in 0.18s ease-out;
+}
+
+@keyframes cya-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (min-width: 768px) {
+  /* En tablet/escritorio el sidebar convive con el contenido: sin capa. */
+  .cya-menu-backdrop {
+    display: none;
+  }
+}
+
+/* En celular los rellenos anidados de la plantilla (content-page +
+   container-fluid + col-12 + card-body = 58px por lado) se comían casi un
+   tercio del ancho útil. Se reducen para dar aire a las tablas y formularios
+   sin cambiar el diseño en pantallas grandes. */
+@media (max-width: 767.98px) {
+  .content-page {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  .content-page .container-fluid {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .content-page .row {
+    margin-left: -6px;
+    margin-right: -6px;
+  }
+
+  .content-page .col-12 {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .content-page .card-body {
+    padding: 14px 10px;
+  }
+}
