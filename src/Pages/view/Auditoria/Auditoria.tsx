@@ -2,8 +2,11 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
   FormControl,
+  FormControlLabel,
+  FormGroup,
   Grid,
   InputLabel,
   MenuItem,
@@ -29,11 +32,14 @@ import GridOnIcon from "@mui/icons-material/GridOn";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import FilterAltOffIcon from "@mui/icons-material/FilterAltOff";
 
+// Los módulos que mueven dinero se resaltan en la tabla.
+const ECONOMICOS = ["Ingresos", "Egresos", "Apadrinamientos"];
+
 interface Movimiento {
-  tipo: "Ingreso" | "Egreso";
+  modulo: string;
   id: number;
   detalle: string;
-  monto: number;
+  monto: number | null;
   fecha_declarada: string | null;
   creado_en: string | null;
   creado_por: string | null;
@@ -45,8 +51,14 @@ interface Resumen {
   total: number;
   conHuella: number;
   sinHuella: number;
-  totalIngresos: number;
-  totalEgresos: number;
+  modificados: number;
+  montoIngresos: number;
+  montoEgresos: number;
+}
+
+interface ModuloDisponible {
+  clave: string;
+  economico: boolean;
 }
 
 function Tarjeta({ etiqueta, valor, color }: { etiqueta: string; valor: string; color: string }) {
@@ -83,8 +95,18 @@ export default function Auditoria() {
   const [resumen, setResumen] = React.useState<Resumen | null>(null);
   const [desde, setDesde] = React.useState("");
   const [hasta, setHasta] = React.useState("");
-  const [tipo, setTipo] = React.useState("");
+  const [modulo, setModulo] = React.useState("");
+  const [soloEconomicos, setSoloEconomicos] = React.useState(false);
+  const [soloModificados, setSoloModificados] = React.useState(false);
+  const [modulos, setModulos] = React.useState<ModuloDisponible[]>([]);
   const [cargando, setCargando] = React.useState(false);
+
+  React.useEffect(() => {
+    axios
+      .get(baseurl + "auditoria-registros/modulos")
+      .then((r) => setModulos(r.data.data || []))
+      .catch(() => setModulos([]));
+  }, []);
 
   const rangoInvalido = Boolean(desde && hasta && desde > hasta);
 
@@ -92,10 +114,12 @@ export default function Auditoria() {
     if (desde && hasta && desde > hasta) return;
     setCargando(true);
     try {
-      const { data } = await axios.post(baseurl + "auditoria-registros/economica", {
+      const { data } = await axios.post(baseurl + "auditoria-registros/registros", {
         desde: desde || null,
         hasta: hasta || null,
-        tipo: tipo || null,
+        modulo: modulo || null,
+        soloEconomicos,
+        soloModificados,
       });
       setMovimientos(data.data || []);
       setResumen(data.resumen || null);
@@ -105,7 +129,7 @@ export default function Auditoria() {
     } finally {
       setCargando(false);
     }
-  }, [desde, hasta, tipo]);
+  }, [desde, hasta, modulo, soloEconomicos, soloModificados]);
 
   React.useEffect(() => {
     const timer = setTimeout(() => consultar(), 350);
@@ -115,24 +139,28 @@ export default function Auditoria() {
   const limpiar = () => {
     setDesde("");
     setHasta("");
-    setTipo("");
+    setModulo("");
+    setSoloEconomicos(false);
+    setSoloModificados(false);
   };
+
+  const hayFiltros = Boolean(desde || hasta || modulo || soloEconomicos || soloModificados);
 
   const filas = React.useMemo(
     () =>
       movimientos.map((m) => ({
         ...m,
-        idFila: `${m.tipo}-${m.id}`,
+        idFila: `${m.modulo}-${m.id}`,
       })),
     [movimientos]
   );
 
   const filasExportables = () =>
     movimientos.map((m) => ({
-      Tipo: m.tipo,
+      Módulo: m.modulo,
       "N°": m.id,
       Detalle: m.detalle,
-      "Monto (S/)": m.monto.toFixed(2),
+      "Monto (S/)": m.monto != null ? m.monto.toFixed(2) : "—",
       "Fecha declarada": m.fecha_declarada ? moment(m.fecha_declarada).format("DD-MM-YYYY") : "—",
       "Registrado el": m.creado_en ? moment(m.creado_en).format("DD-MM-YYYY HH:mm") : "Sin registro",
       "Registrado por": m.creado_por || "Sin registro",
@@ -152,7 +180,7 @@ export default function Auditoria() {
     const url = URL.createObjectURL(new Blob([salida], { type: "application/octet-stream" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `auditoria_economica_${moment().format("YYYYMMDD_HHmm")}.xlsx`;
+    link.download = `auditoria_registros_${moment().format("YYYYMMDD_HHmm")}.xlsx`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -181,14 +209,14 @@ export default function Auditoria() {
     doc.setTextColor(90, 90, 90);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text("Auditoría de movimientos económicos", 12, 19);
+    doc.text("Auditoría de registros del sistema", 12, 19);
 
     const periodo =
       desde || hasta
         ? `Periodo: ${desde ? moment(desde).format("DD-MM-YYYY") : "inicio"} a ${
             hasta ? moment(hasta).format("DD-MM-YYYY") : "hoy"
           }`
-        : "Periodo: todos los movimientos";
+        : "Periodo: todos los registros";
     doc.setTextColor(110, 110, 110);
     doc.setFontSize(9);
     doc.text(
@@ -198,11 +226,9 @@ export default function Auditoria() {
     );
     if (resumen) {
       doc.text(
-        `Movimientos: ${resumen.total}   ·   Ingresos: S/ ${resumen.totalIngresos.toFixed(
-          2
-        )}   ·   Egresos: S/ ${resumen.totalEgresos.toFixed(2)}   ·   Sin huella de auditoría: ${
+        `Registros: ${resumen.total}   ·   Editados: ${resumen.modificados}   ·   Sin huella: ${
           resumen.sinHuella
-        }`,
+        }   ·   Ingresos: S/ ${resumen.montoIngresos.toFixed(2)}   ·   Egresos: S/ ${resumen.montoEgresos.toFixed(2)}`,
         12,
         36
       );
@@ -226,21 +252,21 @@ export default function Auditoria() {
       doc.text(`Página ${i} de ${paginas}`, ancho - 32, alto - 8);
       doc.text("Refugio Colitas y Amor", 12, alto - 8);
     }
-    doc.save(`auditoria_economica_${moment().format("YYYYMMDD_HHmm")}.pdf`);
+    doc.save(`auditoria_registros_${moment().format("YYYYMMDD_HHmm")}.pdf`);
   };
 
   const columnas: GridColDef[] = [
     {
-      field: "tipo",
-      headerName: "Tipo",
-      width: 110,
+      field: "modulo",
+      headerName: "Módulo",
+      width: 150,
       align: "center",
       headerAlign: "center",
       renderCell: (p) => (
         <Chip
           label={p.value}
           size="small"
-          color={p.value === "Ingreso" ? "success" : "warning"}
+          color={ECONOMICOS.includes(p.value) ? "success" : "default"}
           variant="outlined"
         />
       ),
@@ -252,7 +278,7 @@ export default function Auditoria() {
       width: 110,
       align: "right",
       headerAlign: "center",
-      renderCell: (p) => Number(p.value || 0).toFixed(2),
+      renderCell: (p) => (p.value != null ? Number(p.value).toFixed(2) : "—"),
     },
     {
       field: "fecha_declarada",
@@ -320,9 +346,9 @@ export default function Auditoria() {
             <Grid item xs={12}>
               <Grid container spacing={2} sx={{ justifyContent: "space-between", alignItems: "center" }}>
                 <Grid item xs={12} md="auto">
-                  <Typography variant="h4">Auditoría económica</Typography>
+                  <Typography variant="h4">Auditoría de registros</Typography>
                   <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mt: 0.3 }}>
-                    Quién registró cada ingreso y egreso, y a qué hora real lo hizo
+                    Quién creó o editó cada registro del sistema, y a qué hora real lo hizo
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md="auto">
@@ -341,23 +367,27 @@ export default function Auditoria() {
             <Grid item xs={12} sx={{ marginTop: "20px" }}>
               {resumen && resumen.sinHuella > 0 && (
                 <Alert severity="info" sx={{ mb: 2, borderRadius: "var(--cya-radius-md)" }}>
-                  {resumen.sinHuella} movimiento(s) se registraron antes de que existiera la auditoría, por eso
-                  no tienen fecha real ni usuario. Los nuevos sí la llevan.
+                  {resumen.sinHuella} registro(s) se guardaron antes de que existiera la auditoría, por eso no
+                  tienen fecha real ni usuario. Los nuevos sí la llevan.
                 </Alert>
               )}
 
               <Grid container spacing={2} sx={{ mb: 3 }}>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Tarjeta etiqueta="Movimientos" valor={String(resumen?.total ?? 0)} color="var(--cya-dark)" />
+                  <Tarjeta etiqueta="Registros" valor={String(resumen?.total ?? 0)} color="var(--cya-dark)" />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
                   <Tarjeta etiqueta="Con huella" valor={String(resumen?.conHuella ?? 0)} color="#3F9E5C" />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Tarjeta etiqueta="Total ingresos" valor={`S/ ${(resumen?.totalIngresos ?? 0).toFixed(2)}`} color="#3F9E5C" />
+                  <Tarjeta etiqueta="Editados" valor={String(resumen?.modificados ?? 0)} color="#C99A2E" />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
-                  <Tarjeta etiqueta="Total egresos" valor={`S/ ${(resumen?.totalEgresos ?? 0).toFixed(2)}`} color="#E4602F" />
+                  <Tarjeta
+                    etiqueta="Ingresos / Egresos"
+                    valor={`S/ ${(resumen?.montoIngresos ?? 0).toFixed(0)} / ${(resumen?.montoEgresos ?? 0).toFixed(0)}`}
+                    color="#3F9E5C"
+                  />
                 </Grid>
               </Grid>
 
@@ -365,16 +395,19 @@ export default function Auditoria() {
                 <Grid container spacing={2} sx={{ p: 2, alignItems: "flex-start" }}>
                   <Grid item xs={12} md={3}>
                     <FormControl fullWidth size="small">
-                      <InputLabel id="tipo-auditoria">Tipo</InputLabel>
+                      <InputLabel id="modulo-auditoria">Módulo</InputLabel>
                       <Select
-                        labelId="tipo-auditoria"
-                        label="Tipo"
-                        value={tipo}
-                        onChange={(e) => setTipo(e.target.value)}
+                        labelId="modulo-auditoria"
+                        label="Módulo"
+                        value={modulo}
+                        onChange={(e) => setModulo(e.target.value)}
                       >
-                        <MenuItem value="">Todos</MenuItem>
-                        <MenuItem value="Ingreso">Ingresos</MenuItem>
-                        <MenuItem value="Egreso">Egresos</MenuItem>
+                        <MenuItem value="">Todos los módulos</MenuItem>
+                        {modulos.map((m) => (
+                          <MenuItem key={m.clave} value={m.clave}>
+                            {m.clave}
+                          </MenuItem>
+                        ))}
                       </Select>
                     </FormControl>
                   </Grid>
@@ -407,12 +440,36 @@ export default function Auditoria() {
                       variant="outlined"
                       fullWidth
                       startIcon={<FilterAltOffIcon />}
-                      disabled={!desde && !hasta && !tipo}
+                      disabled={!hayFiltros}
                       onClick={limpiar}
                       sx={{ height: "40px", textTransform: "none" }}
                     >
                       Limpiar
                     </Button>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <FormGroup row>
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            size="small"
+                            checked={soloEconomicos}
+                            onChange={(e) => setSoloEconomicos(e.target.checked)}
+                          />
+                        }
+                        label={<Typography variant="body2">Solo lo económico</Typography>}
+                      />
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            size="small"
+                            checked={soloModificados}
+                            onChange={(e) => setSoloModificados(e.target.checked)}
+                          />
+                        }
+                        label={<Typography variant="body2">Solo los que fueron editados</Typography>}
+                      />
+                    </FormGroup>
                   </Grid>
                 </Grid>
               </Paper>

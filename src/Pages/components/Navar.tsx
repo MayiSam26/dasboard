@@ -135,7 +135,7 @@ const sections: Section[] = [
     label: "Auditoría",
     icon: <FactCheckIcon />,
     roles: ["Administrador"],
-    items: [{ label: "Auditoría económica", path: "/panel/auditoria" }],
+    items: [{ label: "Auditoría de registros", path: "/panel/auditoria" }],
   },
 ];
 
