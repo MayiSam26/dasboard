@@ -3,6 +3,10 @@ import {
   Autocomplete,
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   Grid,
   IconButton,
@@ -19,6 +23,7 @@ import baseurl from "../../../../../Config/axios";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 interface props {
   setOpenModal: any;
@@ -49,14 +54,24 @@ export default function Agregar({
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
   const [sending, setSending] = React.useState<boolean>(false);
+  const [confirmar, setConfirmar] = React.useState<boolean>(false);
 
-  const createData = async () => {
+  // El ingreso no se puede editar ni eliminar después de guardarlo (así se
+  // evita la malversación de registros), por eso se pide una confirmación
+  // explícita antes de mandarlo. Se valida primero para no preguntar por
+  // datos que igual iban a ser rechazados.
+  const intentarGuardar = () => {
     if (!donateSelect || !monto || Number(monto) <= 0 || !suministro || !donacion || !tipoyape || !dateTo) {
       setSeverity("warning");
       setMssg("Completa el donante, el monto, la fecha y todos los campos obligatorios.");
       setOpenAlert(true);
       return;
     }
+    setConfirmar(true);
+  };
+
+  const createData = async () => {
+    setConfirmar(false);
     setSending(true);
     const url = baseurl + "ingresos/create";
     const formData = new FormData();
@@ -298,10 +313,58 @@ export default function Agregar({
         >
           Cancelar
         </Button>
-        <Button onClick={createData} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add" disabled={sending}>
+        <Button onClick={intentarGuardar} variant="contained" startIcon={<SaveIcon />} className="cya-btn-add" disabled={sending}>
           {sending ? "Guardando..." : "Guardar"}
         </Button>
       </Box>
+
+      <Dialog
+        open={confirmar}
+        onClose={() => setConfirmar(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{ sx: { borderRadius: "var(--cya-radius-lg)" } }}
+      >
+        <DialogTitle sx={{ display: "flex", alignItems: "center", gap: 1.2, pb: 1 }}>
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "rgba(201, 154, 46, 0.16)",
+              color: "#B85C00",
+              flexShrink: 0,
+            }}
+          >
+            <WarningAmberIcon fontSize="small" />
+          </Box>
+          <Typography component="span" variant="h6" sx={{ fontWeight: 800, color: "var(--cya-dark)" }}>
+            Confirmar registro
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ color: "var(--cya-dark)", mb: 1.5 }}>
+            ¿Estás segura de que los datos están correctamente registrados?
+          </Typography>
+          <Alert severity="warning" sx={{ borderRadius: "var(--cya-radius-md)" }}>
+            Ten en cuenta que después <strong>no se podrá editar ni eliminar</strong> este ingreso.
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.5, gap: 1 }}>
+          <Button
+            onClick={() => setConfirmar(false)}
+            sx={{ textTransform: "none", color: "var(--cya-text-muted)" }}
+          >
+            No, revisar
+          </Button>
+          <Button onClick={createData} variant="contained" className="cya-btn-add" startIcon={<SaveIcon />}>
+            Sí, guardar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

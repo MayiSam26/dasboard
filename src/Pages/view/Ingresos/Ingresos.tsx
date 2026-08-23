@@ -16,7 +16,8 @@ import PhoneIphoneIcon from "@mui/icons-material/PhoneIphone";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import Agregar from "./Components/Modal/Agregar";
 import Search from "./Components/Search";
-import { Modal, Grow } from "@mui/material";
+import { Modal, Grow, Snackbar } from "@mui/material";
+import { generarReporteIngresos } from "./Components/Modal/Reporte";
 
 function buildImgUrl(evidencia: string) {
   const cleanBase = baseurl.replace(/\/+$/, "");
@@ -101,6 +102,8 @@ export default function Ingresos() {
   const [reporte, setReporte] = React.useState<any>([]);
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [busqueda, setBusqueda] = React.useState<string>("");
+  const [generando, setGenerando] = React.useState<boolean>(false);
+  const [avisoReporte, setAvisoReporte] = React.useState<string>("");
 
   const getIngresos = async () => {
     const url = baseurl + "ingresos/list";
@@ -140,6 +143,27 @@ export default function Ingresos() {
       )
     );
   }, [ingresos, busqueda]);
+
+  // El reporte se arma con lo que está a la vista (respeta la búsqueda), y
+  // lleva la evidencia de cada ingreso incrustada como comprobante.
+  const descargarReporte = async () => {
+    if (!ingresosFiltrados || ingresosFiltrados.length === 0) {
+      setAvisoReporte("No hay ingresos para incluir en el reporte.");
+      return;
+    }
+    setGenerando(true);
+    setAvisoReporte("Preparando el reporte...");
+    try {
+      await generarReporteIngresos(ingresosFiltrados, buildImgUrl, (hechos, total) =>
+        setAvisoReporte(`Preparando el reporte... evidencia ${hechos} de ${total}`)
+      );
+      setAvisoReporte("Reporte descargado.");
+    } catch (e: any) {
+      setAvisoReporte("No se pudo generar el reporte: " + (e?.message || "error desconocido"));
+    } finally {
+      setGenerando(false);
+    }
+  };
 
   const columns: GridColDef<(typeof ingresos)[number]>[] = [
     {
@@ -262,7 +286,12 @@ export default function Ingresos() {
           <Body>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <HeaderBox setOpenModal={() => setOpenModal(true)} count={ingresos ? ingresos.length : 0} />
+                <HeaderBox
+                  setOpenModal={() => setOpenModal(true)}
+                  count={ingresos ? ingresos.length : 0}
+                  onReporte={descargarReporte}
+                  generandoReporte={generando}
+                />
               </Grid>
               <Grid item xs={12} sx={{ marginTop: "20px" }}>
                 <Alert severity="warning" sx={{ mb: 2, borderRadius: "var(--cya-radius-md)" }}>
@@ -333,6 +362,13 @@ export default function Ingresos() {
         </Content>
       </Layout>
       {ModalAgregar()}
+      <Snackbar
+        open={Boolean(avisoReporte)}
+        message={avisoReporte}
+        autoHideDuration={generando ? null : 3500}
+        onClose={() => setAvisoReporte("")}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      />
     </>
   );
 }
