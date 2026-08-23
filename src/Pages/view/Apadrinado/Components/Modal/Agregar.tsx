@@ -23,6 +23,7 @@ import formatlocaldate from "../../../../../Config/helpersDate";
 
 import { soloDecimal } from "../../../../../utils/campos";
 import { ANIMALES_EN_ALBERGUE } from "../../constantes";
+import FechaRegistro from "../../../../components/FechaRegistro";
 interface props {
     setOpenModal: any;
     getApadrinados: () => void;
@@ -222,20 +223,10 @@ export default function Agregar({ setOpenModal, getApadrinados }: props) {
                     />
                 </Grid>
                 <Grid item xs={12}>
-                    <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-                      Fecha de registro *
-                    </Typography>
-                    <input
-                        type="date"
+                    <FechaRegistro
+                        label="Fecha de registro *"
                         value={fechaRegistro}
-                        onChange={(e) => setFechaRegistro(e.target.value)}
-                        style={{
-                            padding: "8px",
-                            width: "100%",
-                            border: "1px solid var(--cya-border)",
-                            borderRadius: "8px",
-                            boxSizing: "border-box",
-                        }}
+                        onChange={setFechaRegistro}
                     />
                 </Grid>
               </Grid>

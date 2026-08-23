@@ -8,6 +8,7 @@ import moment from "moment";
 
  
 import { soloDecimal } from "../../../../../utils/campos";
+import FechaRegistro from "../../../../components/FechaRegistro";
 interface props {
     setOpenModal:any
     getEgreso:() => void
@@ -22,10 +23,11 @@ export default function Agregar({setOpenModal,getEgreso}:props){
     const[openAlert,setOpenAlert] = React.useState<boolean>(false)
 
    
-    const handleFormatTo = async (e: any) => {
-        const selectedDate :any = new Date(e.target.value); 
-        setFromto(moment(selectedDate).add(1, 'days').toDate()); 
-      };
+    // Antes se convertía a Date y se le sumaba un día para compensar el
+    // desfase de zona horaria (new Date("2026-08-23") se interpreta como UTC
+    // y en Perú caía un día antes). Guardando el texto "YYYY-MM-DD" tal cual,
+    // como hacen los demás módulos, el problema no existe y no hay que
+    // corregir nada a mano.
 
 
    const saveIngreso = () =>{
@@ -133,15 +135,10 @@ export default function Agregar({setOpenModal,getEgreso}:props){
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                                    <input 
-                                        type="date"
-                                        onChange={handleFormatTo}
-                                        style={{
-                                            padding:'8px',
-                                            width:'100%',
-                                            border:'1px solid #c2c2c2',
-                                            borderRadius:'4px'
-                                        }}
+                                    <FechaRegistro
+                                        label="Fecha de registro"
+                                        value={fromto || ""}
+                                        onChange={setFromto}
                                     />
                         </Grid>
                     </Grid>

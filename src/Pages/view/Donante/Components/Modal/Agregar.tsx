@@ -19,6 +19,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import formatlocaldate from "../../../../../Config/helpersDate";
+import FechaRegistro from "../../../../components/FechaRegistro";
 import {
   soloDigitos,
   propsNumericos,
@@ -222,19 +223,10 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
             />
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-              Fecha de registro
-            </Typography>
-            <input
-              type="date"
-              onChange={(e) => setDateTo(e.target.value)}
-              style={{
-                padding: "8px",
-                width: "100%",
-                border: "1px solid var(--cya-border)",
-                borderRadius: "8px",
-                boxSizing: "border-box",
-              }}
+            <FechaRegistro
+              label="Fecha de registro"
+              value={dateTo}
+              onChange={setDateTo}
             />
           </Grid>
         </Grid>

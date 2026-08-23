@@ -7,6 +7,7 @@ import formatlocaldate from "../../../../../Config/helpersDate";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import SaveIcon from "@mui/icons-material/Save";
+import FechaRegistro from "../../../../components/FechaRegistro";
 import {
   soloDigitos,
   propsNumericos,
@@ -202,19 +203,10 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
             ></textarea>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-              Fecha de registro
-            </Typography>
-            <input
-              type="date"
-              onChange={(e) => setFromto(e.target.value)}
-              style={{
-                padding: "8px",
-                width: "100%",
-                border: "1px solid var(--cya-border)",
-                borderRadius: "8px",
-                boxSizing: "border-box",
-              }}
+            <FechaRegistro
+              label="Fecha de registro"
+              value={fromto}
+              onChange={setFromto}
             />
           </Grid>
         </Grid>

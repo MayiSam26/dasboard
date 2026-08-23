@@ -22,6 +22,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import SaveIcon from "@mui/icons-material/Save";
 
+import FechaRegistro from "../../../../components/FechaRegistro";
 interface props {
   setOpenModal: any;
   getAdopciones: () => void;
@@ -272,19 +273,10 @@ export default function Agregar({ setOpenModal, getAdopciones, getReportes }: pr
             ></textarea>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-              Fecha de adopción
-            </Typography>
-            <input
-              type="date"
-              onChange={(e) => setfromDate(e.target.value)}
-              style={{
-                padding: "8px",
-                width: "100%",
-                border: "1px solid var(--cya-border)",
-                borderRadius: "8px",
-                boxSizing: "border-box",
-              }}
+            <FechaRegistro
+              label="Fecha de adopción"
+              value={fromdate}
+              onChange={setfromDate}
             />
           </Grid>
         </Grid>

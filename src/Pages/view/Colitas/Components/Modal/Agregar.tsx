@@ -23,6 +23,7 @@ import moment from "moment";
 import formatlocaldate from "../../../../../Config/helpersDate";
 
 import { soloDecimal, soloDigitos } from "../../../../../utils/campos";
+import FechaRegistro from "../../../../components/FechaRegistro";
 interface props {
   setOpenModal: any;
   getAlbergados: () => void;
@@ -282,19 +283,10 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
           </Grid>
 
           <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-              Fecha de ingreso
-            </Typography>
-            <input
-              type="date"
-              onChange={(e) => setDateTo(e.target.value)}
-              style={{
-                padding: "8px",
-                width: "100%",
-                border: "1px solid var(--cya-border)",
-                borderRadius: "8px",
-                boxSizing: "border-box",
-              }}
+            <FechaRegistro
+              label="Fecha de ingreso"
+              value={dateTo}
+              onChange={setDateTo}
             />
           </Grid>
 

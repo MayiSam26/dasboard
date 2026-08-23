@@ -26,6 +26,7 @@ import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 import { soloDecimal } from "../../../../../utils/campos";
+import FechaRegistro from "../../../../components/FechaRegistro";
 interface props {
   setOpenModal: any;
   getIngresos: () => void;
@@ -265,19 +266,10 @@ export default function Agregar({
             </FormControl>
           </Grid>
           <Grid item xs={12}>
-            <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
-              Fecha de registro
-            </Typography>
-            <input
-              type="date"
-              onChange={(e) => setDateTo(e.target.value)}
-              style={{
-                padding: "8px",
-                width: "100%",
-                border: "1px solid var(--cya-border)",
-                borderRadius: "8px",
-                boxSizing: "border-box",
-              }}
+            <FechaRegistro
+              label="Fecha de registro"
+              value={dateTo}
+              onChange={setDateTo}
             />
           </Grid>
           <Grid item xs={12}>
