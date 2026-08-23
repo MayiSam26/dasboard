@@ -7,6 +7,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 
+import { soloDigitos, propsNumericos, telefonoValido, LARGO_TELEFONO } from "../../../../../utils/campos";
 interface props {
   setOpenModal: any;
   getApadrinado: () => void;
@@ -15,6 +16,7 @@ export default function Agregar({ setOpenModal, getApadrinado }: props) {
   const [nombre, setNombre] = React.useState<any>("");
   const [facebook, setFacebook] = React.useState<any>("");
   const [instagram, setInstagram] = React.useState<any>("");
+  const [whatsapp, setWhatsapp] = React.useState<string>("");
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -28,11 +30,18 @@ export default function Agregar({ setOpenModal, getApadrinado }: props) {
       setOpenAlert(true);
       return;
     }
+    if (!telefonoValido(whatsapp)) {
+      setSeverity("warning");
+      setMssg("El WhatsApp debe tener 9 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
     const body = {
       iduser: null,
       nombre: nombre,
       facebook: facebook,
       instagram: instagram,
+      whatsapp: whatsapp,
     };
     const url = baseurl + "amo/create";
     setSending(true);
@@ -135,6 +144,18 @@ export default function Agregar({ setOpenModal, getApadrinado }: props) {
               fullWidth
               size="small"
               onChange={(e) => setInstagram(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="WhatsApp (opcional)"
+              variant="outlined"
+              fullWidth
+              size="small"
+              helperText="9 dígitos. En la web NO se muestra el número: solo aparece un botón para escribirle."
+              inputProps={propsNumericos(LARGO_TELEFONO)}
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(soloDigitos(e.target.value, LARGO_TELEFONO))}
             />
           </Grid>
         </Grid>

@@ -1,4 +1,4 @@
-import { Box, Grid, Grow, IconButton, Modal, Tooltip, Typography } from "@mui/material";
+import { Box, Chip, Grid, Grow, IconButton, Modal, Tooltip, Typography } from "@mui/material";
 import Header from "../../components/Header";
 import Body from "../../components/Layout/Body";
 import Content from "../../components/Layout/Content";
@@ -17,6 +17,7 @@ import Editar from "./Components/Modal/Editar";
 import Agregar from "./Components/Modal/Agregar";
 import Delete from "./Components/Modal/Delete";
 import Search from "./Components/Search";
+import WhatsAppIcon from "@mui/icons-material/WhatsApp";
 
 function SocialCell({ icon, value, color }: { icon: React.ReactNode; value: string; color: string }) {
   if (!value) {
@@ -91,6 +92,27 @@ export default function Amo() {
       renderCell: (params) => (
         <SocialCell icon={<InstagramIcon fontSize="small" />} value={params.value} color="#C13584" />
       ),
+    },
+    {
+      field: "whatsapp",
+      headerName: "WhatsApp",
+      width: 130,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) =>
+        params.value ? (
+          <Chip
+            icon={<WhatsAppIcon />}
+            label={params.value}
+            size="small"
+            variant="outlined"
+            sx={{ color: "#128C7E", borderColor: "#128C7E", "& .MuiChip-icon": { color: "#25D366" } }}
+          />
+        ) : (
+          <Typography variant="body2" sx={{ color: "var(--cya-text-muted)" }}>
+            —
+          </Typography>
+        ),
     },
     {
       field: "view",
