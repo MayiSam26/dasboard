@@ -48,21 +48,37 @@ export default function Veterinaria() {
   const [registros, setRegistros] = React.useState<any>([]);
   const [busqueda, setBusqueda] = React.useState("");
   const [tipoFiltro, setTipoFiltro] = React.useState("");
+  const [desde, setDesde] = React.useState("");
+  const [hasta, setHasta] = React.useState("");
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
   const [openModalDelete, setOpenModalDelete] = React.useState<boolean>(false);
   const [idRegistro, setIdRegistro] = React.useState<any>("");
 
   const getRegistros = React.useCallback(async () => {
+    // Rango invertido: no consultamos, el Search ya avisa del error.
+    if (desde && hasta && desde > hasta) return;
     const url = baseurl + "veterinaria/list";
     await axios
-      .post(url, { search: busqueda || "", tipo: tipoFiltro || null })
+      .post(url, {
+        search: busqueda || "",
+        tipo: tipoFiltro || null,
+        desde: desde || null,
+        hasta: hasta || null,
+      })
       .then((response) => {
         const { data } = response.data;
         setRegistros(data);
       })
       .catch(() => setRegistros([]));
-  }, [busqueda, tipoFiltro]);
+  }, [busqueda, tipoFiltro, desde, hasta]);
+
+  const limpiarFiltros = () => {
+    setBusqueda("");
+    setTipoFiltro("");
+    setDesde("");
+    setHasta("");
+  };
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
@@ -296,8 +312,13 @@ export default function Veterinaria() {
                 <Search
                   busqueda={busqueda}
                   tipoFiltro={tipoFiltro}
+                  desde={desde}
+                  hasta={hasta}
                   handleBusqueda={setBusqueda}
                   handleTipoFiltro={setTipoFiltro}
+                  handleDesde={setDesde}
+                  handleHasta={setHasta}
+                  handleLimpiar={limpiarFiltros}
                 />
                 <Box sx={{ width: "100%" }} className="cya-table-card">
                   <DataGrid
