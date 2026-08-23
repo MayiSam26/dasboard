@@ -30,9 +30,14 @@ export default function Header(){
         }
     }
     const logout = () =>{
+        // Se limpia lo mismo que cuando vence la sesión (ver axiosSetup):
+        // antes quedaban "user" y "rol" del usuario anterior, y el menú se
+        // dibujaba con ese rol hasta que el siguiente login lo sobrescribía.
         localStorage.removeItem("token")
         localStorage.removeItem("auditoria")
         localStorage.removeItem("userFoto")
+        localStorage.removeItem("user")
+        localStorage.removeItem("rol")
         setAuthHeader(null)
         verifyToken()
     }

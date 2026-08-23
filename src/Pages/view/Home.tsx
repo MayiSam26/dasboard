@@ -45,8 +45,17 @@ function cssVar(name: string, fallback: string) {
 
 // Primario/secundario siguen la paleta elegida en "Mi cuenta"; acento y
 // neutro se mantienen fijos (uso semántico: pendiente/otro).
-const CYA_PRIMARY = cssVar("--cya-primary", "#E4602F");
-const CYA_SECONDARY = cssVar("--cya-secondary", "#3F9E5C");
+let CYA_PRIMARY = cssVar("--cya-primary", "#E4602F");
+let CYA_SECONDARY = cssVar("--cya-secondary", "#3F9E5C");
+
+// Los gráficos reciben el color como valor fijo (no como var() de CSS), así
+// que hay que releerlo al entrar a la pantalla: si el usuario cambiaba la
+// paleta en "Mi cuenta", las barras y la torta seguían con el color anterior
+// hasta recargar la página entera.
+function refrescarColoresDelTema() {
+  CYA_PRIMARY = cssVar("--cya-primary", "#E4602F");
+  CYA_SECONDARY = cssVar("--cya-secondary", "#3F9E5C");
+}
 const CYA_ACCENT = "#F4A731";
 const CYA_MUTED = "#B7C2C9";
 const CYA_ERROR = "#C0392B";
@@ -115,6 +124,8 @@ function StatCard({ icon, label, value, color, onClick }: StatCardProps) {
 }
 
 export default function HomePanel() {
+  refrescarColoresDelTema();
+
   const [user, userName] = React.useState<any>("");
   const navigate = useNavigate();
 
