@@ -21,6 +21,7 @@ import baseurl from "../../../../../Config/axios";
 import SaveIcon from "@mui/icons-material/Save";
 import formatlocaldate from "../../../../../Config/helpersDate";
 
+import { soloDecimal } from "../../../../../utils/campos";
 interface props {
     setOpenModal: any;
     getApadrinados: () => void;
@@ -206,12 +207,13 @@ export default function Agregar({ setOpenModal, getApadrinados }: props) {
                 <Grid item xs={6}>
                     <TextField
                         label="Monto (S/.)"
-                        type="number"
+                        type="text"
+                        inputProps={{ inputMode: "decimal" }}
                         variant="outlined"
                         fullWidth
                         size="small"
                         value={monto}
-                        onChange={(e) => setMonto(e.target.value)}
+                        onChange={(e) => setMonto(soloDecimal(e.target.value))}
                         helperText="Opcional, si el apadrinamiento implica un aporte económico"
                     />
                 </Grid>

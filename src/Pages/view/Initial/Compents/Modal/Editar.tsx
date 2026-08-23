@@ -5,6 +5,14 @@ import CloseIcon from "@mui/icons-material/Close";
 import HomeIcon from "@mui/icons-material/Home";
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
+import {
+  soloDigitos,
+  propsNumericos,
+  telefonoValido,
+  correoValido,
+  LARGO_TELEFONO,
+  AYUDA_TELEFONO,
+} from "../../../../../utils/campos";
 
 interface props {
   setFlask?: any;
@@ -41,6 +49,21 @@ export default function Editar({ setFlask, setOpenModalEdit, idRefugio, getRedes
   }, [idRefugio]);
 
   const updateRefugio = async () => {
+    // Estos datos se publican en el sitio público, así que se valida el
+    // formato antes de guardarlos.
+    if (!telefonoValido(telefono)) {
+      setSeverity("warning");
+      setMssg("El teléfono debe tener 9 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
+    if (!correoValido(correo)) {
+      setSeverity("warning");
+      setMssg("Ingresa un correo electrónico válido.");
+      setOpenAlert(true);
+      return;
+    }
+
     const url = baseurl + "home/updates/" + idRefugio;
     const body = {
       nombre,
@@ -163,8 +186,10 @@ export default function Editar({ setFlask, setOpenModalEdit, idRefugio, getRedes
               variant="outlined"
               fullWidth
               size="small"
+              helperText={AYUDA_TELEFONO}
+              inputProps={propsNumericos(LARGO_TELEFONO)}
               value={telefono ?? ""}
-              onChange={(e) => setTelefono(e.target.value)}
+              onChange={(e) => setTelefono(soloDigitos(e.target.value, LARGO_TELEFONO))}
             />
           </Grid>
           <Grid item xs={6}>

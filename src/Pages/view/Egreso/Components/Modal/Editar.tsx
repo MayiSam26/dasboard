@@ -5,6 +5,7 @@ import axios from "axios";
 import baseurl from "../../../../../Config/axios";
 import moment from "moment";
  
+import { soloDecimal } from "../../../../../utils/campos";
 interface props {
     
     setOpenModalEdit?:any
@@ -118,11 +119,12 @@ export default function Editar({setOpenModalEdit,idEgreso,getEgreso}:props){
                                 id="outlined-basic" 
                                 label="Ingrese Precio" 
                                 variant="outlined"
-                                type='number'
+                                type="text"
+                                inputProps={{ inputMode: "decimal" }}
                                 fullWidth
                                 value={precio ?? ""}
                                 size="small"
-                                onChange={(e) => setPrecio(e.target.value)}
+                                onChange={(e) => setPrecio(soloDecimal(e.target.value))}
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>

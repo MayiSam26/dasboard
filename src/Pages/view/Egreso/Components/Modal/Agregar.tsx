@@ -7,6 +7,7 @@ import baseurl from "../../../../../Config/axios";
 import moment from "moment";
 
  
+import { soloDecimal } from "../../../../../utils/campos";
 interface props {
     setOpenModal:any
     getEgreso:() => void
@@ -123,10 +124,12 @@ export default function Agregar({setOpenModal,getEgreso}:props){
                                 id="outlined-basic" 
                                 label="Ingrese Precio" 
                                 variant="outlined"
-                                type='number'
+                                type="text"
+                                inputProps={{ inputMode: "decimal" }}
                                 fullWidth
                                 size="small"
-                                onChange={(e) => setPrecio(e.target.value)}
+                                value={precio ?? ""}
+                                onChange={(e) => setPrecio(soloDecimal(e.target.value))}
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>

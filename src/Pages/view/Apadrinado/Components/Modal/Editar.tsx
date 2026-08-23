@@ -22,6 +22,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import moment from "moment";
 import formatlocaldate from "../../../../../Config/helpersDate";
 
+import { soloDecimal } from "../../../../../utils/campos";
 interface props {
     setOpenModalEdit: any;
     idapadrinado: any;
@@ -231,12 +232,13 @@ export default function Editar({ setOpenModalEdit, idapadrinado, getApadrinados 
                 <Grid item xs={6}>
                     <TextField
                         label="Monto (S/.)"
-                        type="number"
+                        type="text"
+                        inputProps={{ inputMode: "decimal" }}
                         variant="outlined"
                         fullWidth
                         size="small"
                         value={monto}
-                        onChange={(e) => setMonto(e.target.value)}
+                        onChange={(e) => setMonto(soloDecimal(e.target.value))}
                     />
                 </Grid>
                 <Grid item xs={6}>

@@ -15,6 +15,7 @@ import React from "react";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
+import { propsNumericos, LARGO_DNI, LARGO_RUC, AYUDA_DNI, AYUDA_RUC } from "../../../../../utils/campos";
 
 interface props {
   setOpenModalEdit: (value: boolean) => void;
@@ -150,6 +151,8 @@ export default function Editar({
               variant="outlined"
               fullWidth
               size="small"
+              helperText={AYUDA_RUC}
+              inputProps={propsNumericos(LARGO_RUC)}
               value={ruc}
               onChange={(e) => handleRuc(e.target.value)}
             />
@@ -161,6 +164,8 @@ export default function Editar({
               variant="outlined"
               fullWidth
               size="small"
+              helperText={AYUDA_DNI}
+              inputProps={propsNumericos(LARGO_DNI)}
               value={dni}
               onChange={(e) => handleDni(e.target.value)}
             />

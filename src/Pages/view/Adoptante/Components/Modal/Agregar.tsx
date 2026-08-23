@@ -4,6 +4,7 @@ import React from "react";
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
 
+import { soloDecimal } from "../../../../../utils/campos";
 interface props {
     setFlask:any,
     setOpenModal:any
@@ -152,10 +153,12 @@ export default function Agregar({setFlask,setOpenModal,getPlanesMensual}:props){
                                 id="outlined-basic" 
                                 label="Ingrese Precio" 
                                 variant="outlined"
-                                type='number'
+                                type="text"
+                                inputProps={{ inputMode: "decimal" }}
                                 fullWidth
                                 size="small"
-                                onChange={(e) => setPrecio(e.target.value)}
+                                value={precio ?? ""}
+                                onChange={(e) => setPrecio(soloDecimal(e.target.value))}
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>

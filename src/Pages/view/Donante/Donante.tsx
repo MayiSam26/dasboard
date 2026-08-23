@@ -19,6 +19,7 @@ import Header from "../../components/Header";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
 import Search from "./Components/Search";
+import { soloDigitos, dniValido, rucValido, LARGO_DNI, LARGO_RUC } from "../../../utils/campos";
 
 const SOCIAL_ICONS: Record<string, { icon: React.ReactNode; color: string }> = {
   Facebook: { icon: <FacebookIcon fontSize="small" />, color: "#3b5998" },
@@ -79,6 +80,19 @@ export default function Donante() {
   };
 
   const changeEditDonante = async () => {
+    if (!dniValido(dni)) {
+      setSeverity("warning");
+      setMssg("El DNI debe tener 8 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
+    if (!rucValido(ruc)) {
+      setSeverity("warning");
+      setMssg("El RUC debe tener 11 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
+
     const body = {
       idtipopersona: idtipopersona,
       fullname: fullname,
@@ -118,8 +132,9 @@ export default function Donante() {
   const handleFullname = (value: string) => setFullname(value);
   const handleRedsocial = (value: string) => setRedsocial(value);
   const handleIdtipopersona = (value: string) => setIdtipopersona(value);
-  const handleRuc = (value: string) => setRuc(value);
-  const handleDni = (value: string) => setDni(value);
+  // Documentos de Perú: solo dígitos, con el largo exacto de cada uno.
+  const handleRuc = (value: string) => setRuc(soloDigitos(value, LARGO_RUC));
+  const handleDni = (value: string) => setDni(soloDigitos(value, LARGO_DNI));
 
   React.useEffect(() => {
     getDonante();

@@ -19,6 +19,16 @@ import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import formatlocaldate from "../../../../../Config/helpersDate";
+import {
+  soloDigitos,
+  propsNumericos,
+  dniValido,
+  rucValido,
+  LARGO_DNI,
+  LARGO_RUC,
+  AYUDA_DNI,
+  AYUDA_RUC,
+} from "../../../../../utils/campos";
 
 interface props {
   setOpenModal: any;
@@ -46,6 +56,20 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
     if (!fullname.trim() || !idtipopersona) {
       setSeverity("warning");
       setMssg("Completa el nombre completo y el tipo de persona.");
+      setOpenAlert(true);
+      return;
+    }
+    // Documentos de Perú: DNI 8 dígitos, RUC 11. Ambos son opcionales según
+    // el tipo de persona, pero si se llenan tienen que estar completos.
+    if (!dniValido(dni)) {
+      setSeverity("warning");
+      setMssg("El DNI debe tener 8 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
+    if (!rucValido(ruc)) {
+      setSeverity("warning");
+      setMssg("El RUC debe tener 11 dígitos numéricos.");
       setOpenAlert(true);
       return;
     }
@@ -179,7 +203,10 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
               variant="outlined"
               fullWidth
               size="small"
-              onChange={(e) => setRuc(e.target.value)}
+              helperText={AYUDA_RUC}
+              inputProps={propsNumericos(LARGO_RUC)}
+              value={ruc}
+              onChange={(e) => setRuc(soloDigitos(e.target.value, LARGO_RUC))}
             />
           </Grid>
           <Grid item xs={6}>
@@ -188,7 +215,10 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
               variant="outlined"
               fullWidth
               size="small"
-              onChange={(e) => setDNI(e.target.value)}
+              helperText={AYUDA_DNI}
+              inputProps={propsNumericos(LARGO_DNI)}
+              value={dni}
+              onChange={(e) => setDNI(soloDigitos(e.target.value, LARGO_DNI))}
             />
           </Grid>
           <Grid item xs={12}>

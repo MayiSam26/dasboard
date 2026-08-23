@@ -25,6 +25,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
 import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
+import { soloDecimal } from "../../../../../utils/campos";
 interface props {
   setOpenModal: any;
   getIngresos: () => void;
@@ -210,9 +211,11 @@ export default function Agregar({
               label="Monto (S/)"
               variant="outlined"
               fullWidth
-              type="number"
+              type="text"
+              inputProps={{ inputMode: "decimal" }}
               size="small"
-              onChange={(e) => setMonto(e.target.value)}
+              value={monto ?? ""}
+              onChange={(e) => setMonto(soloDecimal(e.target.value))}
             />
           </Grid>
           <Grid item xs={6}>

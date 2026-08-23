@@ -6,6 +6,16 @@ import baseurl from "../../../../../Config/axios";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
+import {
+  soloDigitos,
+  propsNumericos,
+  dniValido,
+  telefonoValido,
+  LARGO_DNI,
+  LARGO_TELEFONO,
+  AYUDA_DNI,
+  AYUDA_TELEFONO,
+} from "../../../../../utils/campos";
 
 interface props {
   setOpenModalEdit?: any;
@@ -51,6 +61,20 @@ export default function Editar({
   }, []);
 
   const updateData = async() =>{
+    // Mismo criterio que al crear: DNI y teléfono con el formato de Perú.
+    if (!dniValido(documento)) {
+      setSeverity("warning");
+      setMssg("El DNI debe tener 8 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
+    if (!telefonoValido(telefono)) {
+      setSeverity("warning");
+      setMssg("El teléfono debe tener 9 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
+
     const url=baseurl+'adoptante/update/'+idadoptante
     
     const body = {
@@ -151,10 +175,11 @@ export default function Editar({
               label="DNI"
               variant="outlined"
               value={documento ?? ""}
-              type="number"
               fullWidth
               size="small"
-              onChange={(e) => setdocumento(e.target.value)}
+              helperText={AYUDA_DNI}
+              inputProps={propsNumericos(LARGO_DNI)}
+              onChange={(e) => setdocumento(soloDigitos(e.target.value, LARGO_DNI))}
             />
           </Grid>
           <Grid item xs={6}>
@@ -164,7 +189,9 @@ export default function Editar({
               value={telefono ?? ""}
               fullWidth
               size="small"
-              onChange={(e) => setTelefono(e.target.value)}
+              helperText={AYUDA_TELEFONO}
+              inputProps={propsNumericos(LARGO_TELEFONO)}
+              onChange={(e) => setTelefono(soloDigitos(e.target.value, LARGO_TELEFONO))}
             />
           </Grid>
           <Grid item xs={12}>

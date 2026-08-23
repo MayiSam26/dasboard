@@ -17,6 +17,14 @@ import baseurl from "../../../../../Config/axios";
 import SaveIcon from "@mui/icons-material/Save";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
+import {
+  soloDigitos,
+  propsNumericos,
+  telefonoValido,
+  correoValido,
+  LARGO_TELEFONO,
+  AYUDA_TELEFONO,
+} from "../../../../../utils/campos";
 
 interface props {
   setOpenModal: any;
@@ -40,6 +48,18 @@ export default function Agregar({ setOpenModal, getUsuarios }: props) {
     if (!usuario.trim() || !correo.trim() || !pass || !rol) {
       setSeverity("error");
       setMssg("Completa usuario, correo, contraseña y rol.");
+      setOpenAlert(true);
+      return;
+    }
+    if (!correoValido(correo.trim())) {
+      setSeverity("error");
+      setMssg("Ingresa un correo electrónico válido.");
+      setOpenAlert(true);
+      return;
+    }
+    if (!telefonoValido(telefono)) {
+      setSeverity("error");
+      setMssg("El teléfono debe tener 9 dígitos numéricos.");
       setOpenAlert(true);
       return;
     }
@@ -170,8 +190,10 @@ export default function Agregar({ setOpenModal, getUsuarios }: props) {
               variant="outlined"
               fullWidth
               size="small"
+              helperText={AYUDA_TELEFONO}
+              inputProps={propsNumericos(LARGO_TELEFONO)}
               value={telefono}
-              onChange={(e) => setTelefono(e.target.value)}
+              onChange={(e) => setTelefono(soloDigitos(e.target.value, LARGO_TELEFONO))}
             />
           </Grid>
           <Grid item xs={12}>

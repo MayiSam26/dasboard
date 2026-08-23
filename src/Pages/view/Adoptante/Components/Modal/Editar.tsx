@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
  
+import { soloDecimal } from "../../../../../utils/campos";
 interface props {
     setFlask?:any
     setOpenModalEdit?:any
@@ -185,10 +186,11 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
                                     label="Ingrese Precio" 
                                     variant="outlined"
                                     fullWidth
-                                    type="number"
+                                    type="text"
+                                    inputProps={{ inputMode: "decimal" }}
                                     size="small"
                                     value={precio ?? ""}
-                                    onChange={(e) => setPrecio(e.target.value)}
+                                    onChange={(e) => setPrecio(soloDecimal(e.target.value))}
                              />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>

@@ -7,6 +7,16 @@ import formatlocaldate from "../../../../../Config/helpersDate";
 import CloseIcon from "@mui/icons-material/Close";
 import PersonIcon from "@mui/icons-material/Person";
 import SaveIcon from "@mui/icons-material/Save";
+import {
+  soloDigitos,
+  propsNumericos,
+  dniValido,
+  telefonoValido,
+  LARGO_DNI,
+  LARGO_TELEFONO,
+  AYUDA_DNI,
+  AYUDA_TELEFONO,
+} from "../../../../../utils/campos";
 
 interface props {
   setOpenModal: any;
@@ -27,7 +37,20 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
 
  
   const savedata = async () => {
-  
+    // DNI y teléfono con el formato de Perú: el campo ya solo deja escribir
+    // dígitos, esto atrapa el caso de dejarlos a medio escribir.
+    if (!dniValido(documento)) {
+      setSeverity("warning");
+      setMssg("El DNI debe tener 8 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
+    if (!telefonoValido(telefono)) {
+      setSeverity("warning");
+      setMssg("El teléfono debe tener 9 dígitos numéricos.");
+      setOpenAlert(true);
+      return;
+    }
 
     const body: any = {
       iduser: null,
@@ -130,10 +153,12 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
             <TextField
               label="DNI"
               variant="outlined"
-              type="number"
               fullWidth
               size="small"
-              onChange={(e) => setdocumento(e.target.value)}
+              helperText={AYUDA_DNI}
+              inputProps={propsNumericos(LARGO_DNI)}
+              value={documento}
+              onChange={(e) => setdocumento(soloDigitos(e.target.value, LARGO_DNI))}
             />
           </Grid>
           <Grid item xs={6}>
@@ -142,7 +167,10 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
               variant="outlined"
               fullWidth
               size="small"
-              onChange={(e) => setTelefono(e.target.value)}
+              helperText={AYUDA_TELEFONO}
+              inputProps={propsNumericos(LARGO_TELEFONO)}
+              value={telefono}
+              onChange={(e) => setTelefono(soloDigitos(e.target.value, LARGO_TELEFONO))}
             />
           </Grid>
           <Grid item xs={12}>

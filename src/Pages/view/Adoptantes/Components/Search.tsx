@@ -6,6 +6,7 @@ import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ClearIcon from "@mui/icons-material/Clear";
 import React from "react";
 
+import { soloDigitos, propsNumericos, LARGO_TELEFONO } from "../../../../utils/campos";
 interface Props {
   handleBusqueda: (e: any) => void;
   handleDateTo: (e: any) => void;
@@ -79,7 +80,8 @@ export default function Search({ handleBusqueda, handleDateTo, handleTelefono, o
                         fullWidth
                         size="small"
                         placeholder="Escribe un número..."
-                        onChange={(e) => handleTelefono(e.target.value)}
+                        inputProps={propsNumericos(LARGO_TELEFONO)}
+                        onChange={(e) => handleTelefono(soloDigitos(e.target.value, LARGO_TELEFONO))}
                       />
                     </Grid>
                     <Grid item xs={12} sm={6} md={4}>

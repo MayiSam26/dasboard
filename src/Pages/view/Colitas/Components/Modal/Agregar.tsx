@@ -22,6 +22,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import moment from "moment";
 import formatlocaldate from "../../../../../Config/helpersDate";
 
+import { soloDecimal, soloDigitos } from "../../../../../utils/campos";
 interface props {
   setOpenModal: any;
   getAlbergados: () => void;
@@ -215,10 +216,12 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
             <TextField
               label="Peso (kg)"
               variant="outlined"
-              type="number"
+              type="text"
+              inputProps={{ inputMode: "decimal" }}
               fullWidth
               size="small"
-              onChange={(e) => setPeso(e.target.value)}
+              value={peso ?? ""}
+              onChange={(e) => setPeso(soloDecimal(e.target.value))}
             />
           </Grid>
 
@@ -226,10 +229,12 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
             <TextField
               label="Edad (años)"
               variant="outlined"
-              type="number"
+              type="text"
+              inputProps={{ inputMode: "numeric" }}
               fullWidth
               size="small"
-              onChange={(e) => setEdad(e.target.value)}
+              value={edad ?? ""}
+              onChange={(e) => setEdad(soloDigitos(e.target.value, 2))}
             />
           </Grid>
           <Grid item xs={6}>
