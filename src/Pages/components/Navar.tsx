@@ -24,6 +24,7 @@ import EventIcon from "@mui/icons-material/Event";
 import React from "react";
 import axios from "axios";
 import baseurl from "../../Config/axios";
+import { precargarModulo } from "../../router/lazyModules";
 
 interface SubItem {
   label: string;
@@ -304,6 +305,10 @@ export default function Navar() {
                             key={item.path}
                             className={`cya-sidebar-item cya-sidebar-subitem${active ? " cya-active" : ""}`}
                             sx={{ pl: 4 }}
+                            // Al apuntar la opción ya se empieza a bajar la pantalla:
+                            // para cuando llega el clic, casi siempre está lista.
+                            onMouseEnter={() => precargarModulo(item.path)}
+                            onTouchStart={() => precargarModulo(item.path)}
                             onClick={() => navigate(item.path)}
                           >
                             <ListItemIcon>
@@ -339,6 +344,8 @@ export default function Navar() {
                                   <ListItemButton
                                     key={item.path}
                                     className={`cya-sidebar-item cya-sidebar-subitem${active ? " cya-active" : ""}`}
+                                    onMouseEnter={() => precargarModulo(item.path)}
+                                    onTouchStart={() => precargarModulo(item.path)}
                                     onClick={() => {
                                       navigate(item.path);
                                       setFlyoutSection(null);

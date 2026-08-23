@@ -140,8 +140,11 @@ export default function NotificationBell() {
     setItems(nextItems);
   }, []);
 
+  // Solo el sondeo periódico. La primera carga la hace el efecto de abajo,
+  // que ya se dispara al montar (location.pathname tiene valor desde el
+  // inicio): tenerla también acá hacía que cada cambio de pantalla pidiera
+  // las cuatro listas por duplicado.
   React.useEffect(() => {
-    cargarNotificaciones();
     const timer = setInterval(cargarNotificaciones, POLL_MS);
     return () => clearInterval(timer);
   }, [cargarNotificaciones]);

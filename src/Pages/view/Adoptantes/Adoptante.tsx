@@ -14,9 +14,6 @@ import Header from "../../components/Header";
 import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 function loadImageAsDataUrl(url: string): Promise<string> {
   return fetch(url)
@@ -104,12 +101,15 @@ export default function Adoptante() {
     [adoptante]
   );
 
-  const exportToExcel = () => {
+  // jspdf + xlsx pesan ~700 KB juntos. Se cargan solo cuando el usuario
+  // exporta, no al abrir la pantalla (antes se descargaban siempre).
+  const exportToExcel = async () => {
     const rows = buildExportRows();
     if (rows.length === 0) {
       window.alert("No hay datos para exportar con los filtros actuales.");
       return;
     }
+    const XLSX = await import("xlsx");
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Adoptantes");
@@ -134,6 +134,8 @@ export default function Adoptante() {
       return;
     }
 
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF({ orientation: "landscape" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const usuario = localStorage.getItem("user") || "—";

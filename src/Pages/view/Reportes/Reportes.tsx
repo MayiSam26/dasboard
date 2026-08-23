@@ -27,8 +27,6 @@ import axios from "axios";
 import moment from "moment";
 import "moment/locale/es";
 import baseurl from "../../../Config/axios";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 import { CYA_PRIMARY, CYA_SECONDARY, CYA_ACCENT, CYA_ERROR, CYA_MUTED, linearForecast, tendenciaDe } from "./forecast";
 
 moment.locale("es");
@@ -347,6 +345,8 @@ export default function Reportes() {
   }, [esAdmin]);
 
   const exportarPDF = async () => {
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF({ orientation: "portrait" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const usuario = localStorage.getItem("user") || "—";

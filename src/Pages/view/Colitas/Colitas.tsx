@@ -18,9 +18,6 @@ import Header from "../../components/Header";
 import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
-import * as XLSX from "xlsx";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
 
 // react-icons + los tipos de React 18 no siempre coinciden en el tipo de
 // retorno (ReactNode vs JSX.Element); se castean una sola vez acá.
@@ -172,12 +169,15 @@ export default function Colitas() {
     [albergados]
   );
 
-  const exportToExcel = () => {
+  // jspdf + xlsx pesan ~700 KB juntos. Se cargan solo cuando el usuario
+  // exporta, no al abrir la pantalla (antes se descargaban siempre).
+  const exportToExcel = async () => {
     const rows = buildExportRows();
     if (rows.length === 0) {
       window.alert("No hay datos para exportar con los filtros actuales.");
       return;
     }
+    const XLSX = await import("xlsx");
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Albergados");
@@ -203,6 +203,8 @@ export default function Colitas() {
       return;
     }
 
+    const { default: jsPDF } = await import("jspdf");
+    const { default: autoTable } = await import("jspdf-autotable");
     const doc = new jsPDF({ orientation: "landscape" });
     const pageWidth = doc.internal.pageSize.getWidth();
     const usuario = localStorage.getItem("user") || "—";

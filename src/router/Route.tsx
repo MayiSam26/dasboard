@@ -1,39 +1,63 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { Fragment, Suspense, lazy } from "react";
+import { Fragment, Suspense, lazy, useEffect, useState } from "react";
 import Home from "../Pages";
 import RecuperarClave from "../Pages/RecuperarClave";
 
 import PrivateRoute from "./PrivateRoute";
+import { moduleLoaders, precargarModulosEnReposo } from "./lazyModules";
 
 // Cada módulo del panel se carga solo cuando se visita (code splitting por
 // ruta): el login y el sitio público no necesitan pagar el costo de bundle
-// de las ~18 pantallas del panel administrativo si nunca se abren.
-const HomePanel = lazy(() => import("../Pages/view/Home"));
-const RedesSocial = lazy(() => import("../Pages/view/Social/RedesSocial"));
-const Intial = lazy(() => import("../Pages/view/Initial/Intial"));
-const Planes = lazy(() => import("../Pages/view/Adoptante/Planes"));
-const Egreso = lazy(() => import("../Pages/view/Egreso/Egreso"));
-const Donante = lazy(() => import("../Pages/view/Donante/Donante"));
-const Adoptante = lazy(() => import("../Pages/view/Adoptantes/Adoptante"));
-const Colitas = lazy(() => import("../Pages/view/Colitas/Colitas"));
-const Adopcion = lazy(() => import("../Pages/view/Adopciones/Adopcion"));
-const Entrevista = lazy(() => import("../Pages/view/Entrevista/Entrevista"));
-const Seguimiento = lazy(() => import("../Pages/view/Seguimiento/Seguimiento"));
-const Usuarios = lazy(() => import("../Pages/view/Usuarios/Usuarios"));
-const Reportes = lazy(() => import("../Pages/view/Reportes/Reportes"));
-const Noticias = lazy(() => import("../Pages/view/Noticias/Noticias"));
-const Ingresos = lazy(() => import("../Pages/view/Ingresos/Ingresos"));
-const Amo = lazy(() => import("../Pages/view/Amo/Amo"));
-const Perdidos = lazy(() => import("../Pages/view/Perdidos/Perdidos"));
-const MiCuenta = lazy(() => import("../Pages/view/MiCuenta/MiCuenta"));
-const Veterinaria = lazy(() => import("../Pages/view/Veterinaria/Veterinaria"));
-const Permisos = lazy(() => import("../Pages/view/Usuarios/Permisos"));
-const Apadrinado = lazy(() => import("../Pages/view/Apadrinado/Apadrinado"));
-const Voluntariado = lazy(() => import("../Pages/view/Voluntariado/Voluntariado"));
+// de las ~18 pantallas del panel administrativo si nunca se abren. Los
+// loaders viven en lazyModules.ts para poder precargarlos desde el menú.
+const HomePanel = lazy(moduleLoaders["/panel"]);
+const RedesSocial = lazy(moduleLoaders["/panel/redes-social"]);
+const Intial = lazy(moduleLoaders["/panel/informacion-pages"]);
+const Planes = lazy(moduleLoaders["/panel/informacion-adoptante"]);
+const Egreso = lazy(moduleLoaders["/panel/egreso"]);
+const Donante = lazy(moduleLoaders["/panel/donante"]);
+const Adoptante = lazy(moduleLoaders["/panel/adoptante"]);
+const Colitas = lazy(moduleLoaders["/panel/colitas"]);
+const Adopcion = lazy(moduleLoaders["/panel/adopcion"]);
+const Entrevista = lazy(moduleLoaders["/panel/entrevistas"]);
+const Seguimiento = lazy(moduleLoaders["/panel/seguimiento"]);
+const Usuarios = lazy(moduleLoaders["/panel/usuarios"]);
+const Reportes = lazy(moduleLoaders["/panel/reportes"]);
+const Noticias = lazy(moduleLoaders["/panel/noticias"]);
+const Ingresos = lazy(moduleLoaders["/panel/ingresos"]);
+const Amo = lazy(moduleLoaders["/panel/apoderado"]);
+const Perdidos = lazy(moduleLoaders["/panel/perdidos"]);
+const MiCuenta = lazy(moduleLoaders["/panel/mi-cuenta"]);
+const Veterinaria = lazy(moduleLoaders["/panel/veterinaria"]);
+const Permisos = lazy(moduleLoaders["/panel/permisos"]);
+const Apadrinado = lazy(moduleLoaders["/panel/apadrinado"]);
+const Voluntariado = lazy(moduleLoaders["/panel/voluntariado"]);
 
+// El indicador espera un cuarto de segundo antes de aparecer. Con los módulos
+// ya precargados el cambio de pantalla es casi instantáneo, y mostrar un
+// "Cargando..." por dos cuadros de animación se veía como un parpadeo. Si de
+// verdad tarda (primera visita, red lenta), el aviso igual aparece.
 function PanelFallback() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setVisible(true), 250);
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (!visible) return null;
+
   return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100vh" }}>
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        height: "100vh",
+        color: "var(--cya-muted, #6c757d)",
+        fontFamily: "inherit",
+      }}
+    >
       Cargando...
     </div>
   );
@@ -41,6 +65,13 @@ function PanelFallback() {
 
 export function RoutesApp() {
   const isAuth = Boolean(localStorage.getItem("token"));
+
+  // Con la sesión iniciada, el resto de pantallas se van bajando solas en los
+  // ratos muertos para que moverse por el menú no tenga espera.
+  useEffect(() => {
+    if (!isAuth) return;
+    precargarModulosEnReposo([window.location.pathname]);
+  }, [isAuth]);
 
   return (
     <Fragment>
