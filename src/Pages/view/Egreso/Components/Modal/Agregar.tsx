@@ -33,7 +33,8 @@ export default function Agregar({setOpenModal,getEgreso}:props){
    const saveIngreso = () =>{
 
         const body : any = {
-            iduser:0,
+            // El usuario lo resuelve el servidor con la sesión: mandar un id
+            // desde el formulario era justamente lo que rompía el registro.
             Descripcion:nombre,
             Monto:precio,
             fechato:fromto

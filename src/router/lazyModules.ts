@@ -26,6 +26,7 @@ export const moduleLoaders: Record<string, Loader> = {
   "/panel/seguimiento": () => import("../Pages/view/Seguimiento/Seguimiento"),
   "/panel/usuarios": () => import("../Pages/view/Usuarios/Usuarios"),
   "/panel/reportes": () => import("../Pages/view/Reportes/Reportes"),
+  "/panel/auditoria": () => import("../Pages/view/Auditoria/Auditoria"),
   "/panel/noticias": () => import("../Pages/view/Noticias/Noticias"),
   "/panel/ingresos": () => import("../Pages/view/Ingresos/Ingresos"),
   "/panel/apoderado": () => import("../Pages/view/Amo/Amo"),

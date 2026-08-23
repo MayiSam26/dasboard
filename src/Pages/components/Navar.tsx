@@ -19,6 +19,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import StackedBarChartIcon from "@mui/icons-material/StackedBarChart";
 import GroupIcon from "@mui/icons-material/Group";
 import AssessmentIcon from "@mui/icons-material/Assessment";
+import FactCheckIcon from "@mui/icons-material/FactCheck";
 import MedicalServicesIcon from "@mui/icons-material/MedicalServices";
 import EventIcon from "@mui/icons-material/Event";
 import React from "react";
@@ -126,6 +127,15 @@ const sections: Section[] = [
     icon: <AssessmentIcon />,
     configurable: true,
     items: [{ label: "Reportes Generales", path: "/panel/reportes" }],
+  },
+  {
+    // La auditoría muestra qué hizo cada usuario: se deja fuera de Permisos y
+    // fija al Administrador, mismo criterio que "usuarios".
+    key: "auditoria",
+    label: "Auditoría",
+    icon: <FactCheckIcon />,
+    roles: ["Administrador"],
+    items: [{ label: "Auditoría económica", path: "/panel/auditoria" }],
   },
 ];
 

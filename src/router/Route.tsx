@@ -23,6 +23,7 @@ const Entrevista = lazy(moduleLoaders["/panel/entrevistas"]);
 const Seguimiento = lazy(moduleLoaders["/panel/seguimiento"]);
 const Usuarios = lazy(moduleLoaders["/panel/usuarios"]);
 const Reportes = lazy(moduleLoaders["/panel/reportes"]);
+const Auditoria = lazy(moduleLoaders["/panel/auditoria"]);
 const Noticias = lazy(moduleLoaders["/panel/noticias"]);
 const Ingresos = lazy(moduleLoaders["/panel/ingresos"]);
 const Amo = lazy(moduleLoaders["/panel/apoderado"]);
@@ -99,6 +100,7 @@ export function RoutesApp() {
               <Route path="/panel/seguimiento" element={<Seguimiento />} />
               <Route path="/panel/usuarios" element={<Usuarios />} />
               <Route path="/panel/reportes" element={<Reportes />} />
+              <Route path="/panel/auditoria" element={<Auditoria />} />
               <Route path="/panel/noticias" element={<Noticias />} />
               <Route path="/panel/ingresos" element={<Ingresos />} />
               <Route path="/panel/apoderado" element={<Amo />} />
