@@ -18,6 +18,7 @@ import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
 import Delete from "./Components/Modal/Delete";
+import { yaNoEstaEnElAlbergue } from "./constantes";
 
 function buildImgUrl(foto: string) {
   const cleanBase = baseurl.replace(/\/+$/, "");
@@ -96,21 +97,40 @@ export default function Apadrinado() {
       headerName: "Animal",
       width: 200,
       headerAlign: "center",
-      renderCell: (params) => (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <AnimalPhoto
-            key={params.value?.foto}
-            src={buildImgUrl(params.value?.foto)}
-            alt={params.value?.nombre || ""}
-          />
-          <Typography
-            variant="body2"
-            sx={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
-          >
-            {params.value?.nombre || "—"}
-          </Typography>
-        </Box>
-      ),
+      renderCell: (params) => {
+        // Un apadrinamiento de una mascota que ya salió del refugio se sigue
+        // mostrando (es historial económico), pero se avisa para que se pueda
+        // cerrar: ya no corresponde seguir cobrándolo.
+        const salio = yaNoEstaEnElAlbergue(params.value);
+        return (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <AnimalPhoto
+              key={params.value?.foto}
+              src={buildImgUrl(params.value?.foto)}
+              alt={params.value?.nombre || ""}
+            />
+            <Box sx={{ minWidth: 0 }}>
+              <Typography
+                variant="body2"
+                sx={{ fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}
+              >
+                {params.value?.nombre || "—"}
+              </Typography>
+              {salio && (
+                <Tooltip title={`Estado de la mascota: ${params.value?.estado}`}>
+                  <Chip
+                    label="Ya no está en el refugio"
+                    size="small"
+                    color="warning"
+                    variant="outlined"
+                    sx={{ height: 18, fontSize: "0.65rem", mt: 0.2 }}
+                  />
+                </Tooltip>
+              )}
+            </Box>
+          </Box>
+        );
+      },
     },
     {
       field: "padrino_nombre",

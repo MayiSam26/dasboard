@@ -22,6 +22,7 @@ import SaveIcon from "@mui/icons-material/Save";
 import formatlocaldate from "../../../../../Config/helpersDate";
 
 import { soloDecimal } from "../../../../../utils/campos";
+import { ANIMALES_EN_ALBERGUE } from "../../constantes";
 interface props {
     setOpenModal: any;
     getApadrinados: () => void;
@@ -48,7 +49,10 @@ export default function Agregar({ setOpenModal, getApadrinados }: props) {
 
     const getAnimales = async () => {
         const url = baseurl + "colitas/list";
-        await axios.post(url, {}).then((response) => {
+        // Solo las que siguen dentro del albergue: una vez adoptada (o
+        // fallecida) la mascota ya no se puede apadrinar. "proceso" sí
+        // entra: la adopción no está cerrada y el animal sigue en el refugio.
+        await axios.post(url, { estados: ANIMALES_EN_ALBERGUE }).then((response) => {
             const { data } = response;
             const autocompletes: autocomplete[] = (data.data || []).map((item: any) => ({
                 label: item.nombre,

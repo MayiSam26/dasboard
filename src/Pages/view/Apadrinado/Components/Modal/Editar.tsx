@@ -23,6 +23,7 @@ import moment from "moment";
 import formatlocaldate from "../../../../../Config/helpersDate";
 
 import { soloDecimal } from "../../../../../utils/campos";
+import { ANIMALES_EN_ALBERGUE } from "../../constantes";
 interface props {
     setOpenModalEdit: any;
     idapadrinado: any;
@@ -53,9 +54,11 @@ export default function Editar({ setOpenModalEdit, idapadrinado, getApadrinados 
         // getAnimales/getById se definen acá adentro a propósito (mismo patrón que
         // Perdidos/Editar.tsx): así no hay funciones externas que declarar como
         // dependencia del hook.
+        // Solo las que siguen dentro del albergue: una vez adoptada (o
+        // fallecida) la mascota ya no se puede apadrinar.
         const getAnimales = async (): Promise<autocomplete[]> => {
             const url = baseurl + "colitas/list";
-            const response = await axios.post(url, {});
+            const response = await axios.post(url, { estados: ANIMALES_EN_ALBERGUE });
             const autocompletes: autocomplete[] = (response.data.data || []).map((item: any) => ({
                 label: item.nombre,
                 value: item.idanimal,
@@ -74,7 +77,17 @@ export default function Editar({ setOpenModalEdit, idapadrinado, getApadrinados 
             setMonto(data?.monto != null ? String(data.monto) : "");
             setFechaRegistro(data?.fecha_registro ? moment(data.fecha_registro).format("YYYY-MM-DD") : "");
             setEstado(data?.estado || "Activo");
-            const actual = autocompletes.find((a) => a.value === data?.idanimal) || null;
+            // Si el animal del registro ya salió del refugio no viene en la
+            // lista filtrada: se agrega igual para no vaciarle el campo a un
+            // apadrinamiento viejo (su historial se conserva tal cual).
+            let actual = autocompletes.find((a) => a.value === data?.idanimal) || null;
+            if (!actual && data?.idanimal) {
+                actual = {
+                    label: (data.animal?.nombre || "Animal") + " (ya no está en el refugio)",
+                    value: data.idanimal,
+                };
+                setAnimales([actual, ...autocompletes]);
+            }
             setAnimalSelect(actual);
         };
 
