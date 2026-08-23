@@ -100,6 +100,7 @@ const sections: Section[] = [
     configurable: true,
     items: [
       { label: "Ingreso", path: "/panel/ingresos" },
+      { label: "Egreso", path: "/panel/egreso" },
       { label: "Donante", path: "/panel/donante" },
       { label: "Apadrinamientos", path: "/panel/apadrinado" },
     ],
