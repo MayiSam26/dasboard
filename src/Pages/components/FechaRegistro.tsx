@@ -31,11 +31,14 @@ export default function FechaRegistro({
   const [manual, setManual] = React.useState(false);
 
   // Al abrir el formulario la fecha ya viene puesta: nadie tiene que elegirla.
+  // El ref hace que esto corra una sola vez; después manda lo que el usuario
+  // haya elegido, aunque el efecto se vuelva a evaluar.
+  const yaInicializado = React.useRef(false);
   React.useEffect(() => {
+    if (yaInicializado.current) return;
+    yaInicializado.current = true;
     if (!value) onChange(hoy);
-    // Solo al montar: después manda lo que el usuario haya elegido.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [value, onChange, hoy]);
 
   const alternarManual = (activo: boolean) => {
     setManual(activo);
