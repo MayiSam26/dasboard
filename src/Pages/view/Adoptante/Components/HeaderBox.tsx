@@ -13,7 +13,7 @@ export default function HeaderBox({setOpenModal}:props){
             >
                 <Grid item xs={12} md={9}>
                     <Typography variant="h4">
-                            Planes Mensuales
+                            Canales de Donación
                     </Typography>
                 </Grid>
                 <Grid item xs={12} md={1}>

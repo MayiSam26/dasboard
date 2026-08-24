@@ -30,6 +30,8 @@ import { precargarModulo } from "../../router/lazyModules";
 interface SubItem {
   label: string;
   path: string;
+  // Un ítem puede exigir un rol más estricto que su sección.
+  roles?: string[];
 }
 
 interface Section {
@@ -103,6 +105,11 @@ const sections: Section[] = [
       { label: "Egreso", path: "/panel/egreso" },
       { label: "Donante", path: "/panel/donante" },
       { label: "Apadrinamientos", path: "/panel/apadrinado" },
+      {
+        label: "Canales de Donación",
+        path: "/panel/informacion-adoptante",
+        roles: ["Administrador"],
+      },
     ],
   },
   {
@@ -167,13 +174,22 @@ export default function Navar() {
       .catch(() => setPermisosVisibles(SECCIONES_CONFIGURABLES)); // fail-open, mismo criterio que el resto del sistema
   }, [rol]);
 
-  const visibleSections = sections.filter((s) => {
-    if (s.configurable) {
-      if (permisosVisibles === null) return false; // esperando la respuesta
-      return permisosVisibles.includes(s.key);
-    }
-    return !s.roles || !rol || s.roles.includes(rol);
-  });
+  const visibleSections = sections
+    .filter((s) => {
+      if (s.configurable) {
+        if (permisosVisibles === null) return false; // esperando la respuesta
+        return permisosVisibles.includes(s.key);
+      }
+      return !s.roles || !rol || s.roles.includes(rol);
+    })
+    // "Canales de Donación" toca los datos de pago que ve el público, así que
+    // solo lo ve el Administrador aunque la sección Donaciones esté abierta a
+    // otros roles. Si una sección se queda sin ítems, no se muestra.
+    .map((s) => ({
+      ...s,
+      items: s.items.filter((i) => !i.roles || !rol || i.roles.includes(rol)),
+    }))
+    .filter((s) => s.items.length > 0);
 
   const sectionOfCurrentPath = visibleSections.find((s) =>
     s.items.some((i) => i.path === location.pathname)

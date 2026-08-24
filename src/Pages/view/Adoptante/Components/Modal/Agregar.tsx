@@ -4,7 +4,10 @@ import React from "react";
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
 
-import { soloDecimal } from "../../../../../utils/campos";
+// Alta de un canal de donación (Yape, Plin, PayPal...). Los nombres de las
+// columnas vienen de cuando la tabla era de "planes mensuales": "cantidad"
+// guarda la URL del logo y "content" los datos de la cuenta. Las etiquetas de
+// este formulario dicen lo que el campo realmente es.
 interface props {
     setFlask:any,
     setOpenModal:any
@@ -12,8 +15,7 @@ interface props {
 }
 export default function Agregar({setFlask,setOpenModal,getPlanesMensual}:props){
     const[nombre,setNombre] = React.useState<any>("")
-    const[precio,setPrecio] = React.useState<any>(null)
-    const[file,setFile] = React.useState<any>("")
+    const[logoUrl,setLogoUrl] = React.useState<any>("")
     const[detalleUno,setDetalleUno] = React.useState<any>("")
     const[detalledos,setDetalleDos] = React.useState<any>("")
     const[detalletres,setDetalleTres] = React.useState<any>("")
@@ -22,65 +24,42 @@ export default function Agregar({setFlask,setOpenModal,getPlanesMensual}:props){
     const[mssg,setMssg] = React.useState<any>("")
     const[openAlert,setOpenAlert] = React.useState<boolean>(false)
 
-   
     const createPlanMensual = async () => {
         const detalle : any[] = []
         if(detalleUno){
-          detalle.push({
-              id:1,
-              name:detalleUno
-          })
+          detalle.push({ id:1, name:detalleUno })
         }
         if(detalledos){
-          detalle.push({
-              id:2,
-              name:detalledos
-          })
+          detalle.push({ id:2, name:detalledos })
+        }
+        if(detalletres){
+          detalle.push({ id:3, name:detalletres })
         }
 
-        if(detalletres){
-          detalle.push({
-              id:3,
-              name:detalletres
-          })
+        if (nombre === '') {
+            setSeverity('error');
+            setMssg('Indica el canal (por ejemplo Yape, Plin o PayPal).');
+            setOpenAlert(true);
+            return;
         }
-         
-       
-        
+        if (!logoUrl) {
+            setSeverity('error');
+            setMssg('Falta la URL del logo del canal.');
+            setOpenAlert(true);
+            return;
+        }
+        if (detalle.length === 0) {
+            setSeverity('error');
+            setMssg('Agrega al menos un dato de la cuenta (número o enlace).');
+            setOpenAlert(true);
+            return;
+        }
+
         const url =  baseurl+'plan-mensual/create'
         const formData = new FormData();
         formData.append('nombre', nombre);
-        formData.append('iduser', '');
-        formData.append('cantidad', precio);
+        formData.append('cantidad', logoUrl);
         formData.append('content', JSON.stringify(detalle));
-        if (file) {
-          formData.append('img', file);
-        }
-        
-        if (nombre === '') {
-            setSeverity('error');
-            setMssg('El campo nombre requerido');
-            setOpenAlert(true);
-            return;
-        }
-        if (!precio) {
-            setSeverity('error');
-            setMssg('El campo precio requerido');
-            setOpenAlert(true);
-            return;
-        }
-        if (!file) {
-            setSeverity('error');
-            setMssg('debes subir imagen');
-            setOpenAlert(true);
-            return;
-        }
-        if(nombre === '' &&  precio === '' && !file){
-            setSeverity('error');
-            setMssg('Los campos nombre,precio y imagen son requeridos');
-            setOpenAlert(true);
-            return;
-        }
         try {
           const response :any = (await axios.post(url, formData));
           const {data} = response
@@ -103,7 +82,7 @@ export default function Agregar({setFlask,setOpenModal,getPlanesMensual}:props){
           setOpenAlert(true);
         }
       }
-    
+
     const alert = () =>{
         return(
             <Alert variant="filled" severity={severity}>
@@ -118,11 +97,11 @@ export default function Agregar({setFlask,setOpenModal,getPlanesMensual}:props){
                     <Grid item xs={12} sx={{display:'flex'}}>
                         <Grid item xs={10}>
                                 <Typography variant="h5">
-                                        Crear Nuevo Plan
+                                        Nuevo canal de donación
                                 </Typography>
                             </Grid>
                             <Grid item xs={2}>
-                                <Button 
+                                <Button
                                     onClick={createPlanMensual}
                                     fullWidth
                                     variant="contained" sx={{
@@ -130,77 +109,63 @@ export default function Agregar({setFlask,setOpenModal,getPlanesMensual}:props){
                                     fontWeight:'bolder',
                                     textTransform:'capitalize',
                                     '&:hover': {
-                                        background: '#ed6436', 
+                                        background: '#ed6436',
                                     },
                                     }}>
-                                    Save
+                                    Guardar
                                 </Button>
                             </Grid>
                     </Grid>
                     <Grid item xs={12}>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic"
-                                label="Ingrese Nombre" 
+                            <TextField
+                                label="Canal (Yape, Plin, PayPal...)"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
+                                value={nombre ?? ""}
                                 onChange={(e) => setNombre(e.target.value)}
                              />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="Ingrese Precio" 
+                            <TextField
+                                label="URL del logo del canal"
+                                helperText="Es la imagen que se muestra en la tarjeta del sitio público."
                                 variant="outlined"
-                                type="text"
-                                inputProps={{ inputMode: "decimal" }}
                                 fullWidth
                                 size="small"
-                                value={precio ?? ""}
-                                onChange={(e) => setPrecio(soloDecimal(e.target.value))}
+                                value={logoUrl ?? ""}
+                                onChange={(e) => setLogoUrl(e.target.value)}
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="Ingrese beneficio 1" 
+                            <TextField
+                                label="Dato de la cuenta 1 (número o enlace)"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
+                                value={detalleUno ?? ""}
                                 onChange={(e) => setDetalleUno(e.target.value)}
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="Ingrese beneficio 2" 
+                            <TextField
+                                label="Dato de la cuenta 2 (opcional)"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
+                                value={detalledos ?? ""}
                                 onChange={(e) => setDetalleDos(e.target.value)}
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="Ingrese beneficio 3" 
+                            <TextField
+                                label="Dato de la cuenta 3 (opcional)"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
+                                value={detalletres ?? ""}
                                 onChange={(e) => setDetalleTres(e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <input 
-                                type="file"
-                                style={{ 
-                                    border:'1px solid #c2c2c2',
-                                    padding:'8px',
-                                    width:'100%',
-                                    borderRadius:'4px'
-                                }}
-                            onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
                             />
                         </Grid>
                     </Grid>

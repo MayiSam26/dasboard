@@ -1,10 +1,14 @@
-import { Alert, Box, Button, Grid, Modal, TextField, Typography } from "@mui/material";
+import { Alert, Button, Grid, TextField, Typography } from "@mui/material";
 import React, { useEffect } from "react";
 
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
- 
-import { soloDecimal } from "../../../../../utils/campos";
+
+// Edición de un canal de donación (Yape, Plin, PayPal...). Antes este
+// formulario pasaba la URL del logo por un sanitizador numérico: bastaba con
+// tocar el campo para dejarlo en dígitos y romper la imagen del sitio público.
+// Además, si se subía un archivo, mandaba solo la imagen y descartaba el
+// nombre y los datos de la cuenta. Ahora se envía siempre todo junto.
 interface props {
     setFlask?:any
     setOpenModalEdit?:any
@@ -13,27 +17,30 @@ interface props {
 }
 export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlanesMensual}:props){
     const[nombre,setNombre] = React.useState<any>("")
-    const[precio,setPrecio] = React.useState<any>("")
-    const[link,setLik] = React.useState<any>("")
+    const[logoUrl,setLogoUrl] = React.useState<any>("")
     const[detallesUno,setDetallesUno] = React.useState<any>("")
     const[detallesDos,setDetallesDos] = React.useState<any>("")
     const[detallesTres,setDetallesTres] = React.useState<any>("")
-    const[file,setFile] = React.useState<any>("")
 
     const[severity,setSeverity] = React.useState<any>("")
     const[mssg,setMssg] = React.useState<any>("")
     const[openAlert,setOpenAlert] = React.useState<boolean>(false)
 
-    const getById = async() =>{
-        const url = baseurl+'plan-mensual/detail/'+idPlanMensual
+    const getById = async(id:any) =>{
+        const url = baseurl+'plan-mensual/detail/'+id
         axios.get(url)
         .then(response => {
             const {data} = response
             setNombre(data.data.nombre)
-            setPrecio(data.data.cantidad)
-            setLik(data.data.img)
-            const detail :any[] = JSON.parse(data.data.content)
-
+            setLogoUrl(data.data.cantidad)
+            let detail :any[] = []
+            try {
+                detail = typeof data.data.content === "string"
+                    ? JSON.parse(data.data.content)
+                    : (data.data.content || [])
+            } catch {
+                detail = []
+            }
             setDetallesUno(detail[0]?detail[0].name:'')
             setDetallesDos(detail[1]?detail[1].name:'')
             setDetallesTres(detail[2]?detail[2].name:'')
@@ -41,99 +48,70 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
         .catch(e => console.log(e.message))
     }
     useEffect(() =>{
-        getById()
-    },[])
-	
+        getById(idPlanMensual)
+    },[idPlanMensual])
+
     const updatePlanMensual = async () =>{
         const detalle : any[] = []
         if(detallesUno){
-          detalle.push({
-              id:1,
-              name:detallesUno
-          })
+          detalle.push({ id:1, name:detallesUno })
         }
         if(detallesDos){
-          detalle.push({
-              id:2,
-              name:detallesDos
-          })
+          detalle.push({ id:2, name:detallesDos })
         }
-
         if(detallesTres){
-          detalle.push({
-              id:3,
-              name:detallesTres
-          })
+          detalle.push({ id:3, name:detallesTres })
         }
-        const url = baseurl + 'plan-mensual/update/' + idPlanMensual;
-        if (file) {
-            
-            const formData = new FormData();
-            formData.append('img', file); 
-    
-            try {
-                const uploadResponse : any= await axios.post(url, formData);
-                const{data} = uploadResponse
-                if (data.code === '000') {
-                    setSeverity('success');
-                    setMssg(data.message);
-                    setOpenAlert(true);
-                    setTimeout(() => {
-                        setOpenModalEdit(false);
-                        getPlanesMensual();
-                    }, 1800);
-                } else {
-                    setSeverity('error');
-                    setMssg(data.message);
-                    setOpenAlert(true);
-                }
-            } catch (err) {
-                console.error('Error al subir la imagen:', err);
-            }
-           
-        }else{
-            const dataToSend = {
-                nombre: nombre,
-                iduser: '',
-                cantidad: precio,
-                content: JSON.stringify(detalle),
-            };
-    
-            // Verificar campos obligatorios
-            if (nombre === '' || !precio || (!file && nombre === '' && !precio)) {
-                setSeverity('error');
-                setMssg('Los campos nombre, precio e imagen son requeridos');
-                setOpenAlert(true);
-                return;
-            }
-    
-            // Enviar solicitud con axios
-            try {
-                const response = await axios.post(url, dataToSend);
-                const { data } = response;
 
-                if (data.code === '000') {
-                    setSeverity('success');
-                    setMssg(data.message);
-                    setOpenAlert(true);
-                    setTimeout(() => {
-                        setOpenModalEdit(false);
-                        getPlanesMensual();
-                    }, 1800);
-                } else {
-                    setSeverity('error');
-                    setMssg(data.message);
-                    setOpenAlert(true);
-                }
-            } catch (e: any) {
+        if (nombre === '') {
+            setSeverity('error');
+            setMssg('Indica el canal (por ejemplo Yape, Plin o PayPal).');
+            setOpenAlert(true);
+            return;
+        }
+        if (!logoUrl) {
+            setSeverity('error');
+            setMssg('Falta la URL del logo del canal.');
+            setOpenAlert(true);
+            return;
+        }
+        if (detalle.length === 0) {
+            setSeverity('error');
+            setMssg('Agrega al menos un dato de la cuenta (número o enlace).');
+            setOpenAlert(true);
+            return;
+        }
+
+        const url = baseurl + 'plan-mensual/update/' + idPlanMensual;
+        const dataToSend = {
+            nombre: nombre,
+            cantidad: logoUrl,
+            content: JSON.stringify(detalle),
+        };
+
+        try {
+            const response = await axios.post(url, dataToSend);
+            const { data } = response;
+            if (data.code === '000') {
+                setSeverity('success');
+                setMssg(data.message);
+                setOpenAlert(true);
+                setTimeout(() => {
+                    setOpenModalEdit(false);
+                    getPlanesMensual();
+                }, 1800);
+            } else {
                 setSeverity('error');
-                setMssg(e?.response?.data?.message || e.message || 'No se pudo actualizar.');
+                setMssg(data.message);
                 setOpenAlert(true);
             }
+        } catch (e: any) {
+            setSeverity('error');
+            setMssg(e?.response?.data?.message || e.message || 'No se pudo actualizar.');
+            setOpenAlert(true);
         }
-    
     }
-    
+
     const alert = () =>{
         return(
             <Alert variant="filled" severity={severity}>
@@ -141,7 +119,7 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
             </Alert>
         )
     }
-   
+
     return(
         <>
             {openAlert?alert():null}
@@ -149,11 +127,11 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
                     <Grid item xs={12} sx={{display:'flex'}}>
                         <Grid item xs={10}>
                                 <Typography variant="h5">
-                                        Editar Plan
+                                        Editar canal de donación
                                 </Typography>
                             </Grid>
                             <Grid item xs={2}>
-                                <Button 
+                                <Button
                                     onClick={updatePlanMensual}
                                     fullWidth
                                     variant="contained" sx={{
@@ -161,7 +139,7 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
                                     fontWeight:'bolder',
                                     textTransform:'capitalize',
                                     '&:hover': {
-                                        background: '#ed6436', 
+                                        background: '#ed6436',
                                     },
                                     }}>
                                     Actualizar
@@ -170,9 +148,8 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
                     </Grid>
                     <Grid item xs={12}>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic"
-                                label="Ingrese Nombre" 
+                            <TextField
+                                label="Canal (Yape, Plin, PayPal...)"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
@@ -181,22 +158,27 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
                              />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                    id="outlined-basic"
-                                    label="Ingrese Precio" 
-                                    variant="outlined"
-                                    fullWidth
-                                    type="text"
-                                    inputProps={{ inputMode: "decimal" }}
-                                    size="small"
-                                    value={precio ?? ""}
-                                    onChange={(e) => setPrecio(soloDecimal(e.target.value))}
+                            <TextField
+                                label="URL del logo del canal"
+                                helperText="Es la imagen que se muestra en la tarjeta del sitio público."
+                                variant="outlined"
+                                fullWidth
+                                size="small"
+                                value={logoUrl ?? ""}
+                                onChange={(e) => setLogoUrl(e.target.value)}
                              />
+                            {logoUrl ? (
+                                <img
+                                    src={logoUrl}
+                                    alt={nombre}
+                                    width="80px"
+                                    style={{padding:'10px',border:'1px solid #c2c2c2',marginTop:'8px'}}
+                                />
+                            ) : null}
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="Ingrese beneficio 1" 
+                            <TextField
+                                label="Dato de la cuenta 1 (número o enlace)"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
@@ -205,9 +187,8 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="Ingrese beneficio 2" 
+                            <TextField
+                                label="Dato de la cuenta 2 (opcional)"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
@@ -216,9 +197,8 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
                             />
                         </Grid>
                         <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="Ingrese beneficio 3" 
+                            <TextField
+                                label="Dato de la cuenta 3 (opcional)"
                                 variant="outlined"
                                 fullWidth
                                 size="small"
@@ -226,34 +206,8 @@ export default function Editar({setFlask,setOpenModalEdit,idPlanMensual,getPlane
                                 onChange={(e) => setDetallesTres(e.target.value)}
                             />
                         </Grid>
-                        <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <TextField 
-                                id="outlined-basic" 
-                                label="Ingrese URL de la imagen" 
-                                variant="outlined" 
-                                fullWidth
-                                size="small"
-                                value={link ?? ""}
-                                onChange={(e) => setLik(e.target.value)}
-                                disabled
-                            />
-                             <img src={baseurl+link} width="100px" style={{padding:'10px',border:'1px solid #c2c2c2'}}/>
-                        </Grid>
-                        <Grid item xs={12} sx={{marginTop:'10px'}}>
-                            <input 
-                                type="file"
-                                style={{ 
-                                    border:'1px solid #c2c2c2',
-                                    padding:'8px',
-                                    width:'100%',
-                                    borderRadius:'4px'
-                                }}
-                            onChange={(e) => setFile(e.target.files ? e.target.files[0] : null)}
-                            />
-                        </Grid>
                     </Grid>
             </Grid>
-            
         </>
     )
 }

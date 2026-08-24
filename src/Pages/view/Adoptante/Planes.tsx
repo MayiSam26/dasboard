@@ -22,6 +22,13 @@ export default function Adoptante() {
     const token = localStorage.getItem("token");
     if (!token) {
       navigate("/"); // Redirige a la página de inicio si no hay token
+      return;
+    }
+    // Acá se editan los datos de pago que ve el público, así que la pantalla
+    // es solo para el Administrador (el backend también lo exige).
+    const rol = localStorage.getItem("rol");
+    if (rol && rol !== "Administrador") {
+      navigate("/panel");
     }
   }, [navigate]);
   const [plan, setPlan] = React.useState<any>([]);
@@ -53,43 +60,51 @@ export default function Adoptante() {
 
   
 
+  // La tabla muestra lo que realmente guarda cada columna: "cantidad" tiene la
+  // URL del logo (no un monto) y "content" los datos de la cuenta, que es el
+  // dato más importante y antes no se veía. La columna "img" quedó en desuso:
+  // el sitio público arma la tarjeta con nombre + cantidad + content.
   const columns: GridColDef<(typeof plan)[number]>[] = [
     {
       field: "nombre",
-      headerName: "Nombre",
-      width: 350,
-      editable: true,
+      headerName: "Canal",
+      width: 200,
     },
     {
-      field: "cantidad",
-      headerName: "Precio",
-      width: 150,
-      editable: true,
-    },
-    {
-      field: "img",
-      headerName: "Url imagen",
-      width: 460,
-      editable: true,
+      field: "content",
+      headerName: "Datos de la cuenta",
+      width: 420,
       renderCell: (params) => {
-        return `${baseurl}${params.row.img}`;
+        try {
+          const detalle =
+            typeof params.row.content === "string"
+              ? JSON.parse(params.row.content)
+              : params.row.content;
+          return (detalle || []).map((d: any) => d.name).join(" · ");
+        } catch {
+          return String(params.row.content ?? "");
+        }
       },
     },
     {
+      field: "cantidad",
+      headerName: "Logo (URL)",
+      width: 320,
+    },
+    {
       field: "previo",
-      headerName: "Imagen",
-      width: 350,
-      editable: true,
+      headerName: "Logo",
+      width: 120,
+      align: "center",
       renderCell: (params) => {
         return (
           <img
-            src={`${baseurl}${params.row.img}`}
-            alt="Imagen"
+            src={params.row.cantidad}
+            alt={params.row.nombre}
             style={{
-              objectFit: "cover",
-              backgroundSize: "cover",
+              objectFit: "contain",
               padding: "5px",
-              width: "100px",
+              width: "60px",
             }}
           />
         );

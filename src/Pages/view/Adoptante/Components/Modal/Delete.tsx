@@ -3,9 +3,6 @@ import React from "react";
 
 import axios from "axios";
 import baseurl from "../../../../../Config/axios";
-import { isNull } from "util";
-import { isNullishCoalesce } from "typescript";
-import { deflate } from "zlib";
  
 interface props {
     setFlask?:any
