@@ -2,7 +2,9 @@ import {
   Alert,
   Box,
   Button,
+  Checkbox,
   Chip,
+  FormControlLabel,
   FormControl,
   Grid,
   IconButton,
@@ -33,6 +35,11 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
   const [tamano, setTamano] = React.useState<any>("");
   const [peso, setPeso] = React.useState<any>("");
   const [edad, setEdad] = React.useState<any>("");
+  // Si se conoce el nacimiento exacto se manda esa fecha; si no, la edad
+  // aproximada, con la que el servidor deduce el nacimiento. En los dos casos
+  // la edad mostrada se recalcula sola con el tiempo.
+  const [conoceNacimiento, setConoceNacimiento] = React.useState(false);
+  const [fechaNacimiento, setFechaNacimiento] = React.useState("");
   const [estado] = React.useState<any>("En refugio");
   const [esterilizado, setEsterilizado] = React.useState<any>("");
   const [genero, setGenero] = React.useState<any>("");
@@ -68,6 +75,7 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
     if (!tamano) faltantes.push("Tamaño");
     if (!genero) faltantes.push("Genero");
     if (!tipo) faltantes.push("Tipo");
+    if (conoceNacimiento && !fechaNacimiento) faltantes.push("Fecha de nacimiento");
     return faltantes;
   };
 
@@ -88,6 +96,9 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
     formData.append("tamano", tamano);
     formData.append("peso", peso);
     formData.append("Edada_Aprox", edad);
+    if (conoceNacimiento && fechaNacimiento) {
+      formData.append("fecha_nacimiento", fechaNacimiento);
+    }
     formData.append("foto", file);
     formData.append("observaciones", observacion);
     formData.append("estado", estado);
@@ -227,15 +238,39 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
           </Grid>
 
           <Grid item xs={6}>
-            <TextField
-              label="Edad (años)"
-              variant="outlined"
-              type="text"
-              inputProps={{ inputMode: "numeric" }}
-              fullWidth
-              size="small"
-              value={edad ?? ""}
-              onChange={(e) => setEdad(soloDigitos(e.target.value, 2))}
+            {conoceNacimiento ? (
+              <TextField
+                label="Fecha de nacimiento"
+                type="date"
+                fullWidth
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                value={fechaNacimiento}
+                onChange={(e) => setFechaNacimiento(e.target.value)}
+              />
+            ) : (
+              <TextField
+                label="Edad aproximada (años)"
+                variant="outlined"
+                type="text"
+                inputProps={{ inputMode: "numeric" }}
+                fullWidth
+                size="small"
+                value={edad ?? ""}
+                onChange={(e) => setEdad(soloDigitos(e.target.value, 2))}
+              />
+            )}
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={conoceNacimiento}
+                  onChange={(e) => setConoceNacimiento(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={
+                <Typography variant="caption">Sé la fecha exacta de nacimiento</Typography>
+              }
             />
           </Grid>
           <Grid item xs={6}>

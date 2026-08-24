@@ -16,6 +16,7 @@ import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ClearIcon from "@mui/icons-material/Clear";
 import React from "react";
+import { ESTADOS } from "../constantes";
 
 interface Props {
   handleBusqueda: (e: any) => void;
@@ -104,10 +105,11 @@ export default function Search({
                     sx={selectSx}
                   >
                     <MenuItem value="">Todos</MenuItem>
-                    <MenuItem value="En refugio">En refugio</MenuItem>
-                    <MenuItem value="proceso">En proceso</MenuItem>
-                    <MenuItem value="adoptado">Adoptado</MenuItem>
-                    <MenuItem value="Fallecido">Fallecido</MenuItem>
+                    {ESTADOS.map((e) => (
+                      <MenuItem key={e.valor} value={e.valor}>
+                        {e.etiqueta}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </Grid>

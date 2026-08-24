@@ -71,6 +71,7 @@ function estadoChipProps(estado: string): { label: string; color: "success" | "w
   const e = (estado || "").toLowerCase();
   if (e.includes("fallecid")) return { label: estado, color: "error", sx: { bgcolor: "#000", color: "#fff" } };
   if (e.includes("adopt")) return { label: estado, color: "success" };
+  if (e.includes("baja")) return { label: estado, color: "error", sx: { bgcolor: "#6b7280", color: "#fff" } };
   if (e.includes("tratamiento") || e.includes("proceso")) return { label: estado, color: "warning" };
   if (e.includes("perdid")) return { label: estado, color: "error" };
   return { label: estado || "—", color: "info" };
@@ -158,12 +159,13 @@ export default function Colitas() {
         Nombre: a.nombre,
         Tamaño: a.tamano,
         "Peso (kg)": a.peso,
-        "Edad (años)": a.Edada_Aprox,
+        Edad: a.edad_texto || "",
         "Fecha Ingreso": a.Fecha_Ingreso ? moment(a.Fecha_Ingreso).format("DD-MM-YYYY") : "",
         Genero: a.genero?.descripcion || "",
         Tipo: a.tipo_descripcion?.descripcion || "",
         Estado: a.estado,
         Esterilizado: a.esterelizacion,
+        "Motivo del estado": a.motivo_estado || "",
         Observaciones: a.observaciones || "",
       })),
     [albergados]
@@ -295,12 +297,17 @@ export default function Colitas() {
       headerAlign: "center",
     },
     {
-      field: "Edada_Aprox",
+      // La edad la calcula el servidor desde la fecha de nacimiento, así que
+      // se muestra tal cual llega ("~3 años, 5 meses"). El "~" marca las
+      // estimadas. Se ordena por meses para que el orden sea el real.
+      field: "edad_texto",
       headerName: "Edad",
-      width: 90,
+      width: 130,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => `${params.value} año(s)`,
+      sortComparator: (v1, v2, p1, p2) =>
+        (p1.api.getRow(p1.id)?.edad_meses ?? -1) - (p2.api.getRow(p2.id)?.edad_meses ?? -1),
+      renderCell: (params) => params.value || "—",
     },
     {
       field: "genero",
