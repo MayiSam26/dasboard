@@ -18,6 +18,7 @@ import {
   AYUDA_DNI,
   AYUDA_TELEFONO,
 } from "../../../../../utils/campos";
+import { iniciarMedicion, finalizarMedicion } from "../../../../../utils/medirRegistro";
 
 interface props {
   setOpenModal: any;
@@ -31,6 +32,14 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
   const [telefono, setTelefono] = React.useState<any>("");
   const [motivo, setMotivo] = React.useState<any>("");
   const [fromto, setFromto] = React.useState<any>(null);
+
+  // Cronómetro del indicador "Tiempo de Registro" (ver utils/medirRegistro).
+  const medicionRef = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    iniciarMedicion("Adoptantes").then((id) => {
+      medicionRef.current = id;
+    });
+  }, []);
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -68,6 +77,7 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
         await axios.post(url,body).then((response) => {
             const { data } = response;
             if(data.code === '000'){
+                finalizarMedicion(medicionRef.current);
                 setSeverity('success');
                 setMssg(data.message);
                 setOpenAlert(true);

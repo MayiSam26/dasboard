@@ -5,8 +5,6 @@ import { UserSessionContext } from "../Config/Context";
 import axios from "axios";
 import baseurl from "../Config/axios";
 import { Link, useNavigate } from "react-router-dom";
-import moment from "moment";
-import formatlocaldate from "../Config/helpersDate";
 import { setAuthHeader } from "../Config/axiosSetup";
 
 export default function Home() {
@@ -51,7 +49,6 @@ export default function Home() {
         }
 
         // Intenta guardar auditoría sin bloquear el flujo si falla
-        await saveAuditoria();
 
         // Redirección directa al panel
         window.location.href = "/panel";
@@ -67,33 +64,6 @@ export default function Home() {
       setSeverity('error');
       setMssg('Error al conectar con el servidor');
       setLoading(false);
-    }
-  };
-
-  const saveAuditoria = async () => {
-    try {
-      const fecha = moment(new Date()).format('YYYY-MM-DD HH:mm:ss');
-
-      const body = {
-        fechaInicio: formatlocaldate(new Date()),
-        modulo: "Login",
-        fechaRegistro: fecha,
-        resultado: null
-      };
-
-      const url = baseurl + "auditoria";
-      const token = localStorage.getItem("token");
-
-      const response = await axios.post(url, body, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      const { data } = response;
-      if (data && data.data && data.data.idauditoria) {
-        localStorage.setItem("auditoria", data.data.idauditoria);
-      }
-    } catch (error) {
-      console.error("Error no bloqueante al guardar auditoría:", error);
     }
   };
 

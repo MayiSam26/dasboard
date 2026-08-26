@@ -26,6 +26,7 @@ import formatlocaldate from "../../../../../Config/helpersDate";
 
 import { soloDecimal, soloDigitos } from "../../../../../utils/campos";
 import FechaRegistro from "../../../../components/FechaRegistro";
+import { iniciarMedicion, finalizarMedicion } from "../../../../../utils/medirRegistro";
 interface props {
   setOpenModal: any;
   getAlbergados: () => void;
@@ -49,6 +50,15 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
   const [file, setFile] = React.useState<any>("");
   const [previewUrl, setPreviewUrl] = React.useState<string>("");
   const previewUrlRef = React.useRef<string>("");
+
+  // Cronómetro del indicador "Tiempo de Registro": arranca al abrir el
+  // formulario y se cierra cuando el guardado se confirma.
+  const medicionRef = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    iniciarMedicion("Colitas").then((id) => {
+      medicionRef.current = id;
+    });
+  }, []);
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -114,7 +124,7 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
       const response: any = await axios.post(url, formData);
       const { data } = response;
       if (data.code === "000") {
-        saveAuditoria();
+        finalizarMedicion(medicionRef.current);
         setSeverity("success");
         setMssg(data.message);
         setOpenAlert(true);
@@ -134,22 +144,6 @@ export default function Agregar({ setOpenModal, getAlbergados }: props) {
     }
   };
 
-  const saveAuditoria = async () => {
-    const id = localStorage.getItem("auditoria");
-    let fecha = moment(new Date()).add(5, "hours").format("YYYY-MM-DD HH:mm:ss");
-    const body = {
-      modulo: "colitas",
-      fechaRegistro: fecha,
-    };
-
-    const url = baseurl + "auditoria/update/" + id;
-    try {
-      await axios.put(url, body);
-    } catch (e) {
-      // La auditoría es de mejor esfuerzo: si falla no debe interrumpir el
-      // guardado de la colita, que ya se confirmó exitoso antes de llamar aquí.
-    }
-  };
   const alert = () => {
     return (
       <Alert variant="filled" severity={severity} sx={{ borderRadius: 0 }}>

@@ -28,6 +28,7 @@ import moment from "moment";
 import "moment/locale/es";
 import baseurl from "../../../Config/axios";
 import { CYA_PRIMARY, CYA_SECONDARY, CYA_ACCENT, CYA_ERROR, CYA_MUTED, linearForecast, tendenciaDe } from "./forecast";
+import { formatearDuracion } from "../../../utils/medirRegistro";
 
 moment.locale("es");
 
@@ -344,6 +345,16 @@ export default function Reportes() {
     );
   }, [esAdmin]);
 
+  // Indicador "Tiempo de Registro" de la tesis: cuánto se tarda en completar
+  // un alta, medido por el servidor de punta a punta (ver utils/medirRegistro).
+  const [tiempos, setTiempos] = React.useState<any>(null);
+  React.useEffect(() => {
+    axios
+      .post(baseurl + "auditoria/reporte", {})
+      .then((r) => setTiempos(r.data?.data || null))
+      .catch(() => setTiempos(null));
+  }, []);
+
   const exportarPDF = async () => {
     const { default: jsPDF } = await import("jspdf");
     const { default: autoTable } = await import("jspdf-autotable");
@@ -402,6 +413,21 @@ export default function Reportes() {
       ["Donaciones y Finanzas", "Total egresos (S/.)", totalEgresos.toFixed(2)],
       ["Donaciones y Finanzas", "Balance neto (S/.)", (totalIngresos - totalEgresos).toFixed(2)],
       ["Donaciones y Finanzas", "Donantes registrados", totalDonantes],
+      // Indicador "Tiempo de Registro": va al PDF junto con el resto, no
+      // hace falta un reporte aparte.
+      ...(tiempos && tiempos.general?.mediciones > 0
+        ? [
+            ["Tiempo de registro", "Promedio general", formatearDuracion(tiempos.general.promedio)],
+            ["Tiempo de registro", "Registros medidos", tiempos.general.mediciones],
+            ["Tiempo de registro", "El más rápido", formatearDuracion(tiempos.general.minimo)],
+            ["Tiempo de registro", "El más lento", formatearDuracion(tiempos.general.maximo)],
+            ...tiempos.porModulo.map((m: any) => [
+              "Tiempo de registro",
+              `Promedio en ${m.modulo} (${m.mediciones} ${m.mediciones === 1 ? "registro" : "registros"})`,
+              formatearDuracion(m.promedio),
+            ]),
+          ]
+        : [["Tiempo de registro", "Mediciones disponibles", "Sin datos todavía"]]),
       ...(hayDatosAdopciones
         ? [
             ["Tendencias", "Proyección adopciones próximo mes", proyeccionAdopciones[0]],
@@ -647,6 +673,98 @@ export default function Reportes() {
                 </Paper>
               </Grid>
             </Grid>
+
+            {/* Tiempo de Registro — indicador 2 de la tesis */}
+            <SectionHeader
+              icon={<HourglassTopIcon fontSize="small" />}
+              title="Tiempo de Registro"
+              subtitle="Cuánto toma completar un alta, medido por el sistema"
+            />
+            <Typography variant="caption" sx={{ color: "var(--cya-text-muted)", display: "block", mb: 2 }}>
+              El sistema cronometra desde que se abre el formulario hasta que se guarda. Las mediciones de más
+              de una hora se descartan: son formularios que quedaron abiertos, no registros lentos.
+            </Typography>
+
+            {tiempos && tiempos.general?.mediciones > 0 ? (
+              <>
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <StatCard
+                      icon={<HourglassTopIcon />}
+                      label="Promedio general"
+                      value={formatearDuracion(tiempos.general.promedio)}
+                      color={CYA_SECONDARY}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <StatCard
+                      icon={<DescriptionIcon />}
+                      label="Registros medidos"
+                      value={tiempos.general.mediciones}
+                      color={CYA_SECONDARY}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <StatCard
+                      icon={<CheckCircleIcon />}
+                      label="El más rápido"
+                      value={formatearDuracion(tiempos.general.minimo)}
+                      color={CYA_SECONDARY}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <StatCard
+                      icon={<HourglassTopIcon />}
+                      label="El más lento"
+                      value={formatearDuracion(tiempos.general.maximo)}
+                      color={CYA_ACCENT}
+                    />
+                  </Grid>
+                </Grid>
+
+                <Grid container spacing={2} sx={{ mb: 2 }}>
+                  <Grid item xs={12} md={6}>
+                    <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
+                      <Typography sx={{ fontWeight: 700, mb: 1 }}>Promedio por módulo (segundos)</Typography>
+                      <BarChart
+                        xAxis={[{ scaleType: "band", data: tiempos.porModulo.map((m: any) => m.modulo) }]}
+                        series={[
+                          {
+                            data: tiempos.porModulo.map((m: any) => m.promedio),
+                            color: CYA_SECONDARY,
+                            label: "Segundos",
+                          },
+                        ]}
+                        height={240}
+                        grid={{ horizontal: true }}
+                      />
+                    </Paper>
+                  </Grid>
+                  <Grid item xs={12} md={6}>
+                    <Paper elevation={0} sx={{ p: 2.5, borderRadius: "16px", border: "1px solid var(--cya-border)" }}>
+                      <Typography sx={{ fontWeight: 700, mb: 1 }}>Evolución mes a mes (segundos)</Typography>
+                      <BarChart
+                        xAxis={[{ scaleType: "band", data: tiempos.porMes.map((m: any) => m.etiqueta) }]}
+                        series={[
+                          {
+                            data: tiempos.porMes.map((m: any) => m.promedio),
+                            color: CYA_PRIMARY,
+                            label: "Segundos",
+                          },
+                        ]}
+                        height={240}
+                        grid={{ horizontal: true }}
+                      />
+                    </Paper>
+                  </Grid>
+                </Grid>
+              </>
+            ) : (
+              <Typography color="text.secondary" sx={{ mb: 2 }}>
+                Todavía no hay mediciones. El tiempo empieza a registrarse con las próximas altas que se hagan
+                desde el panel.
+              </Typography>
+            )}
 
             {/* Tendencias y Proyección */}
             <SectionHeader

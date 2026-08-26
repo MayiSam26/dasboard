@@ -27,6 +27,7 @@ import WarningAmberIcon from "@mui/icons-material/WarningAmber";
 
 import { soloDecimal } from "../../../../../utils/campos";
 import FechaRegistro from "../../../../components/FechaRegistro";
+import { iniciarMedicion, finalizarMedicion } from "../../../../../utils/medirRegistro";
 interface props {
   setOpenModal: any;
   getIngresos: () => void;
@@ -51,6 +52,14 @@ export default function Agregar({
   const [tipoyape, setTipoYape] = React.useState<any>("");
   const [file, setFile] = React.useState<any>("");
   const [dateTo, setDateTo] = React.useState<any>("");
+
+  // Cronómetro del indicador "Tiempo de Registro" (ver utils/medirRegistro).
+  const medicionRef = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    iniciarMedicion("Ingresos").then((id) => {
+      medicionRef.current = id;
+    });
+  }, []);
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -92,6 +101,7 @@ export default function Agregar({
       const response: any = await axios.post(url, formData);
       const { data } = response;
       if (data.code === "000") {
+        finalizarMedicion(medicionRef.current);
         setSeverity("success");
         setMssg(data.message);
         getReportes();

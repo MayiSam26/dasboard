@@ -30,6 +30,7 @@ import {
   AYUDA_DNI,
   AYUDA_RUC,
 } from "../../../../../utils/campos";
+import { iniciarMedicion, finalizarMedicion } from "../../../../../utils/medirRegistro";
 
 interface props {
   setOpenModal: any;
@@ -47,6 +48,14 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
   const [ruc, setRuc] = React.useState<any>("");
   const [dni, setDNI] = React.useState<any>("");
   const [dateTo, setDateTo] = React.useState<any>("");
+
+  // Cronómetro del indicador "Tiempo de Registro" (ver utils/medirRegistro).
+  const medicionRef = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    iniciarMedicion("Donantes").then((id) => {
+      medicionRef.current = id;
+    });
+  }, []);
 
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
@@ -89,6 +98,7 @@ export default function Agregar({ setOpenModal, getDonante }: props) {
       .then((response) => {
         const { data } = response;
         if (data.code === "000") {
+          finalizarMedicion(medicionRef.current);
           setSeverity("success");
           setMssg(data.message);
           setOpenAlert(true);

@@ -23,6 +23,7 @@ import FavoriteIcon from "@mui/icons-material/Favorite";
 import SaveIcon from "@mui/icons-material/Save";
 
 import FechaRegistro from "../../../../components/FechaRegistro";
+import { iniciarMedicion, finalizarMedicion } from "../../../../../utils/medirRegistro";
 interface props {
   setOpenModal: any;
   getAdopciones: () => void;
@@ -50,6 +51,14 @@ export default function Agregar({ setOpenModal, getAdopciones, getReportes }: pr
   const [detalledos, setDetalleDos] = React.useState<any>("");
   const [detalletres, setDetalleTres] = React.useState<any>("");
 
+  // Cronómetro del indicador "Tiempo de Registro" (ver utils/medirRegistro).
+  const medicionRef = React.useRef<number | null>(null);
+  React.useEffect(() => {
+    iniciarMedicion("Adopciones").then((id) => {
+      medicionRef.current = id;
+    });
+  }, []);
+
   const [severity, setSeverity] = React.useState<any>("");
   const [mssg, setMssg] = React.useState<any>("");
   const [openAlert, setOpenAlert] = React.useState<boolean>(false);
@@ -69,7 +78,7 @@ export default function Agregar({ setOpenModal, getAdopciones, getReportes }: pr
     .then((response:any) =>{
         const {data} = response
         if(data.code === '000'){
-            saveAuditoria()
+            finalizarMedicion(medicionRef.current)
             setSeverity('success');
             setMssg(data.message);
             setOpenAlert(true);
@@ -150,20 +159,6 @@ export default function Agregar({ setOpenModal, getAdopciones, getReportes }: pr
       setColitaSelect(null);
     }
   };
-
-  const saveAuditoria = async() =>{
-    const id = localStorage.getItem("auditoria")
-    let fecha = moment(new Date()).add(5, 'hours').format('YYYY-MM-DD HH:mm:ss');
-    const body = {
-      modulo:"Adopciones",
-      fechaRegistro:fecha
-    }
-   
-    const url = baseurl+"auditoria/update/"+id
-    const response = await axios.put(url, body);
-    const{data} = response
-    console.log(data)
-  }
 
   React.useEffect(() => {
     getAlbergados();
