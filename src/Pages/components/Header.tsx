@@ -38,6 +38,9 @@ export default function Header(){
         localStorage.removeItem("userFoto")
         localStorage.removeItem("user")
         localStorage.removeItem("rol")
+        // Menú cacheado de este usuario: si no se borra, quien inicie sesión
+        // después en la misma pestaña vería por un instante el menú anterior.
+        sessionStorage.removeItem("permisos_visibles")
         setAuthHeader(null)
         verifyToken()
     }

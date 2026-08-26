@@ -159,11 +159,24 @@ export default function Navar() {
   // muestran todas las secciones, igual que hace el backend con esos tokens.
   const rol = localStorage.getItem("rol");
 
-  // Secciones configurables: null = todavía no se sabe (evita mostrar y
-  // luego ocultar). Administrador siempre las ve todas sin consultar nada.
-  const [permisosVisibles, setPermisosVisibles] = React.useState<string[] | null>(
-    !rol || rol === "Administrador" ? SECCIONES_CONFIGURABLES : null
-  );
+  // El menú se vuelve a montar en cada cambio de módulo, porque cada pantalla
+  // dibuja el suyo. Sin recordar la respuesta anterior, un Veterinario o un
+  // Voluntario veía el menú casi vacío durante toda la consulta al servidor,
+  // y las secciones aparecían de golpe: un parpadeo en cada clic. Guardando la
+  // última respuesta en la sesión, el menú se dibuja completo desde el primer
+  // cuadro y la consulta solo sirve para actualizarlo si algo cambió.
+  const CLAVE_CACHE = "permisos_visibles";
+
+  const [permisosVisibles, setPermisosVisibles] = React.useState<string[] | null>(() => {
+    if (!rol || rol === "Administrador") return SECCIONES_CONFIGURABLES;
+    try {
+      const guardado = sessionStorage.getItem(CLAVE_CACHE);
+      if (guardado) return JSON.parse(guardado);
+    } catch {
+      // Sesión sin almacenamiento disponible: se consulta como siempre.
+    }
+    return null;
+  });
 
   React.useEffect(() => {
     if (!rol || rol === "Administrador") {
@@ -172,7 +185,15 @@ export default function Navar() {
     }
     axios
       .get(baseurl + "permisos/mios")
-      .then((response) => setPermisosVisibles(response.data.data || []))
+      .then((response) => {
+        const permisos = response.data.data || [];
+        setPermisosVisibles(permisos);
+        try {
+          sessionStorage.setItem(CLAVE_CACHE, JSON.stringify(permisos));
+        } catch {
+          // Si no se puede guardar, simplemente se vuelve a consultar.
+        }
+      })
       .catch(() => setPermisosVisibles(SECCIONES_CONFIGURABLES)); // fail-open, mismo criterio que el resto del sistema
   }, [rol]);
 

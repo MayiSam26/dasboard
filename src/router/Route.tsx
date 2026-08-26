@@ -55,7 +55,10 @@ function PanelFallback() {
         alignItems: "center",
         justifyContent: "center",
         height: "100vh",
-        color: "var(--cya-muted, #6c757d)",
+        // Fondo del panel, no blanco: si el aviso llega a aparecer, no
+        // corta la pantalla con un destello claro.
+        background: "var(--cya-bg, #f7f8fa)",
+        color: "var(--cya-text-muted, #6c757d)",
         fontFamily: "inherit",
       }}
     >
@@ -76,7 +79,15 @@ export function RoutesApp() {
 
   return (
     <Fragment>
-      <BrowserRouter>
+      {/*
+        v7_startTransition hace que el cambio de ruta pase por una transicion
+        de React. Sin esto, al pulsar un modulo React desmonta la pantalla
+        entera (menu y cabecera incluidos) antes de montar la siguiente, y si
+        el codigo de ese modulo todavia no estaba descargado se veia un
+        parpadeo en blanco. Con la transicion, la pantalla actual se queda
+        visible hasta que la nueva esta lista.
+      */}
+      <BrowserRouter future={{ v7_startTransition: true }}>
         <Suspense fallback={<PanelFallback />}>
           <Routes>
             {/* PUBLICA */}
