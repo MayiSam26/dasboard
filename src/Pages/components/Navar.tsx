@@ -116,7 +116,9 @@ const sections: Section[] = [
     key: "voluntariado",
     label: "Voluntariado",
     icon: <EventIcon />,
-    roles: ["Administrador"],
+    // Configurable desde Permisos de Roles: el Administrador decide si un
+    // Voluntario ve el listado de sus visitas asignadas.
+    configurable: true,
     items: [{ label: "Visitas de Voluntariado", path: "/panel/voluntariado" }],
   },
   {

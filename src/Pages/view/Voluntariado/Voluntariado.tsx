@@ -11,6 +11,9 @@ import baseurl from "../../../Config/axios";
 import axios from "axios";
 import DriveFileRenameOutlineIcon from "@mui/icons-material/DriveFileRenameOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import UndoIcon from "@mui/icons-material/Undo";
+import { Snackbar, Alert } from "@mui/material";
 import { DataGrid, GridColDef } from "@mui/x-data-grid";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
@@ -27,11 +30,14 @@ interface Voluntario {
 export default function Voluntariado() {
   const navigate = useNavigate();
 
+  // La pantalla ya no es exclusiva del Administrador: si el Administrador le
+  // habilita la sección a Voluntariado desde Permisos de Roles, el voluntario
+  // entra y ve solo sus visitas (el servidor filtra por su usuario). Lo que sí
+  // queda reservado al Administrador es asignar, editar y eliminar.
+  const esAdmin = localStorage.getItem("rol") === "Administrador";
+
   React.useEffect(() => {
-    const rol = localStorage.getItem("rol");
-    if (rol && rol !== "Administrador") {
-      navigate("/panel");
-    }
+    if (!localStorage.getItem("token")) navigate("/");
   }, [navigate]);
 
   const [openModal, setOpenModal] = React.useState<boolean>(false);
@@ -42,6 +48,7 @@ export default function Voluntariado() {
   const [voluntarios, setVoluntarios] = React.useState<Voluntario[]>([]);
   const [iduser, setIduser] = React.useState<any>("");
   const [mes, setMes] = React.useState<any>("");
+  const [aviso, setAviso] = React.useState<{ texto: string; tipo: "success" | "error" } | null>(null);
 
   const getVisitas = React.useCallback(async () => {
     const body: any = {};
@@ -84,6 +91,31 @@ export default function Voluntariado() {
       .catch(() => setVoluntarios([]));
   }, []);
 
+  // Atajo para marcar la visita como realizada sin abrir el formulario. Es
+  // reversible: si se marca por error, el mismo botón la devuelve a pendiente.
+  const cambiarEstado = async (visita: any) => {
+    const nuevo = visita.Estado === "Realizado" ? "Pendiente" : "Realizado";
+    try {
+      const { data } = await axios.put(baseurl + "voluntario-visita/estado/" + visita.idvisita, {
+        Estado: nuevo,
+      });
+      if (data.code === "000") {
+        setAviso({
+          texto: nuevo === "Realizado" ? "Visita marcada como realizada." : "Visita devuelta a pendiente.",
+          tipo: "success",
+        });
+        getVisitas();
+      } else {
+        setAviso({ texto: data.message || "No se pudo cambiar el estado.", tipo: "error" });
+      }
+    } catch (e: any) {
+      setAviso({
+        texto: e?.response?.data?.message || e.message || "No se pudo cambiar el estado.",
+        tipo: "error",
+      });
+    }
+  };
+
   const handleClearFilters = () => {
     setIduser("");
     setMes("");
@@ -120,19 +152,54 @@ export default function Voluntariado() {
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
-        <Chip label={params.value} color={params.value === "Realizado" ? "success" : "warning"} size="small" />
+        <Tooltip
+          title={
+            params.value === "Realizado"
+              ? "Marcar como pendiente"
+              : "Marcar como realizada"
+          }
+        >
+          <Chip
+            label={params.value}
+            color={params.value === "Realizado" ? "success" : "warning"}
+            size="small"
+            onClick={() => cambiarEstado(params.row)}
+            sx={{ cursor: "pointer" }}
+          />
+        </Tooltip>
       ),
     },
     {
       field: "view",
       headerName: "Opción",
-      width: 90,
+      width: 140,
       sortable: false,
       resizable: false,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
         <>
+          <Tooltip
+            title={
+              params.row.Estado === "Realizado"
+                ? "Volver a pendiente"
+                : "Marcar como realizada"
+            }
+          >
+            <IconButton
+              size="small"
+              sx={{ color: params.row.Estado === "Realizado" ? "#8a8f98" : "#2e7d32" }}
+              onClick={() => cambiarEstado(params.row)}
+            >
+              {params.row.Estado === "Realizado" ? (
+                <UndoIcon fontSize="small" />
+              ) : (
+                <CheckCircleIcon fontSize="small" />
+              )}
+            </IconButton>
+          </Tooltip>
+          {!esAdmin ? null : (
+          <>
           <Tooltip title="Editar">
             <IconButton
               className="cya-icon-edit"
@@ -157,6 +224,8 @@ export default function Voluntariado() {
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
+          </>
+          )}
         </>
       ),
     },
@@ -248,7 +317,10 @@ export default function Voluntariado() {
           <Body>
             <Grid container spacing={2}>
               <Grid item xs={12}>
-                <HeaderBox setOpenModal={() => setOpenModal(true)} count={visitas ? visitas.length : 0} />
+                <HeaderBox
+                  setOpenModal={esAdmin ? () => setOpenModal(true) : null}
+                  count={visitas ? visitas.length : 0}
+                />
               </Grid>
               <Grid item xs={12} sx={{ marginTop: "20px" }}>
                 <Search
@@ -285,6 +357,16 @@ export default function Voluntariado() {
       {ModalAgregar()}
       {ModalEditar()}
       {ModalDelete()}
+      <Snackbar
+        open={Boolean(aviso)}
+        autoHideDuration={3000}
+        onClose={() => setAviso(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity={aviso?.tipo || "success"} variant="filled" onClose={() => setAviso(null)}>
+          {aviso?.texto}
+        </Alert>
+      </Snackbar>
     </>
   );
 }

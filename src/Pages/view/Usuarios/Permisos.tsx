@@ -37,6 +37,7 @@ const SECCIONES: { key: string; label: string }[] = [
   { key: "veterinaria", label: "Veterinaria" },
   { key: "adopcion", label: "Adopción" },
   { key: "donaciones", label: "Donaciones" },
+  { key: "voluntariado", label: "Voluntariado (visitas)" },
   { key: "reportes", label: "Reportes" },
 ];
 

@@ -21,16 +21,20 @@ export default function HeaderBox({ setOpenModal, count }: props) {
             </Typography>
           )}
         </Grid>
-        <Grid item xs={12} md="auto">
-          <Button
-            className="cya-btn-add"
-            onClick={() => setOpenModal(true)}
-            variant="contained"
-            startIcon={<AddCircleIcon />}
-          >
-            Asignar visita
-          </Button>
-        </Grid>
+        {/* Asignar visitas es solo del Administrador: al voluntario se le pasa
+            null y el botón no se dibuja. */}
+        {setOpenModal ? (
+          <Grid item xs={12} md="auto">
+            <Button
+              className="cya-btn-add"
+              onClick={() => setOpenModal(true)}
+              variant="contained"
+              startIcon={<AddCircleIcon />}
+            >
+              Asignar visita
+            </Button>
+          </Grid>
+        ) : null}
       </Grid>
     </>
   );
