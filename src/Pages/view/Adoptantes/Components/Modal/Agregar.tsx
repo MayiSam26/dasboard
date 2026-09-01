@@ -19,6 +19,12 @@ import {
   AYUDA_TELEFONO,
 } from "../../../../../utils/campos";
 import { iniciarMedicion, finalizarMedicion } from "../../../../../utils/medirRegistro";
+import CamposAdoptante, {
+  FichaAdoptante,
+  FICHA_VACIA,
+  fichaParaApi,
+  validarFicha,
+} from "../CamposAdoptante";
 
 interface props {
   setOpenModal: any;
@@ -32,6 +38,10 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
   const [telefono, setTelefono] = React.useState<any>("");
   const [motivo, setMotivo] = React.useState<any>("");
   const [fromto, setFromto] = React.useState<any>(null);
+  const [ficha, setFicha] = React.useState<FichaAdoptante>(FICHA_VACIA);
+
+  const cambiarFicha = (campo: keyof FichaAdoptante, valor: string) =>
+    setFicha((f) => ({ ...f, [campo]: valor }));
 
   // Cronómetro del indicador "Tiempo de Registro" (ver utils/medirRegistro).
   const medicionRef = React.useRef<number | null>(null);
@@ -62,6 +72,14 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
       return;
     }
 
+    const problemaFicha = validarFicha(ficha);
+    if (problemaFicha) {
+      setSeverity("warning");
+      setMssg(problemaFicha);
+      setOpenAlert(true);
+      return;
+    }
+
     const body: any = {
       iduser: null,
       Nombre: nombre,
@@ -71,8 +89,8 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
       telefono: telefono,
       Motivo: motivo,
       Fecha_Registro:formatlocaldate(fromto) ,
+      ...fichaParaApi(ficha),
     };
-    console.log("body",body)
     const url = baseurl + "adopciones/create";
         await axios.post(url,body).then((response) => {
             const { data } = response;
@@ -186,13 +204,16 @@ export default function Agregar({ setOpenModal, getAdoptante }: props) {
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Direccion"
+              label="Dirección (domicilio)"
               variant="outlined"
               fullWidth
               size="small"
+              placeholder="Calle, número, urbanización"
               onChange={(e) => setdireccion(e.target.value)}
             />
           </Grid>
+
+          <CamposAdoptante ficha={ficha} onChange={cambiarFicha} />
           <Grid item xs={12}>
             <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
               Motivo

@@ -16,6 +16,13 @@ import {
   AYUDA_DNI,
   AYUDA_TELEFONO,
 } from "../../../../../utils/campos";
+import CamposAdoptante, {
+  FichaAdoptante,
+  FICHA_VACIA,
+  fichaDesdeApi,
+  fichaParaApi,
+  validarFicha,
+} from "../CamposAdoptante";
 
 interface props {
   setOpenModalEdit?: any;
@@ -35,6 +42,10 @@ export default function Editar({
   const [direccion, setdireccion] = React.useState<any>("");
   const [telefono, setTelefono] = React.useState<any>("");
   const [motivo, setMotivo] = React.useState<any>("");
+  const [ficha, setFicha] = React.useState<FichaAdoptante>(FICHA_VACIA);
+
+  const cambiarFicha = (campo: keyof FichaAdoptante, valor: string) =>
+    setFicha((f) => ({ ...f, [campo]: valor }));
 
  
   const [severity, setSeverity] = React.useState<any>("");
@@ -53,6 +64,7 @@ export default function Editar({
         setdireccion(data.data.Direccion)
         setTelefono(data.data.telefono)
         setMotivo(data.data.Motivo)
+        setFicha(fichaDesdeApi(data.data))
       })
       .catch((e) => console.log(e.message));
   };
@@ -75,6 +87,14 @@ export default function Editar({
       return;
     }
 
+    const problemaFicha = validarFicha(ficha);
+    if (problemaFicha) {
+      setSeverity("warning");
+      setMssg(problemaFicha);
+      setOpenAlert(true);
+      return;
+    }
+
     const url=baseurl+'adoptante/update/'+idadoptante
     
     const body = {
@@ -83,7 +103,8 @@ export default function Editar({
       Dni:documento,
       Direccion:direccion,
       telefono:telefono,
-      Motivo:motivo
+      Motivo:motivo,
+      ...fichaParaApi(ficha),
     }
     axios.put(url,body)
     .then((response:any) =>{
@@ -196,14 +217,17 @@ export default function Editar({
           </Grid>
           <Grid item xs={12}>
             <TextField
-              label="Direccion"
+              label="Dirección (domicilio)"
               variant="outlined"
               value={direccion ?? ""}
               fullWidth
               size="small"
+              placeholder="Calle, número, urbanización"
               onChange={(e) => setdireccion(e.target.value)}
             />
           </Grid>
+
+          <CamposAdoptante ficha={ficha} onChange={cambiarFicha} />
           <Grid item xs={12}>
             <Typography variant="body2" sx={{ color: "var(--cya-text-muted)", mb: 0.5 }}>
               Motivo

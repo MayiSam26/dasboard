@@ -16,6 +16,13 @@ import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
 import { dibujarLogoCabecera } from "../../../utils/logoPdf";
 
+// Los campos de sí/no llegan como booleano y en una tabla o un Excel se leen
+// mejor escritos. Un campo sin responder no es un "No": queda en blanco.
+function siNo(valor: any) {
+  if (valor === null || valor === undefined || valor === "") return "";
+  return valor ? "Sí" : "No";
+}
+
 export default function Adoptante() {
   const [adoptante, setAdoptante] = React.useState<any>([]);
 
@@ -81,7 +88,13 @@ export default function Adoptante() {
         Apellido: a.Apellido,
         DNI: a.Dni,
         "Teléfono / Celular": a.telefono,
+        "Teléfono referencia": a.telefono_referencia || "",
+        Correo: a.correo || "",
         Direccion: a.Direccion,
+        Distrito: a.distrito || "",
+        Vivienda: [a.tipo_vivienda, a.tenencia_vivienda].filter(Boolean).join(" / "),
+        Patio: siNo(a.tiene_patio),
+        "Otras mascotas": a.tiene_otras_mascotas ? a.detalle_mascotas || "Sí" : siNo(a.tiene_otras_mascotas),
         Motivo: a.Motivo,
         "Fecha Registro": a.Fecha_Registro ? moment(a.Fecha_Registro).format("DD-MM-YYYY") : "",
       })),
@@ -189,7 +202,34 @@ export default function Adoptante() {
     },
     { field: "Dni", headerName: "DNI", width: 100, align: "center", headerAlign: "center" },
     { field: "telefono", headerName: "Telefono / Celular", width: 140, align: "center", headerAlign: "center" },
-    { field: "Direccion", headerName: "Direccion", width: 170, align: "center", headerAlign: "center" },
+    {
+      field: "correo",
+      headerName: "Correo",
+      width: 190,
+      headerAlign: "center",
+      renderCell: (params: any) => params.value || "—",
+    },
+    { field: "Direccion", headerName: "Dirección", width: 170, align: "center", headerAlign: "center" },
+    {
+      field: "distrito",
+      headerName: "Distrito",
+      width: 130,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params: any) => params.value || "—",
+    },
+    {
+      field: "tipo_vivienda",
+      headerName: "Vivienda",
+      width: 150,
+      align: "center",
+      headerAlign: "center",
+      sortable: false,
+      renderCell: (params: any) => {
+        const partes = [params.row.tipo_vivienda, params.row.tenencia_vivienda].filter(Boolean);
+        return partes.length ? partes.join(" · ") : "—";
+      },
+    },
     {
       field: "Motivo",
       headerName: "Motivo",

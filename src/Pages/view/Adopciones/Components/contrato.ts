@@ -52,6 +52,14 @@ export interface AdopcionContrato {
     Dni?: string;
     Direccion?: string;
     telefono?: string;
+    correo?: string | null;
+    distrito?: string | null;
+    telefono_referencia?: string | null;
+    tipo_vivienda?: string | null;
+    tenencia_vivienda?: string | null;
+    tiene_patio?: boolean | number | null;
+    tiene_otras_mascotas?: boolean | number | null;
+    detalle_mascotas?: string | null;
   } | null;
   animales?: {
     nombre?: string;
@@ -93,6 +101,24 @@ function edadLegible(valor: any) {
   const limpio = texto(valor, "");
   if (!limpio) return "No determinada";
   return limpio.startsWith("~") ? "aprox. " + limpio.slice(1) : limpio;
+}
+
+/** "Casa · Propia · con patio", o "—" si no se registró nada. */
+function describirVivienda(a: any) {
+  const partes = [a?.tipo_vivienda, a?.tenencia_vivienda].filter(Boolean);
+  if (a?.tiene_patio === true || a?.tiene_patio === 1) partes.push("con patio o área cerrada");
+  else if (a?.tiene_patio === false || a?.tiene_patio === 0) partes.push("sin patio");
+  return partes.length ? partes.join(" · ") : "—";
+}
+
+/** Domicilio con el distrito pegado, que es como se escribe una dirección. */
+function domicilioCompleto(a: any) {
+  const direccion = texto(a?.Direccion, "");
+  const distrito = texto(a?.distrito, "");
+  if (!direccion && !distrito) return "—";
+  if (!distrito) return direccion;
+  if (!direccion) return distrito;
+  return direccion + ", " + distrito;
 }
 
 function estaEsterilizado(valor: any) {
@@ -305,7 +331,7 @@ export async function construirContrato(adopcion: AdopcionContrato, urlFoto?: st
     "Conste por el presente documento el Contrato de Adopción Responsable que celebran, de una parte, " +
     REFUGIO.nombre + ", con domicilio en " + REFUGIO.direccion + ", a quien en adelante se denominará " +
     "EL REFUGIO; y de la otra parte, " + nombreAdoptante + ", identificado(a) con DNI N.° " +
-    texto(adoptante.Dni) + ", con domicilio en " + texto(adoptante.Direccion) + ", a quien en adelante " +
+    texto(adoptante.Dni) + ", con domicilio en " + domicilioCompleto(adoptante) + ", a quien en adelante " +
     "se denominará EL ADOPTANTE; en los términos y condiciones siguientes:";
   const lineasEntrada = doc.splitTextToSize(entrada, ANCHO_UTIL);
   doc.text(lineasEntrada, MARGEN, y, { align: "justify", maxWidth: ANCHO_UTIL });
@@ -327,8 +353,14 @@ export async function construirContrato(adopcion: AdopcionContrato, urlFoto?: st
     body: [
       ["Nombres y apellidos", nombreAdoptante],
       ["Documento de identidad", texto(adoptante.Dni)],
-      ["Domicilio", texto(adoptante.Direccion)],
-      ["Teléfono de contacto", texto(adoptante.telefono)],
+      ["Domicilio", domicilioCompleto(adoptante)],
+      [
+        "Teléfonos",
+        texto(adoptante.telefono) +
+          (texto(adoptante.telefono_referencia, "") ? "  ·  referencia: " + adoptante.telefono_referencia : ""),
+      ],
+      ["Correo electrónico", texto(adoptante.correo)],
+      ["Vivienda declarada", describirVivienda(adoptante)],
     ],
     theme: "grid",
     headStyles: cabecera,
