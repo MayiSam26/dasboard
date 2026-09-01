@@ -1,4 +1,16 @@
-import { Box, Chip, Grid, Grow, IconButton, Modal, Tooltip, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Chip,
+  CircularProgress,
+  Grid,
+  Grow,
+  IconButton,
+  Modal,
+  Snackbar,
+  Tooltip,
+  Typography,
+} from "@mui/material";
 import Header from "../../components/Header";
 import Body from "../../components/Layout/Body";
 import Content from "../../components/Layout/Content";
@@ -18,6 +30,14 @@ import CancelIcon from "@mui/icons-material/Cancel";
 import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
+import DescriptionIcon from "@mui/icons-material/Description";
+import { generarContratoAdopcion, numeroContrato } from "./Components/contrato";
+
+function buildImgUrl(foto: string) {
+  const cleanBase = baseurl.replace(/\/+$/, "");
+  const cleanFoto = (foto || "").replace(/\\/g, "/").replace(/^\/+/, "");
+  return `${cleanBase}/${cleanFoto}`;
+}
 
 function ReporteCard({
   icon,
@@ -79,6 +99,25 @@ export default function Adopcion() {
   const [openModal, setOpenModal] = React.useState<boolean>(false);
   const [openModalEdit, setOpenModalEdit] = React.useState<boolean>(false);
   const [idAdopcion, setIdAdopacion] = React.useState<any>("");
+
+  // Contrato de adopcion: se arma en el navegador (ver Components/contrato).
+  // Se guarda que fila se esta generando para mostrar el avance solo en su
+  // boton, porque la foto del animal se descarga y puede tardar un momento.
+  const [generando, setGenerando] = React.useState<number | null>(null);
+  const [aviso, setAviso] = React.useState<{ tipo: "success" | "error"; texto: string } | null>(null);
+
+  const descargarContrato = async (fila: any) => {
+    setGenerando(fila.idadopcion);
+    try {
+      const foto = fila.animales?.foto ? buildImgUrl(fila.animales.foto) : null;
+      await generarContratoAdopcion(fila, foto);
+      setAviso({ tipo: "success", texto: `Contrato ${numeroContrato(fila)} descargado.` });
+    } catch {
+      setAviso({ tipo: "error", texto: "No se pudo generar el contrato. Intentelo nuevamente." });
+    } finally {
+      setGenerando(null);
+    }
+  };
 
   const getAdopciones = React.useCallback(async () => {
     const body = {
@@ -199,25 +238,53 @@ export default function Adopcion() {
     {
       field: "view",
       headerName: "Opción",
-      width: 80,
+      width: 116,
       sortable: false,
       resizable: false,
       align: "center",
       headerAlign: "center",
-      renderCell: (params) => (
-        <Tooltip title="Editar">
-          <IconButton
-            className="cya-icon-edit"
-            size="small"
-            onClick={() => {
-              setOpenModalEdit(true);
-              setIdAdopacion(params.row.idadopcion);
-            }}
-          >
-            <DriveFileRenameOutlineIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      ),
+      renderCell: (params) => {
+        const concretada = params.row.Estado === "adoptado";
+        const enCurso = generando === params.row.idadopcion;
+        return (
+          <Box sx={{ display: "flex", gap: 0.5 }}>
+            <Tooltip title="Editar">
+              <IconButton
+                className="cya-icon-edit"
+                size="small"
+                onClick={() => {
+                  setOpenModalEdit(true);
+                  setIdAdopacion(params.row.idadopcion);
+                }}
+              >
+                <DriveFileRenameOutlineIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            {/* El contrato solo tiene sentido cuando la adopción se concretó:
+                emitirlo en "proceso" o "rechazado" sería un documento firmado
+                por una entrega que todavía no ocurrió. El botón se deja
+                visible pero deshabilitado, para que se entienda por qué. */}
+            <Tooltip
+              title={
+                concretada
+                  ? "Descargar contrato de adopción (PDF)"
+                  : "El contrato se emite cuando la adopción figura como Adoptado"
+              }
+            >
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!concretada || enCurso}
+                  onClick={() => descargarContrato(params.row)}
+                  sx={{ color: "var(--cya-primary)" }}
+                >
+                  {enCurso ? <CircularProgress size={16} /> : <DescriptionIcon fontSize="small" />}
+                </IconButton>
+              </span>
+            </Tooltip>
+          </Box>
+        );
+      },
     },
   ];
 
@@ -367,6 +434,16 @@ export default function Adopcion() {
       </Layout>
       {ModalAgregar()}
       {ModalEditar()}
+      <Snackbar
+        open={!!aviso}
+        autoHideDuration={4000}
+        onClose={() => setAviso(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity={aviso?.tipo || "success"} variant="filled" onClose={() => setAviso(null)}>
+          {aviso?.texto}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
