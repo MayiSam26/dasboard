@@ -29,6 +29,7 @@ import "moment/locale/es";
 import baseurl from "../../../Config/axios";
 import { CYA_PRIMARY, CYA_SECONDARY, CYA_ACCENT, CYA_ERROR, CYA_MUTED, linearForecast, tendenciaDe } from "./forecast";
 import { formatearDuracion } from "../../../utils/medirRegistro";
+import { dibujarLogoCabecera } from "../../../utils/logoPdf";
 
 moment.locale("es");
 
@@ -38,20 +39,6 @@ function lastNMonths(n: number) {
     months.push(moment().subtract(i, "months"));
   }
   return months;
-}
-
-function loadImageAsDataUrl(url: string): Promise<string> {
-  return fetch(url)
-    .then((r) => r.blob())
-    .then(
-      (blob) =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        })
-    );
 }
 
 interface StatCardProps {
@@ -368,21 +355,18 @@ export default function Reportes() {
     doc.setLineWidth(0.7);
     doc.line(0, 24, pageWidth, 24);
 
-    try {
-      const logoDataUrl = await loadImageAsDataUrl(`${window.location.origin}/images/logocito.png`);
-      doc.addImage(logoDataUrl, "PNG", 10, 4, 16, 16);
-    } catch {
-      // Si el logo no carga, seguimos con el resto del reporte igual.
-    }
+    // Devuelve dónde empieza el texto, porque el logo no es cuadrado y su
+    // ancho depende de la proporción del archivo (ver utils/logoPdf).
+    const xTexto = await dibujarLogoCabecera(doc);
 
     doc.setTextColor(228, 96, 47);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(15);
-    doc.text("Refugio Colitas y Amor", 30, 12);
+    doc.text("Refugio Colitas y Amor", xTexto, 12);
     doc.setTextColor(90, 90, 90);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text("Reporte General Consolidado", 30, 19);
+    doc.text("Reporte General Consolidado", xTexto, 19);
 
     doc.setTextColor(110, 110, 110);
     doc.setFontSize(9);

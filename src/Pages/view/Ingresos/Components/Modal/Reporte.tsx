@@ -1,4 +1,5 @@
 import moment from "moment";
+import { dibujarLogoCabecera } from "../../../../../utils/logoPdf";
 
 // Miniatura de la evidencia tal cual se ve en la miniatura de la tabla.
 // Ancho/alto en milímetros dentro del PDF.
@@ -100,17 +101,18 @@ export async function generarReporteIngresos(
   doc.setLineWidth(0.7);
   doc.line(0, 24, pageWidth, 24);
 
-  const logo = await cargarMiniatura(`${window.location.origin}/images/logocito.png`);
-  if (logo) doc.addImage(logo.dataUrl, "JPEG", 10, 4, 16, 16);
+  // Devuelve dónde empieza el texto, porque el logo no es cuadrado y su ancho
+  // depende de la proporción del archivo (ver utils/logoPdf).
+  const xTexto = await dibujarLogoCabecera(doc);
 
   doc.setTextColor(228, 96, 47);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(15);
-  doc.text("Refugio Colitas y Amor", 30, 12);
+  doc.text("Refugio Colitas y Amor", xTexto, 12);
   doc.setTextColor(90, 90, 90);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
-  doc.text("Reporte de Ingresos", 30, 19);
+  doc.text("Reporte de Ingresos", xTexto, 19);
 
   const totalMonto = ingresos.reduce((suma, i) => suma + (Number(i.monto) || 0), 0);
   const conEvidencia = miniaturas.filter(Boolean).length;

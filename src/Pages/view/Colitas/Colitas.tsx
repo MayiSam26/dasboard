@@ -18,6 +18,7 @@ import Header from "../../components/Header";
 import Search from "./Components/Search";
 import Agregar from "./Components/Modal/Agregar";
 import Editar from "./Components/Modal/Editar";
+import { dibujarLogoCabecera } from "../../../utils/logoPdf";
 
 // react-icons + los tipos de React 18 no siempre coinciden en el tipo de
 // retorno (ReactNode vs JSX.Element); se castean una sola vez acá.
@@ -28,20 +29,6 @@ function buildImgUrl(foto: string) {
   const cleanBase = baseurl.replace(/\/+$/, "");
   const cleanFoto = (foto || "").replace(/\\/g, "/").replace(/^\/+/, "");
   return `${cleanBase}/${cleanFoto}`;
-}
-
-function loadImageAsDataUrl(url: string): Promise<string> {
-  return fetch(url)
-    .then((r) => r.blob())
-    .then(
-      (blob) =>
-        new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(blob);
-        })
-    );
 }
 
 function AnimalPhoto({ src, alt }: { src: string; alt: string }) {
@@ -219,21 +206,18 @@ export default function Colitas() {
     doc.setLineWidth(0.7);
     doc.line(0, 24, pageWidth, 24);
 
-    try {
-      const logoDataUrl = await loadImageAsDataUrl(`${window.location.origin}/images/logocito.png`);
-      doc.addImage(logoDataUrl, "PNG", 10, 4, 16, 16);
-    } catch {
-      // Si el logo no carga, seguimos con el resto del reporte igual.
-    }
+    // Devuelve dónde empieza el texto, porque el logo no es cuadrado y su
+    // ancho depende de la proporción del archivo (ver utils/logoPdf).
+    const xTexto = await dibujarLogoCabecera(doc);
 
     doc.setTextColor(228, 96, 47);
     doc.setFont("helvetica", "bold");
     doc.setFontSize(15);
-    doc.text("Refugio Colitas y Amor", 30, 12);
+    doc.text("Refugio Colitas y Amor", xTexto, 12);
     doc.setTextColor(90, 90, 90);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text("Reporte de Mascotas Albergadas", 30, 19);
+    doc.text("Reporte de Mascotas Albergadas", xTexto, 19);
 
     doc.setTextColor(110, 110, 110);
     doc.setFontSize(9);
